@@ -107,6 +107,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Attribuites\ApiAuthorizeAttribute.cs" />
     <Compile Include="Attribuites\ApiRoleAttribute.cs" />
+    <Compile Include="Constant\GlobalConstant.cs" />
     <Compile Include="Controllers\ApiPersonalSkillController.cs" />
     <Compile Include="Controllers\ApiProjectResponsibilityController.cs" />
     <Compile Include="Controllers\ApiProjectSkillController.cs" />
@@ -178,6 +179,9 @@
     <Compile Include="ViewModel\UserDescription\ReadingUserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\UserDescription\SearchUserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\UserDescription\CreateUserDescriptionViewModel.cs" />
+    <Compile Include="ViewModel\User\RegisterViewModel.cs" />
+    <Compile Include="ViewModel\User\ResponsesLoginViewModel.cs" />
+    <Compile Include="ViewModel\User\LoginViewModel.cs" />
     <Compile Include="ViewModel\User\AcountViewModel.cs" />
     <Compile Include="ViewModel\User\UpdateUserViewModel.cs" />
     <Compile Include="ViewModel\User\SearchUserViewModel.cs" />

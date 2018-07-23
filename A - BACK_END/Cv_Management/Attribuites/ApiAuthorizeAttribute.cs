@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using Cv_Management.Constant;
 using Cv_Management.Entities.Context;
 using Cv_Management.ViewModel.User;
 using JWT;
@@ -23,7 +24,7 @@ namespace Cv_Management.Attribuites
         public override void OnAuthorization( HttpActionContext actionContext)
         {
             var token = actionContext.Request.Headers.Authorization.Parameter;
-            const string secret = "dkjfjfosaijfskfjslfjaoijovocjosjfofjs";
+           
             try
             {
                 IJsonSerializer serializer = new JsonNetSerializer();
@@ -32,7 +33,7 @@ namespace Cv_Management.Attribuites
                 IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
                 IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
 
-                var json = decoder.Decode(token, secret, verify: true);
+                var json = decoder.Decode(token, GlobalConstant.Secret, verify: true);
                 var acount = JsonConvert.DeserializeObject<AcountViewModel>(json);
               //  var user = DbSet.Users.Any(c=>c.)
 

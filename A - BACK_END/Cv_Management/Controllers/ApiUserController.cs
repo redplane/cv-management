@@ -5,10 +5,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using Cv_Management.Constant;
 using Cv_Management.Entities;
 using Cv_Management.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.User;
+using JWT;
+using JWT.Algorithms;
+using JWT.Serializers;
+using Newtonsoft.Json;
 
 namespace Cv_Management.Controllers
 {
@@ -41,7 +46,7 @@ namespace Cv_Management.Controllers
         [Route("search")]
         public async Task<IHttpActionResult> GellAll([FromBody] SearchUserViewModel model)
         {
-            var result = new List<ReadingUserViewModel>();
+
             var users = DbSet.Users.AsQueryable();
             model = model ?? new SearchUserViewModel();
             if (model.Ids != null)
@@ -52,13 +57,13 @@ namespace Cv_Management.Controllers
 
             }
 
-            if (model.LastNames!=null)
+            if (model.LastNames != null)
                 users = users.Where(c => model.LastNames.Contains(c.LastName));
 
             if (model.FirstNames != null)
                 users = users.Where(c => model.FirstNames.Contains(c.FirstName));
 
-            if (model.Birthday >0 )
+            if (model.Birthday > 0)
                 users = users.Where(c => c.Birthday.Equals(model.Birthday));
 
             var results = new SearchResultViewModel<IList<User>>();
@@ -72,8 +77,9 @@ namespace Cv_Management.Controllers
                     .Take(pagination.Records);
             }
             results.Records = await users.ToListAsync();
-            return Ok(result);
+            return Ok(results);
         }
+
         /// <summary>
         /// Create User
         /// </summary>
@@ -99,6 +105,7 @@ namespace Cv_Management.Controllers
             await DbSet.SaveChangesAsync();
             return Ok(user);
         }
+
         /// <summary>
         /// Update User
         /// </summary>
@@ -122,8 +129,9 @@ namespace Cv_Management.Controllers
             MappingDataForUpdate(user, model);
 
             await DbSet.SaveChangesAsync();
-            return Ok(new ReadingUserViewModel(user));
+            return Ok(user);
         }
+
         /// <summary>
         /// Delete User using Id
         /// </summary>
@@ -135,6 +143,7 @@ namespace Cv_Management.Controllers
         {
             return Ok();
         }
+
         /// <summary>
         /// Mapping data from Entity to model for create
         /// </summary>
@@ -151,6 +160,7 @@ namespace Cv_Management.Controllers
             entity.Email = model.Email;
             entity.Password = model.Password;
         }
+
         /// <summary>
         /// Mapping data from entity to model for update
         /// </summary>
@@ -158,14 +168,142 @@ namespace Cv_Management.Controllers
         /// <param name="model"></param>
         public void MappingDataForUpdate(User entity, UpdateUserViewModel model)
         {
-            entity.FirstName = model.FirstName;
-            entity.LastName = model.LastName;
-            entity.Birthday = model.Birthday;
-            if (model.Photo != null)
-                entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
-            entity.Role = model.Role;
+            if (!string.IsNullOrEmpty(model.FirstName))
+                entity.FirstName = model.FirstName;
+            if (!string.IsNullOrEmpty(model.LastName))
+                entity.LastName = model.LastName;
+            if (model.Birthday != null)
+                entity.Birthday = model.Birthday.GetValueOrDefault();
+
         }
 
+
+        /// <summary>
+        /// Get personal info from token
+        /// </summary>
+        /// <param name="accessToken"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("personal-profile/{accessToken}")]
+        public async Task<IHttpActionResult> GetPersonalInfo([FromUri]string accessToken)
+        {
+            try
+            {
+                IJsonSerializer serializer = new JsonNetSerializer();
+                IDateTimeProvider provider = new UtcDateTimeProvider();
+                IJwtValidator validator = new JwtValidator(serializer, provider);
+                IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+                IJwtDecoder decoder = new JwtDecoder(serializer, validator, urlEncoder);
+
+                var json = decoder.Decode(accessToken, GlobalConstant.Secret, verify: true);
+                var account = JsonConvert.DeserializeObject<AcountViewModel>(json);
+                var user = await DbSet.Users.FirstOrDefaultAsync(c =>
+                    c.Email == account.Username && c.Password == account.Password);
+                if (user == null)
+                    return NotFound();
+                return Ok(user);
+            }
+            catch (TokenExpiredException e)
+            {
+                throw new Exception("TOKEN_HAS_EXPRIED");
+
+            }
+
+        }
+
+        #region Login
+        /// <summary>
+        /// Login 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("login")]
+        public async Task<IHttpActionResult> Login([FromBody] LoginViewModel model)
+        {
+            if (model == null)
+            {
+                model = new LoginViewModel();
+                Validate(model);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            //get user by username and password
+            var user = await DbSet.Users.FirstOrDefaultAsync(c =>
+                c.Email.Equals(model.Username) && c.Password.Equals(model.Password));
+            if (user == null)
+                return NotFound();
+
+            var result = new ResponsesLoginViewModel();
+            result.LifeTime = 3600;
+            result.AccessToken = GetToken(user);
+            result.Type = "Bearer";
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get token using web token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public string GetToken(User user)
+        {
+            var userToken = new AcountViewModel()
+            {
+                Username = user.Email,
+                Password = user.Password,
+                Role = user.Role
+
+            };
+
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+
+            string token = encoder.Encode(userToken, GlobalConstant.Secret);
+            return token;
+        }
+        #endregion
+
+        #region Register
+        /// <summary>
+        /// Register new user
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("register")]
+        public async Task<IHttpActionResult> Register([FromBody]RegisterViewModel model)
+        {
+            if (model == null)
+            {
+                model = new RegisterViewModel();
+                Validate(model);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            //check duplicate
+            var isDuplicate = await DbSet.Users.AnyAsync(c => c.Email == model.Email && c.Password == model.Password);
+            if (isDuplicate)
+                return Conflict();
+
+            var user = new User();
+            user.Email = model.Email;
+            user.LastName = model.LastName;
+            user.FirstName = model.FirstName;
+            user.Password = model.Password;
+
+            DbSet.Users.Add(user);
+            await DbSet.SaveChangesAsync();
+            return Ok(user);
+        }
+
+        #endregion
         #endregion
     }
 }
