@@ -16,7 +16,7 @@ namespace Cv_Management.Controllers
     public class ApiSkillController : ApiController
     {
         #region Properties
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
 
         #endregion
 
@@ -24,7 +24,7 @@ namespace Cv_Management.Controllers
 
         public ApiSkillController()
         {
-            DbSet = new DbCvManagementContext();
+            DbSet = new CvManagementDbContext();
         }
 
         #endregion

@@ -15,10 +15,10 @@ namespace Cv_Management.Attribuites
 {
     public class ApiAuthorizeAttribute:AuthorizeAttribute
     {
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
         public ApiAuthorizeAttribute()
         {
-            DbSet= new DbCvManagementContext();
+            DbSet= new CvManagementDbContext();
         }
 
         public override void OnAuthorization( HttpActionContext actionContext)

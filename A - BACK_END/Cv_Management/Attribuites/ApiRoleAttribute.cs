@@ -10,12 +10,12 @@ namespace Cv_Management.Attribuites
 {
     public class ApiRoleAttribute:AuthorizeAttribute
     {
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
         public string[] _roles;
         public ApiRoleAttribute(string[] roles)
         {
             _roles = roles;
-            DbSet = new DbCvManagementContext();
+            DbSet = new CvManagementDbContext();
         }
 
         public override void OnAuthorization(HttpActionContext context)

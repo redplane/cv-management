@@ -5,14 +5,14 @@ namespace Cv_Management.Migrations
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Cv_Management.Entities.Context.DbCvManagementContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<Cv_Management.Entities.Context.CvManagementDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(Cv_Management.Entities.Context.DbCvManagementContext context)
+        protected override void Seed(Cv_Management.Entities.Context.CvManagementDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

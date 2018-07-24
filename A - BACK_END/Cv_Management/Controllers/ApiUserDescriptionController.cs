@@ -17,14 +17,14 @@ namespace Cv_Management.Controllers
     public class ApiUserDescriptionController : ApiController
     {
         #region Properties
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
         #endregion
 
         #region Contructors
 
         public ApiUserDescriptionController()
         {
-            DbSet = new DbCvManagementContext();
+            DbSet = new CvManagementDbContext();
         }
 
         #endregion

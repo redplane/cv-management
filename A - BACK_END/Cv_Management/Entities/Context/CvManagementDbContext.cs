@@ -7,9 +7,15 @@ using System.Web;
 
 namespace Cv_Management.Entities.Context
 {
-    public class DbCvManagementContext: DbContext
+    public class CvManagementDbContext : DbContext
     {
-        public DbCvManagementContext() : base("DefaultConnection") { }
+        #region Constructors
+
+        public CvManagementDbContext() : base("DefaultConnection") { }
+
+        #endregion
+
+        #region Properties
 
         public DbSet<Project> Projects { get; set; }
         public DbSet<Skill> Skills { get; set; }
@@ -20,5 +26,7 @@ namespace Cv_Management.Entities.Context
         public DbSet<SkillCategory> SkillCategories { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserDescription> UserDescriptions { get; set; }
+
+        #endregion
     }
 }
