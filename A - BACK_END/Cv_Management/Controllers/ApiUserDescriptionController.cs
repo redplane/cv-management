@@ -55,13 +55,7 @@ namespace Cv_Management.Controllers
             var results = new SearchResultViewModel<IList<UserDescription>>();
             results.Total = await userDescriptions.CountAsync();
             var pagination = model.Pagination;
-            if (pagination != null)
-            {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-                userDescriptions = userDescriptions.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
-            }
+           
             results.Records = await userDescriptions.ToListAsync();
             return Ok(results);
 

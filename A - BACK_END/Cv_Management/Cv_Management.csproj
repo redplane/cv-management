@@ -141,6 +141,17 @@
     <Compile Include="Controllers\ApiUserDescriptionController.cs" />
     <Compile Include="Controllers\ApiUserController.cs" />
     <Compile Include="Controllers\ApiSkillController.cs" />
+    <Compile Include="Enums\SortProperties\UserSortProperty.cs" />
+    <Compile Include="Enums\TextSearchMode.cs" />
+    <Compile Include="Models\Pagination.cs" />
+    <Compile Include="Models\TextSearch.cs" />
+    <Compile Include="Services\DbService.cs" />
+    <Compile Include="Interceptor\GlobalDbCommandInterceptor.cs" />
+    <Compile Include="Interfaces\Services\IDbService.cs" />
+    <Compile Include="Migrations\201808010644374_InitialMigration.cs" />
+    <Compile Include="Migrations\201808010644374_InitialMigration.Designer.cs">
+      <DependentUpon>201808010644374_InitialMigration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Entities\Context\CvManagementDbContext.cs" />
     <Compile Include="Models\Entities\Hobby.cs" />
@@ -157,8 +168,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\RangeModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModel\PaginationViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\UpdatePersonalSkillViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\SearchPersonalSkillViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\ReadingPersonalSkillViewModel.cs" />
@@ -199,6 +210,7 @@
     <Compile Include="ViewModel\User\SearchUserViewModel.cs" />
     <Compile Include="ViewModel\User\ReadingUserViewModel.cs" />
     <Compile Include="ViewModel\User\CreateUserViewModel.cs" />
+    <Compile Include="ViewModel\User\UserViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -215,6 +227,11 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Models\SkillCategory\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201808010644374_InitialMigration.resx">
+      <DependentUpon>201808010644374_InitialMigration.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

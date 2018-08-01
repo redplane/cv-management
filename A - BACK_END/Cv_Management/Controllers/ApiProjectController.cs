@@ -57,13 +57,7 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<Project>>();
             result.Total = await projects.CountAsync();
             var pagination = model.Pagination;
-            if (pagination != null)
-            {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-                projects = projects.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
-            }
+            
             result.Records = await projects.ToListAsync();
             return Ok(result);
 

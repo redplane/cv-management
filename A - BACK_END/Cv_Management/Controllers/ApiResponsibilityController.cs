@@ -56,13 +56,7 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<Responsibility>>();
             result.Total = await responsibilities.CountAsync();
             var pagination = model.Pagination;
-            if (pagination != null)
-            {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-                responsibilities = responsibilities.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
-            }
+            
             result.Records = await responsibilities.ToListAsync();
             return Ok(result);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Cv_Management.Models;
 
 namespace Cv_Management.ViewModel
 {
@@ -12,7 +13,7 @@ namespace Cv_Management.ViewModel
         /// <summary>
         /// Pagination information
         /// </summary>
-        public PaginationViewModel Pagination { get; set; }
+        public Pagination Pagination { get; set; }
 
         #endregion
     }

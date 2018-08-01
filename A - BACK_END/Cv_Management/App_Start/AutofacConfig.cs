@@ -4,7 +4,9 @@ using Autofac;
 using Autofac.Integration.WebApi;
 using AutoMapper;
 using AutoMapper.Configuration;
+using Cv_Management.Interfaces.Services;
 using Cv_Management.Models.Entities.Context;
+using Cv_Management.Services;
 
 namespace Cv_Management
 {
@@ -40,6 +42,7 @@ namespace Cv_Management
             #region Database context
 
             builder.RegisterType<CvManagementDbContext>().As<DbContext>().InstancePerLifetimeScope();
+            builder.RegisterType<DbService>().As<IDbService>().InstancePerLifetimeScope();
 
             #endregion
 

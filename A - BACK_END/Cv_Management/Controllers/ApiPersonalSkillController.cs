@@ -64,13 +64,7 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<SkillCategorySkillRelationship>>();
             result.Total = await personalSkills.CountAsync();
             var pagination = model.Pagination;
-            if (pagination != null)
-            {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-                personalSkills = personalSkills.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
-            }
+          
             result.Records = await personalSkills.ToListAsync();
             return Ok(result);
 

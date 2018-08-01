@@ -64,14 +64,7 @@ namespace Cv_Management.Controllers
             result.Total = await projectResponsibilities.CountAsync();
 
             var pagination = model.Pagination;
-            if (pagination != null)
-            {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-
-                projectResponsibilities = projectResponsibilities.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
-            }
+            
             result.Records = await projectResponsibilities.ToListAsync();
             return Ok(result);
 
