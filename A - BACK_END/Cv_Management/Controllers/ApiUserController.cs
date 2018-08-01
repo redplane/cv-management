@@ -9,8 +9,8 @@ using System.Web;
 using System.Web.Http;
 using ApiMultiPartFormData.Models;
 using Cv_Management.Constant;
-using Cv_Management.Entities;
-using Cv_Management.Entities.Context;
+using Cv_Management.Models.Entities;
+using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.User;
 using JWT;
@@ -25,7 +25,7 @@ namespace Cv_Management.Controllers
     {
         #region Properties
 
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
 
         #endregion
 
@@ -33,7 +33,7 @@ namespace Cv_Management.Controllers
 
         public ApiUserController()
         {
-            DbSet = new DbCvManagementContext();
+            DbSet = new CvManagementDbContext();
         }
 
         #endregion
@@ -159,7 +159,6 @@ namespace Cv_Management.Controllers
             entity.Birthday = model.Birthday;
             if (model.Photo != null)
                 entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
-            entity.Role = model.Role;
             entity.Email = model.Email;
             entity.Password = model.Password;
         }
@@ -282,7 +281,6 @@ namespace Cv_Management.Controllers
             {
                 Username = user.Email,
                 Password = user.Password,
-                Role = user.Role
 
             };
 

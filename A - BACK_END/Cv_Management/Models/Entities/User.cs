@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
+using Cv_Management.Enums;
 using Newtonsoft.Json;
 
-namespace Cv_Management.Entities
+namespace Cv_Management.Models.Entities
 {
     public class User
     {
         #region Properties
 
-        [Key]
         public int Id { get; set; }
 
         public string Email { get; set; }
@@ -27,23 +23,23 @@ namespace Cv_Management.Entities
 
         public double Birthday { get; set; }
 
-        public string Role { get; set; }
+        public UserRoles Role { get; set; }
 
         #endregion
 
         #region Navigation properties
 
         [JsonIgnore]
-        public List<SkillCategory> SkillCategories { get; set; }
+        public virtual ICollection<SkillCategory> SkillCategories { get; set; }
 
         [JsonIgnore]
-        public List<UserDescription> UserDescriptions { get; set; }
+        public virtual ICollection<UserDescription> UserDescriptions { get; set; }
 
         [JsonIgnore]
-        public List<Project> Projects { get; set; }
+        public virtual ICollection<Project> Projects { get; set; }
 
         [JsonIgnore]
-        public List<Hobby> Hobbies { get; set; }
+        public virtual ICollection<Hobby> Hobbies { get; set; }
 
         #endregion
     }

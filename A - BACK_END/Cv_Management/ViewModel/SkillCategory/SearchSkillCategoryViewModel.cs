@@ -8,10 +8,23 @@ namespace Cv_Management.ViewModel.SkillCategory
 {
     public class SearchSkillCategoryViewModel: BaseSearchViewModel
     {
+        #region Properties
 
+        /// <summary>
+        /// List of indexes.
+        /// </summary>
         public HashSet<int> Ids { get; set; }
-        public int UserId { get; set; }
+
+        /// <summary>
+        /// List of user indexes.
+        /// </summary>
+        public HashSet<int> UserIds { get; set; }
         
-        public string Name { get; set; }
+        /// <summary>
+        /// Skill category names.
+        /// </summary>
+        public HashSet<string> Names { get; set; }
+
+        #endregion
     }
 }

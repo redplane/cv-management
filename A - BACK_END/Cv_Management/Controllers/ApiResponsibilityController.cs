@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using Cv_Management.Entities;
-using Cv_Management.Entities.Context;
+using Cv_Management.Models.Entities;
+using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.Responsibility;
 
@@ -18,7 +18,7 @@ namespace Cv_Management.Controllers
 
         #region Properties 
 
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace Cv_Management.Controllers
 
         public ApiResponsibilityController()
         {
-            DbSet = new DbCvManagementContext();
+            DbSet = new CvManagementDbContext();
         }
 
         #endregion

@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using Cv_Management.Entities;
-using Cv_Management.Entities.Context;
+using Cv_Management.Models.Entities;
+using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.PersonalSkill;
 using Cv_Management.ViewModel.Skill;
@@ -18,7 +18,7 @@ namespace Cv_Management.Controllers
     {
         #region Properties
 
-        public readonly DbCvManagementContext DbSet;
+        public readonly CvManagementDbContext DbSet;
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace Cv_Management.Controllers
 
         public ApiPersonalSkillController()
         {
-            DbSet = new DbCvManagementContext();
+            DbSet = new CvManagementDbContext();
         }
 
         #endregion
@@ -61,7 +61,7 @@ namespace Cv_Management.Controllers
             }
             if (model.Point > 0)
                 personalSkills = personalSkills.Where(c => c.Point == model.Point);
-            var result = new SearchResultViewModel<IList<PersonalSkill>>();
+            var result = new SearchResultViewModel<IList<SkillCategorySkillRelationship>>();
             result.Total = await personalSkills.CountAsync();
             var pagination = model.Pagination;
             if (pagination != null)
@@ -93,7 +93,7 @@ namespace Cv_Management.Controllers
             }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var personalSkill = new PersonalSkill();
+            var personalSkill = new SkillCategorySkillRelationship();
             personalSkill.SkillCategoryId = model.SkillCategoryId;
             personalSkill.SkillId = model.SkillId;
             personalSkill.Point = model.Point;
