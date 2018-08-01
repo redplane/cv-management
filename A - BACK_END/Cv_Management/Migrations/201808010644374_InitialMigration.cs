@@ -3,12 +3,12 @@ namespace Cv_Management.Migrations
     using System;
     using System.Data.Entity.Migrations;
     
-    public partial class Initial : DbMigration
+    public partial class InitialMigration : DbMigration
     {
         public override void Up()
         {
             CreateTable(
-                "dbo.PersonalSkills",
+                "dbo.SkillCategorySkillRelationship",
                 c => new
                     {
                         SkillCategoryId = c.Int(nullable: false),
@@ -17,66 +17,13 @@ namespace Cv_Management.Migrations
                         CreatedTime = c.Double(nullable: false),
                     })
                 .PrimaryKey(t => new { t.SkillCategoryId, t.SkillId })
-                .ForeignKey("dbo.Skills", t => t.SkillId, cascadeDelete: true)
-                .ForeignKey("dbo.SkillCategories", t => t.SkillCategoryId, cascadeDelete: true)
+                .ForeignKey("dbo.Skill", t => t.SkillId)
+                .ForeignKey("dbo.SkillCategory", t => t.SkillCategoryId)
                 .Index(t => t.SkillCategoryId)
                 .Index(t => t.SkillId);
             
             CreateTable(
-                "dbo.Skills",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        Name = c.String(),
-                        CreatedTime = c.Double(nullable: false),
-                    })
-                .PrimaryKey(t => t.Id);
-            
-            CreateTable(
-                "dbo.ProjectSkills",
-                c => new
-                    {
-                        ProjectId = c.Int(nullable: false),
-                        SkillId = c.Int(nullable: false),
-                    })
-                .PrimaryKey(t => new { t.ProjectId, t.SkillId })
-                .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
-                .ForeignKey("dbo.Skills", t => t.SkillId, cascadeDelete: true)
-                .Index(t => t.ProjectId)
-                .Index(t => t.SkillId);
-            
-            CreateTable(
-                "dbo.Projects",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        UserId = c.Int(nullable: false),
-                        Name = c.String(),
-                        Description = c.String(),
-                        StatedTime = c.Double(nullable: false),
-                        FinishedTime = c.Double(),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Users", t => t.UserId, cascadeDelete: true)
-                .Index(t => t.UserId);
-            
-            CreateTable(
-                "dbo.ProjectResponsibilities",
-                c => new
-                    {
-                        ProjectId = c.Int(nullable: false),
-                        RespinsibilityId = c.Int(nullable: false),
-                        CreatedTime = c.Double(nullable: false),
-                        Responsibility_Id = c.Int(),
-                    })
-                .PrimaryKey(t => new { t.ProjectId, t.RespinsibilityId })
-                .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
-                .ForeignKey("dbo.Responsibilities", t => t.Responsibility_Id)
-                .Index(t => t.ProjectId)
-                .Index(t => t.Responsibility_Id);
-            
-            CreateTable(
-                "dbo.Responsibilities",
+                "dbo.Skill",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -87,20 +34,87 @@ namespace Cv_Management.Migrations
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "dbo.Users",
+                "dbo.ProjectSkill",
+                c => new
+                    {
+                        ProjectId = c.Int(nullable: false),
+                        SkillId = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => new { t.ProjectId, t.SkillId })
+                .ForeignKey("dbo.Project", t => t.ProjectId)
+                .ForeignKey("dbo.Skill", t => t.SkillId)
+                .Index(t => t.ProjectId)
+                .Index(t => t.SkillId);
+            
+            CreateTable(
+                "dbo.Project",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        FirstName = c.String(),
-                        LastName = c.String(),
-                        Photo = c.String(),
-                        Birthday = c.Double(nullable: false),
-                        Role = c.String(),
+                        UserId = c.Int(nullable: false),
+                        Name = c.String(),
+                        Description = c.String(),
+                        StatedTime = c.Double(nullable: false),
+                        FinishedTime = c.Double(),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.User", t => t.UserId)
+                .Index(t => t.UserId);
+            
+            CreateTable(
+                "dbo.ProjectResponsibility",
+                c => new
+                    {
+                        ProjectId = c.Int(nullable: false),
+                        ResponsibilityId = c.Int(nullable: false),
+                        CreatedTime = c.Double(nullable: false),
+                    })
+                .PrimaryKey(t => new { t.ProjectId, t.ResponsibilityId })
+                .ForeignKey("dbo.Project", t => t.ResponsibilityId)
+                .ForeignKey("dbo.Responsibility", t => t.ResponsibilityId)
+                .Index(t => t.ResponsibilityId);
+            
+            CreateTable(
+                "dbo.Responsibility",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(),
+                        CreatedTime = c.Double(nullable: false),
+                        LastModifiedTime = c.Double(),
                     })
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "dbo.SkillCategories",
+                "dbo.User",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Email = c.String(),
+                        Password = c.String(),
+                        FirstName = c.String(),
+                        LastName = c.String(),
+                        Photo = c.String(),
+                        Birthday = c.Double(nullable: false),
+                        Role = c.Int(nullable: false),
+                    })
+                .PrimaryKey(t => t.Id);
+            
+            CreateTable(
+                "dbo.Hobby",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        UserId = c.Int(nullable: false),
+                        Name = c.String(),
+                        Description = c.String(),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.User", t => t.UserId)
+                .Index(t => t.UserId);
+            
+            CreateTable(
+                "dbo.SkillCategory",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -110,11 +124,11 @@ namespace Cv_Management.Migrations
                         CreatedTime = c.Double(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Users", t => t.UserId, cascadeDelete: true)
+                .ForeignKey("dbo.User", t => t.UserId)
                 .Index(t => t.UserId);
             
             CreateTable(
-                "dbo.UserDescriptions",
+                "dbo.UserDescription",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
@@ -122,40 +136,42 @@ namespace Cv_Management.Migrations
                         Description = c.String(),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Users", t => t.UserId, cascadeDelete: true)
+                .ForeignKey("dbo.User", t => t.UserId)
                 .Index(t => t.UserId);
             
         }
         
         public override void Down()
         {
-            DropForeignKey("dbo.ProjectSkills", "SkillId", "dbo.Skills");
-            DropForeignKey("dbo.UserDescriptions", "UserId", "dbo.Users");
-            DropForeignKey("dbo.SkillCategories", "UserId", "dbo.Users");
-            DropForeignKey("dbo.PersonalSkills", "SkillCategoryId", "dbo.SkillCategories");
-            DropForeignKey("dbo.Projects", "UserId", "dbo.Users");
-            DropForeignKey("dbo.ProjectSkills", "ProjectId", "dbo.Projects");
-            DropForeignKey("dbo.ProjectResponsibilities", "Responsibility_Id", "dbo.Responsibilities");
-            DropForeignKey("dbo.ProjectResponsibilities", "ProjectId", "dbo.Projects");
-            DropForeignKey("dbo.PersonalSkills", "SkillId", "dbo.Skills");
-            DropIndex("dbo.UserDescriptions", new[] { "UserId" });
-            DropIndex("dbo.SkillCategories", new[] { "UserId" });
-            DropIndex("dbo.ProjectResponsibilities", new[] { "Responsibility_Id" });
-            DropIndex("dbo.ProjectResponsibilities", new[] { "ProjectId" });
-            DropIndex("dbo.Projects", new[] { "UserId" });
-            DropIndex("dbo.ProjectSkills", new[] { "SkillId" });
-            DropIndex("dbo.ProjectSkills", new[] { "ProjectId" });
-            DropIndex("dbo.PersonalSkills", new[] { "SkillId" });
-            DropIndex("dbo.PersonalSkills", new[] { "SkillCategoryId" });
-            DropTable("dbo.UserDescriptions");
-            DropTable("dbo.SkillCategories");
-            DropTable("dbo.Users");
-            DropTable("dbo.Responsibilities");
-            DropTable("dbo.ProjectResponsibilities");
-            DropTable("dbo.Projects");
-            DropTable("dbo.ProjectSkills");
-            DropTable("dbo.Skills");
-            DropTable("dbo.PersonalSkills");
+            DropForeignKey("dbo.SkillCategorySkillRelationship", "SkillCategoryId", "dbo.SkillCategory");
+            DropForeignKey("dbo.SkillCategorySkillRelationship", "SkillId", "dbo.Skill");
+            DropForeignKey("dbo.ProjectSkill", "SkillId", "dbo.Skill");
+            DropForeignKey("dbo.ProjectSkill", "ProjectId", "dbo.Project");
+            DropForeignKey("dbo.Project", "UserId", "dbo.User");
+            DropForeignKey("dbo.UserDescription", "UserId", "dbo.User");
+            DropForeignKey("dbo.SkillCategory", "UserId", "dbo.User");
+            DropForeignKey("dbo.Hobby", "UserId", "dbo.User");
+            DropForeignKey("dbo.ProjectResponsibility", "ResponsibilityId", "dbo.Responsibility");
+            DropForeignKey("dbo.ProjectResponsibility", "ResponsibilityId", "dbo.Project");
+            DropIndex("dbo.UserDescription", new[] { "UserId" });
+            DropIndex("dbo.SkillCategory", new[] { "UserId" });
+            DropIndex("dbo.Hobby", new[] { "UserId" });
+            DropIndex("dbo.ProjectResponsibility", new[] { "ResponsibilityId" });
+            DropIndex("dbo.Project", new[] { "UserId" });
+            DropIndex("dbo.ProjectSkill", new[] { "SkillId" });
+            DropIndex("dbo.ProjectSkill", new[] { "ProjectId" });
+            DropIndex("dbo.SkillCategorySkillRelationship", new[] { "SkillId" });
+            DropIndex("dbo.SkillCategorySkillRelationship", new[] { "SkillCategoryId" });
+            DropTable("dbo.UserDescription");
+            DropTable("dbo.SkillCategory");
+            DropTable("dbo.Hobby");
+            DropTable("dbo.User");
+            DropTable("dbo.Responsibility");
+            DropTable("dbo.ProjectResponsibility");
+            DropTable("dbo.Project");
+            DropTable("dbo.ProjectSkill");
+            DropTable("dbo.Skill");
+            DropTable("dbo.SkillCategorySkillRelationship");
         }
     }
 }

@@ -12,14 +12,13 @@ namespace Cv_Management.ViewModel.User
         {
             
         }
-        public ReadingUserViewModel(Entities.User e )
+        public ReadingUserViewModel(Models.Entities.User e )
         {
             this.Id = e.Id;
             this.FirstName = e.FirstName;
             this.LastName = e.LastName;
             this.Photo = e.Photo;
             this.Birthday = e.Birthday;
-            this.Role = e.Role;
             this.Email = e.Email;
             this.Password = e.Password;
         }

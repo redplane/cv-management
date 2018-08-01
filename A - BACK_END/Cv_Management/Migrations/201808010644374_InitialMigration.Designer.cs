@@ -6,14 +6,14 @@ namespace Cv_Management.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddLastModifiedTimeColumn : IMigrationMetadata
+    [GeneratedCode("EntityFramework.Migrations", "6.2.0-61023")]
+    public sealed partial class InitialMigration : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddLastModifiedTimeColumn));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(InitialMigration));
         
         string IMigrationMetadata.Id
         {
-            get { return "201807031525377_AddLastModifiedTimeColumn"; }
+            get { return "201808010644374_InitialMigration"; }
         }
         
         string IMigrationMetadata.Source

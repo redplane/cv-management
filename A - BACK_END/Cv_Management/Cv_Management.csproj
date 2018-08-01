@@ -25,6 +25,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -48,13 +49,29 @@
       <HintPath>..\packages\ApiMultipartFormDataFormatter.1.0.3\lib\4.5\ApiMultiPartFormData.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Autofac, Version=4.8.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.8.1\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi, Version=4.2.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.WebApi2.4.2.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper, Version=7.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.7.0.1\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper.EF6, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.EF6.1.1.1\lib\net45\AutoMapper.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="DelegateDecompiler, Version=1.0.0.0, Culture=neutral, PublicKeyToken=93b26a10a04705bd, processorArchitecture=MSIL">
+      <HintPath>..\packages\DelegateDecompiler.0.24.0\lib\net45\DelegateDecompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="DelegateDecompiler.EntityFramework, Version=1.0.0.0, Culture=neutral, PublicKeyToken=93b26a10a04705bd, processorArchitecture=MSIL">
+      <HintPath>..\packages\DelegateDecompiler.EntityFramework.0.24.0\lib\net45\DelegateDecompiler.EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="JWT, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\JWT.4.0.0\lib\net46\JWT.dll</HintPath>
@@ -65,6 +82,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Mono.Reflection, Version=1.1.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Reflection.Core.1.1.1\lib\net45\Mono.Reflection.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -76,6 +96,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -104,9 +127,10 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Start\AutofacConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Attribuites\ApiAuthorizeAttribute.cs" />
-    <Compile Include="Attribuites\ApiRoleAttribute.cs" />
+    <Compile Include="Attributes\ApiAuthorizeAttribute.cs" />
+    <Compile Include="Attributes\ApiRoleAttribute.cs" />
     <Compile Include="Constant\GlobalConstant.cs" />
     <Compile Include="Controllers\ApiPersonalSkillController.cs" />
     <Compile Include="Controllers\ApiProjectResponsibilityController.cs" />
@@ -117,34 +141,22 @@
     <Compile Include="Controllers\ApiUserDescriptionController.cs" />
     <Compile Include="Controllers\ApiUserController.cs" />
     <Compile Include="Controllers\ApiSkillController.cs" />
-    <Compile Include="Entities\Context\DbCvManagementContext.cs" />
-    <Compile Include="Entities\Hobby.cs" />
-    <Compile Include="Entities\PersonalSkill .cs" />
-    <Compile Include="Entities\Project.cs" />
-    <Compile Include="Entities\ProjectResponsibility.cs" />
-    <Compile Include="Entities\ProjectSkill.cs" />
-    <Compile Include="Entities\Responsibility.cs" />
-    <Compile Include="Entities\Skill.cs" />
-    <Compile Include="Entities\SkillCategory.cs" />
-    <Compile Include="Entities\User.cs" />
-    <Compile Include="Entities\UserDescription.cs" />
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Entities\Context\CvManagementDbContext.cs" />
+    <Compile Include="Models\Entities\Hobby.cs" />
+    <Compile Include="Models\Entities\SkillCategorySkillRelationship.cs" />
+    <Compile Include="Models\Entities\Project.cs" />
+    <Compile Include="Models\Entities\ProjectResponsibility.cs" />
+    <Compile Include="Models\Entities\ProjectSkill.cs" />
+    <Compile Include="Models\Entities\Responsibility.cs" />
+    <Compile Include="Models\Entities\Skill.cs" />
+    <Compile Include="Models\Entities\SkillCategory.cs" />
+    <Compile Include="Models\Entities\User.cs" />
+    <Compile Include="Models\Entities\UserDescription.cs" />
     <Compile Include="Enums\UserRoles.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201807031514407_Initial.cs" />
-    <Compile Include="Migrations\201807031514407_Initial.Designer.cs">
-      <DependentUpon>201807031514407_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201807031525377_AddLastModifiedTimeColumn.cs" />
-    <Compile Include="Migrations\201807031525377_AddLastModifiedTimeColumn.Designer.cs">
-      <DependentUpon>201807031525377_AddLastModifiedTimeColumn.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201807201510177_addHobbyTable.cs" />
-    <Compile Include="Migrations\201807201510177_addHobbyTable.Designer.cs">
-      <DependentUpon>201807201510177_addHobbyTable.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\PaginationViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\UpdatePersonalSkillViewModel.cs" />
@@ -202,17 +214,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201807031514407_Initial.resx">
-      <DependentUpon>201807031514407_Initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201807031525377_AddLastModifiedTimeColumn.resx">
-      <DependentUpon>201807031525377_AddLastModifiedTimeColumn.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201807201510177_addHobbyTable.resx">
-      <DependentUpon>201807201510177_addHobbyTable.cs</DependentUpon>
-    </EmbeddedResource>
+    <Folder Include="Models\SkillCategory\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

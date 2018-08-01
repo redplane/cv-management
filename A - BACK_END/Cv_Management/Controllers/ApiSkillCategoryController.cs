@@ -5,28 +5,31 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using Cv_Management.Entities;
-using Cv_Management.Entities.Context;
+using Cv_Management.Models.Entities;
+using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.SkillCategory;
 
 namespace Cv_Management.Controllers
 {
-    [RoutePrefix("api/skillCategory")]
+    [RoutePrefix("api/skill-category")]
     public class ApiSkillCategoryController : ApiController
     {
         #region Properties
 
-        public readonly CvManagementDbContext DbSet;
+        private readonly CvManagementDbContext _dbContext;
 
         #endregion
 
-
         #region Contructors
 
-        public ApiSkillCategoryController()
+        /// <summary>
+        /// Initialize controller with injectors.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        public ApiSkillCategoryController(DbContext dbContext)
         {
-            DbSet = new CvManagementDbContext();
+            _dbContext = dbContext as CvManagementDbContext;
         }
 
         #endregion
@@ -35,38 +38,61 @@ namespace Cv_Management.Controllers
         /// <summary>
         /// Get Skill category using specific conditions
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="condition"></param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("")]
-        public async Task<IHttpActionResult> Search([FromBody]SearchSkillCategoryViewModel model)
+        [HttpPost]
+        [Route("search")]
+        public async Task<IHttpActionResult> Search([FromBody]SearchSkillCategoryViewModel condition)
         {
-            model = model ?? new SearchSkillCategoryViewModel();
-            var skillCategories = DbSet.SkillCategories.AsQueryable();
-            if (model.Ids != null)
+            #region Parameters validation
+
+            if (condition == null)
             {
-                var ids = model.Ids.Where(x => x > 0).ToList();
+                condition = new SearchSkillCategoryViewModel();
+                Validate(condition);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            #endregion
+
+            #region Information search
+
+            // Get list of skill categories.
+            var skillCategories = _dbContext.SkillCategories.AsQueryable();
+
+            // Filter skill categories by indexes.
+            if (condition.Ids != null && condition.Ids.Count > 0)
+            {
+                var ids = condition.Ids.Where(x => x > 0).ToList();
                 if (ids.Count > 0)
                     skillCategories = skillCategories.Where(x => ids.Contains(x.Id));
-
             }
 
-            if (model.UserId > 0)
-                skillCategories = skillCategories.Where(c => c.UserId == model.UserId);
-            if (!string.IsNullOrEmpty(model.Name))
-                skillCategories = skillCategories.Where(c => c.Name.Contains(model.Name));
-            var result = new SearchResultViewModel<IList<SkillCategory>>();
-            result.Total = await skillCategories.CountAsync();
-            var pagination = model.Pagination;
-            if (pagination != null)
+            // Filter skill categories by user indexes.
+            if (condition.UserIds != null && condition.UserIds.Count > 0)
             {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-                skillCategories = skillCategories.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
+                var userIds = condition.UserIds.Where(x => x > 0).ToList();
+                if (userIds.Count > 0)
+                    skillCategories = skillCategories.Where(x => userIds.Contains(x.UserId));
             }
-            result.Records = await skillCategories.ToListAsync();
-            return Ok(result);
+
+            // Filter skill categories by user indexes.
+            if (condition.Names != null && condition.Names.Count > 0)
+            {
+                var names = condition.Names.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                if (names.Count > 0)
+                    skillCategories = skillCategories.Where(x => names.Any(name => x.Name.Contains(name)));
+            }
+
+            #endregion
+            
+            // Get offline skill categories.
+            var loadSkillCategoryResult = new SearchResultViewModel<IList<SkillCategory>>();
+            //loadSkillCategoryResult.Total = await skillCategories.CountAsync();
+            //loadSkillCategoryResult.Records = await skillCategories.ToListAsync();
+            return Ok(loadSkillCategoryResult);
 
         }
 
@@ -92,8 +118,8 @@ namespace Cv_Management.Controllers
             if (model.Photo != null)
                 skillCategory.Photo = Convert.ToBase64String(model.Photo.Buffer);
             skillCategory.CreatedTime = DateTime.Now.ToOADate();
-            skillCategory = DbSet.SkillCategories.Add(skillCategory);
-            await DbSet.SaveChangesAsync();
+            skillCategory = _dbContext.SkillCategories.Add(skillCategory);
+            await _dbContext.SaveChangesAsync();
             return Ok(skillCategory);
 
         }
@@ -116,14 +142,14 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             //get SkillCategory
-            var skillCategory = DbSet.SkillCategories.Find(id);
+            var skillCategory = _dbContext.SkillCategories.Find(id);
             if (skillCategory == null)
                 return NotFound();
             skillCategory.Name = model.Name;
             skillCategory.UserId = model.UserId;
             if (model.Photo != null)
                 skillCategory.Photo = Convert.ToBase64String(model.Photo.Buffer);
-            await DbSet.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
             return Ok(skillCategory);
 
         }
@@ -137,11 +163,11 @@ namespace Cv_Management.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult> Delete([FromUri]int id)
         {
-            var skillCategory = DbSet.SkillCategories.Find(id);
+            var skillCategory = _dbContext.SkillCategories.Find(id);
             if (skillCategory == null)
                 return NotFound();
-            DbSet.SkillCategories.Remove(skillCategory);
-            await DbSet.SaveChangesAsync();
+            _dbContext.SkillCategories.Remove(skillCategory);
+            await _dbContext.SaveChangesAsync();
             return Ok();
 
         }

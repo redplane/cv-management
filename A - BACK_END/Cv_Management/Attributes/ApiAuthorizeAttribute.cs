@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Cv_Management.Constant;
-using Cv_Management.Entities.Context;
+using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel.User;
 using JWT;
 using JWT.Serializers;
 using Newtonsoft.Json;
 
-namespace Cv_Management.Attribuites
+namespace Cv_Management.Attributes
 {
     public class ApiAuthorizeAttribute:AuthorizeAttribute
     {

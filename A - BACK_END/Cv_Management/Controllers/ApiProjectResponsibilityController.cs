@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using Cv_Management.Entities;
-using Cv_Management.Entities.Context;
+using Cv_Management.Models.Entities;
+using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.Project;
 using Cv_Management.ViewModel.ProjectResponsibility;
@@ -56,7 +56,7 @@ namespace Cv_Management.Controllers
             {
                 var responsibilityIds = model.ResponsibilityIds.Where(x => x > 0).ToList();
                 if (responsibilityIds.Count > 0)
-                    projectResponsibilities = projectResponsibilities.Where(x => responsibilityIds.Contains(x.RespinsibilityId));
+                    projectResponsibilities = projectResponsibilities.Where(x => responsibilityIds.Contains(x.ResponsibilityId));
 
             }
 
@@ -95,7 +95,7 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
             var projectResponsibility = new ProjectResponsibility();
             projectResponsibility.ProjectId = model.ProjectId;
-            projectResponsibility.RespinsibilityId = model.ResponsibilityId;
+            projectResponsibility.ResponsibilityId = model.ResponsibilityId;
             projectResponsibility.CreatedTime = DateTime.Now.ToOADate();
             projectResponsibility = DbSet.ProjectResponsibilities.Add(projectResponsibility);
             await DbSet.SaveChangesAsync();
@@ -113,7 +113,7 @@ namespace Cv_Management.Controllers
         [Route("")]
         public async Task<IHttpActionResult> Delete([FromUri] int responsibilityId, [FromUri] int projectId)
         {
-            var projectResponsibility = DbSet.ProjectResponsibilities.FirstOrDefault(c => c.RespinsibilityId == responsibilityId && c.ProjectId == projectId);
+            var projectResponsibility = DbSet.ProjectResponsibilities.FirstOrDefault(c => c.ResponsibilityId == responsibilityId && c.ProjectId == projectId);
 
             if (projectResponsibility == null)
                 return NotFound();
