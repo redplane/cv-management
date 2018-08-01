@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.EnterpriseServices.Internal;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using ApiMultiPartFormData.Models;
 using Cv_Management.Constant;
 using Cv_Management.Entities;
 using Cv_Management.Entities.Context;
@@ -209,6 +212,31 @@ namespace Cv_Management.Controllers
 
             }
 
+        }
+
+        /// <summary>
+        /// Upload file for user
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="photo"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("profile-image/{id}")]
+        public async Task<IHttpActionResult> UploadProfile([FromUri] int id, HttpFile photo)
+        {
+            if (photo == null)
+            {
+                return BadRequest("No_FILE_CHOOSED");
+            }
+
+            var user = await DbSet.Users.FindAsync(id);
+            if (user == null)
+                return Conflict();
+
+            user.Photo = Convert.ToBase64String(photo.Buffer);
+             await DbSet.SaveChangesAsync();
+
+            return Ok(user);
         }
 
         #region Login

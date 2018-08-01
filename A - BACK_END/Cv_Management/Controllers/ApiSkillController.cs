@@ -36,7 +36,7 @@ namespace Cv_Management.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("")]
+        [Route("search")]
         public async Task<IHttpActionResult> Search([FromBody]SearchSkillViewModel model)
         {
             model = model ?? new SearchSkillViewModel();
@@ -48,8 +48,8 @@ namespace Cv_Management.Controllers
                     skills = skills.Where(x => ids.Contains(x.Id));
 
             }
-            if (!string.IsNullOrEmpty(model.Name))
-                skills = skills.Where(c => c.Name.Contains(model.Name));
+            if (model.Names != null)
+                skills = skills.Where(c => model.Names.Contains(c.Name));
 
             var result = new SearchResultViewModel<IList<Skill>>();
             result.Total = await skills.CountAsync();
