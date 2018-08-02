@@ -2,11 +2,23 @@
 
 namespace ApiClientShared.ViewModel.Skill
 {
-    public class SearchSkillViewModel:BaseSearchViewModel
+    public class SearchSkillViewModel : BaseSearchViewModel
     {
+        #region Properties
+        /// <summary>
+        /// Skill'id indexes 
+        /// </summary>
         public HashSet<int> Ids { get; set; }
-        public string Name { get; set; }
-      
+
+        /// <summary>
+        /// Skill'name indexes
+        /// </summary>
+        public HashSet<string> Names { get; set; }
+
+        #endregion
+
+
+
 
     }
 }
