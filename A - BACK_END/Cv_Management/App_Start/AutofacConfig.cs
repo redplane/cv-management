@@ -34,7 +34,7 @@ namespace Cv_Management
             #region Controllers & hubs
 
             // Controllers & hubs
-            builder.RegisterApiControllers(typeof(WebApiApplication).Assembly);
+            builder.RegisterApiControllers(typeof(Startup).Assembly);
             builder.RegisterWebApiFilterProvider(httpConfiguration);
 
             #endregion
@@ -42,11 +42,13 @@ namespace Cv_Management
             #region Database context
 
             builder.RegisterType<CvManagementDbContext>().As<DbContext>().InstancePerLifetimeScope();
-            builder.RegisterType<DbService>().As<IDbService>().InstancePerLifetimeScope();
 
             #endregion
 
-            #region Database context
+            #region Services
+
+            builder.RegisterType<DbService>().As<IDbService>().InstancePerLifetimeScope();
+            builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
 
             #endregion
 
