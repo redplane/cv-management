@@ -5,9 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using System.Web.UI.WebControls;
+using Cv_Management.Enums.SortProperties;
+using Cv_Management.Interfaces.Services;
 using Cv_Management.Models.Entities;
 using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
+using Cv_Management.ViewModel.Skill;
 using Cv_Management.ViewModel.SkillCategory;
 
 namespace Cv_Management.Controllers
@@ -17,7 +21,15 @@ namespace Cv_Management.Controllers
     {
         #region Properties
 
+        /// <summary>
+        /// Database context.
+        /// </summary>
         private readonly CvManagementDbContext _dbContext;
+
+        /// <summary>
+        /// Service which is for handling database operation.
+        /// </summary>
+        private readonly IDbService _dbService;
 
         #endregion
 
@@ -27,9 +39,10 @@ namespace Cv_Management.Controllers
         /// Initialize controller with injectors.
         /// </summary>
         /// <param name="dbContext"></param>
-        public ApiSkillCategoryController(DbContext dbContext)
+        public ApiSkillCategoryController(DbContext dbContext, IDbService dbService)
         {
             _dbContext = dbContext as CvManagementDbContext;
+            _dbService = dbService;
         }
 
         #endregion
@@ -42,7 +55,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
-        public async Task<IHttpActionResult> Search([FromBody]SearchSkillCategoryViewModel condition)
+        public async Task<IHttpActionResult> Search([FromBody] SearchSkillCategoryViewModel condition)
         {
             #region Parameters validation
 
@@ -87,11 +100,48 @@ namespace Cv_Management.Controllers
             }
 
             #endregion
+
+            // Import skill list.
+            var skills = Enumerable.Empty<Skill>().AsQueryable();
+            var skillCategorySkillRelationships = Enumerable.Empty<SkillCategorySkillRelationship>().AsQueryable();
+
+            if (condition.IncludeSkills)
+                skills = _dbContext.Skills.AsQueryable();
             
             // Get offline skill categories.
-            var loadSkillCategoryResult = new SearchResultViewModel<IList<SkillCategory>>();
-            //loadSkillCategoryResult.Total = await skillCategories.CountAsync();
-            //loadSkillCategoryResult.Records = await skillCategories.ToListAsync();
+            var loadSkillCategoryResult = new SearchResultViewModel<IList<SkillCategoryViewModel>>();
+            loadSkillCategoryResult.Total = await skillCategories.CountAsync();
+
+            var loadedSkillCategories = from skillCategory in skillCategories
+                select new SkillCategoryViewModel
+                {
+                    Id = skillCategory.Id,
+                    UserId = skillCategory.UserId,
+                    Photo = skillCategory.Photo,
+                    Name = skillCategory.Name,
+                    CreatedTime = skillCategory.CreatedTime,
+                    PersonalSkills = from skill in skills
+                        from skillCategorySkillRelationship in skillCategorySkillRelationships
+                        where skillCategorySkillRelationship.SkillCategoryId == skillCategory.Id &&
+                              skillCategorySkillRelationship.SkillId == skill.Id
+                        select new PersonalSkillViewModel
+                        {
+                            SkillCategoryId = skillCategorySkillRelationship.SkillCategoryId,
+                            SkillId = skillCategorySkillRelationship.SkillId,
+                            Point = skillCategorySkillRelationship.Point,
+                            SkillName = skill.Name
+                        }
+                };
+
+            // Do sorting.
+            loadedSkillCategories = _dbService.Sort(loadedSkillCategories, SortDirection.Ascending,
+                SkillCategorySortProperty.Id);
+
+            // Do paging.
+            loadedSkillCategories = _dbService.Paginate(loadedSkillCategories, condition.Pagination);
+
+            // Get the records list.
+            loadSkillCategoryResult.Records = await loadedSkillCategories.ToListAsync();
             return Ok(loadSkillCategoryResult);
 
         }

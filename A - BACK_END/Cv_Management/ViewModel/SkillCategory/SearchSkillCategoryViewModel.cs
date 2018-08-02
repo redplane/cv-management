@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using ApiMultiPartFormData.Models;
+﻿using System.Collections.Generic;
+using Cv_Management.Models;
 
 namespace Cv_Management.ViewModel.SkillCategory
 {
-    public class SearchSkillCategoryViewModel: BaseSearchViewModel
+    public class SearchSkillCategoryViewModel
     {
         #region Properties
 
@@ -19,12 +16,22 @@ namespace Cv_Management.ViewModel.SkillCategory
         /// List of user indexes.
         /// </summary>
         public HashSet<int> UserIds { get; set; }
-        
+
         /// <summary>
         /// Skill category names.
         /// </summary>
         public HashSet<string> Names { get; set; }
+        
+        /// <summary>
+        /// Whether personal skills are included in search result or not.
+        /// </summary>
+        public bool IncludePersonalSkills { get; set; }
 
+        /// <summary>
+        /// Pagination information.
+        /// </summary>
+        public Pagination Pagination { get; set; }
+        
         #endregion
     }
 }

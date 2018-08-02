@@ -100,9 +100,13 @@ namespace Cv_Management.Controllers
             var loadUserResult = new SearchResultViewModel<IList<UserViewModel>>();
             loadUserResult.Total = await users.CountAsync();
 
+            // List of loaded users.
             IQueryable<UserViewModel> loadedUsers = null;
+
+            // List of user descriptions.
             IQueryable<UserDescription> userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
 
+            // If description is included, data will be taken from the database.
             if (condition.IncludeDescriptions)
                 userDescriptions = _dbContext.UserDescriptions.AsQueryable();
 
@@ -127,7 +131,7 @@ namespace Cv_Management.Controllers
             loadUserResult.Records = loadedUsers.ToList();
             return Ok(loadUserResult);
         }
-
+        
         ///// <summary>
         ///// Create User
         ///// </summary>

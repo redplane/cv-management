@@ -141,6 +141,7 @@
     <Compile Include="Controllers\ApiUserDescriptionController.cs" />
     <Compile Include="Controllers\ApiUserController.cs" />
     <Compile Include="Controllers\ApiSkillController.cs" />
+    <Compile Include="Enums\SortProperties\SkillCategorySortProperty.cs" />
     <Compile Include="Enums\SortProperties\UserSortProperty.cs" />
     <Compile Include="Enums\TextSearchMode.cs" />
     <Compile Include="Models\Pagination.cs" />
@@ -190,10 +191,13 @@
     <Compile Include="ViewModel\Responsibility\CreateResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\BaseSearchViewModel.cs" />
     <Compile Include="ViewModel\SearchResultViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategorySkillRelationship\SkillCategorySkillViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\SearchSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\ReadingSkillCategoryViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategory\SkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\UpdateSkillCategoryViewModel .cs" />
     <Compile Include="ViewModel\SkillCategory\CreateSkillCategoryViewModel.cs" />
+    <Compile Include="ViewModel\Skill\PersonalSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\SearchSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\UpdateSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\CreateSkillViewModel.cs" />
