@@ -39,6 +39,7 @@ namespace Cv_Management.Controllers
         /// Initialize controller with injectors.
         /// </summary>
         /// <param name="dbContext"></param>
+        /// <param name="dbService"></param>
         public ApiSkillCategoryController(DbContext dbContext, IDbService dbService)
         {
             _dbContext = dbContext as CvManagementDbContext;
@@ -105,7 +106,7 @@ namespace Cv_Management.Controllers
             var skills = Enumerable.Empty<Skill>().AsQueryable();
             var skillCategorySkillRelationships = Enumerable.Empty<SkillCategorySkillRelationship>().AsQueryable();
 
-            if (condition.IncludeSkills)
+            if (condition.IncludePersonalSkills)
                 skills = _dbContext.Skills.AsQueryable();
             
             // Get offline skill categories.
