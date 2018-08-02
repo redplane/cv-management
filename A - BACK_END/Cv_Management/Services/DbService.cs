@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
-using Cv_Management.Enums;
+using ApiClientShared.Enums;
+using ApiClientShared.Models;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
 
 namespace Cv_Management.Services
 {
@@ -58,7 +58,7 @@ namespace Cv_Management.Services
             var methodCallExpression = Expression.Call(
                 typeof(Queryable),
                 sortMethod,
-                new[] { list.ElementType, memberExpression.Type },
+                new[] {list.ElementType, memberExpression.Type},
                 list.Expression,
                 Expression.Quote(lamdaExpression));
 

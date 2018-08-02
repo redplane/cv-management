@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
-using Cv_Management.Models.Entities;
-using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.PersonalSkill;
-using Cv_Management.ViewModel.Skill;
+using DbEntity.Models.Entities;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Controllers
 {
@@ -34,13 +32,13 @@ namespace Cv_Management.Controllers
         #region Methods
 
         /// <summary>
-        /// Get Personal skill using specific conditions
+        ///     Get Personal skill using specific conditions
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("")]
-        public async Task<IHttpActionResult> Search([FromBody]SearchPersonalSkillViewModel model)
+        public async Task<IHttpActionResult> Search([FromBody] SearchPersonalSkillViewModel model)
         {
             model = model ?? new SearchPersonalSkillViewModel();
             var personalSkills = DbSet.PersonalSkills.AsQueryable();
@@ -64,21 +62,20 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<SkillCategorySkillRelationship>>();
             result.Total = await personalSkills.CountAsync();
             var pagination = model.Pagination;
-          
+
             result.Records = await personalSkills.ToListAsync();
             return Ok(result);
-
         }
 
 
         /// <summary>
-        /// Create personal skill
+        ///     Create personal skill
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody]CreatePersonalSkillViewModel model)
+        public async Task<IHttpActionResult> Create([FromBody] CreatePersonalSkillViewModel model)
         {
             if (model == null)
             {
@@ -93,20 +90,19 @@ namespace Cv_Management.Controllers
             personalSkill.Point = model.Point;
             personalSkill.CreatedTime = DateTime.Now.ToOADate();
             personalSkill = DbSet.PersonalSkills.Add(personalSkill);
-           await DbSet.SaveChangesAsync();
+            await DbSet.SaveChangesAsync();
             return Ok(personalSkill);
-
         }
 
 
         /// <summary>
-        /// Update personal skill
+        ///     Update personal skill
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("")]
-        public async Task<IHttpActionResult> Update([FromBody]UpdatePersonalSkillViewModel model)
+        public async Task<IHttpActionResult> Update([FromBody] UpdatePersonalSkillViewModel model)
         {
             if (model == null)
             {
@@ -115,17 +111,17 @@ namespace Cv_Management.Controllers
             }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var personalSkill = DbSet.PersonalSkills.FirstOrDefault(c => c.SkillCategoryId == model.SkillCategoryId && c.SkillId == model.SkillId);
+            var personalSkill = DbSet.PersonalSkills.FirstOrDefault(c =>
+                c.SkillCategoryId == model.SkillCategoryId && c.SkillId == model.SkillId);
             if (personalSkill == null)
                 return NotFound();
             personalSkill.Point = model.Point;
-           await DbSet.SaveChangesAsync();
+            await DbSet.SaveChangesAsync();
             return Ok(personalSkill);
-
         }
 
         /// <summary>
-        /// Delete personal skill
+        ///     Delete personal skill
         /// </summary>
         /// <param name="skillId"></param>
         /// <param name="skillCategoryId"></param>
@@ -134,17 +130,16 @@ namespace Cv_Management.Controllers
         [Route("")]
         public async Task<IHttpActionResult> Delete([FromUri] int skillId, [FromUri] int skillCategoryId)
         {
-            var personalSkill = DbSet.PersonalSkills.FirstOrDefault(c => c.SkillId == skillId && c.SkillCategoryId == skillCategoryId);
+            var personalSkill =
+                DbSet.PersonalSkills.FirstOrDefault(c => c.SkillId == skillId && c.SkillCategoryId == skillCategoryId);
 
             if (personalSkill == null)
                 return NotFound();
             DbSet.PersonalSkills.Remove(personalSkill);
             await DbSet.SaveChangesAsync();
             return Ok();
-
         }
 
         #endregion
-
     }
 }

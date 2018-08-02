@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Web.UI.WebControls;
+using ApiClientShared.Models;
 using Cv_Management.Models;
 
 namespace Cv_Management.Interfaces.Services

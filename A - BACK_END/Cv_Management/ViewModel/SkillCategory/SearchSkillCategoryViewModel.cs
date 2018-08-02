@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ApiClientShared.Models;
 using Cv_Management.Models;
 
 namespace Cv_Management.ViewModel.SkillCategory

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Cv_Management.Enums;
+using ApiClientShared.Enums;
+using ApiClientShared.ViewModel.User;
 
 namespace Cv_Management.ViewModel.User
 {
@@ -25,7 +25,7 @@ namespace Cv_Management.ViewModel.User
         /// <summary>
         /// List of description.
         /// </summary>
-        public IEnumerable<Models.Entities.UserDescription> Descriptions { get; set; }
+        public IEnumerable<UserDescriptionViewModel> Descriptions { get; set; }
 
         #endregion
     }

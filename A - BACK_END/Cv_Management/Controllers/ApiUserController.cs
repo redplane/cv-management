@@ -1,47 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 using System.Web.UI.WebControls;
-using Cv_Management.Constant;
-using Cv_Management.Enums.SortProperties;
+using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.ViewModel.User;
+using AutoMapper.QueryableExtensions;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.Models.Entities;
-using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
-using Cv_Management.ViewModel.User;
-using JWT;
-using JWT.Algorithms;
-using JWT.Serializers;
-using Newtonsoft.Json;
+using DbEntity.Models.Entities;
+using DbEntity.Models.Entities.Context;
+using SearchUserViewModel = Cv_Management.ViewModel.User.SearchUserViewModel;
+using UserViewModel = Cv_Management.ViewModel.User.UserViewModel;
 
 namespace Cv_Management.Controllers
 {
     [RoutePrefix("api/user")]
     public class ApiUserController : ApiController
     {
-        #region Properties
-
-        /// <summary>
-        /// Database context to access to database.
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
-        /// <summary>
-        /// Service to handle database query.
-        /// </summary>
-        private readonly IDbService _dbService;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
-        /// Initialize controller with injectors.
+        ///     Initialize controller with injectors.
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
@@ -56,7 +37,7 @@ namespace Cv_Management.Controllers
         #region Methods
 
         /// <summary>
-        /// Get users using specific conditions.
+        ///     Get users using specific conditions.
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
@@ -104,7 +85,7 @@ namespace Cv_Management.Controllers
             IQueryable<UserViewModel> loadedUsers = null;
 
             // List of user descriptions.
-            IQueryable<UserDescription> userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
+            var userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
 
             // If description is included, data will be taken from the database.
             if (condition.IncludeDescriptions)
@@ -120,7 +101,14 @@ namespace Cv_Management.Controllers
                               Photo = user.Photo,
                               Birthday = user.Birthday,
                               Role = user.Role,
-                              Descriptions = userDescriptions.Where(userDescription => userDescription.UserId == user.Id)
+                              Descriptions = userDescriptions
+                              .Where(userDescription => userDescription.UserId == user.Id)
+                              .Select(userDescription => new UserDescriptionViewModel
+                              {
+                                  Id = userDescription.Id,
+                                  UserId = userDescription.UserId,
+                                  Description = userDescription.Description
+                              })
                           };
 
             // Sort.
@@ -131,7 +119,7 @@ namespace Cv_Management.Controllers
             loadUserResult.Records = loadedUsers.ToList();
             return Ok(loadUserResult);
         }
-        
+
         ///// <summary>
         ///// Create User
         ///// </summary>
@@ -354,6 +342,21 @@ namespace Cv_Management.Controllers
         //}
 
         //#endregion
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Database context to access to database.
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
+
+        /// <summary>
+        ///     Service to handle database query.
+        /// </summary>
+        private readonly IDbService _dbService;
+
         #endregion
     }
 }

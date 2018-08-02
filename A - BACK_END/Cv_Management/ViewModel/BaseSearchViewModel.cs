@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using ApiClientShared.Models;
 using Cv_Management.Models;
 
 namespace Cv_Management.ViewModel

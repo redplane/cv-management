@@ -5,8 +5,8 @@ using Autofac.Integration.WebApi;
 using AutoMapper;
 using AutoMapper.Configuration;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.Models.Entities.Context;
 using Cv_Management.Services;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management
 {

@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.UI.WebControls;
-using Cv_Management.Enums.SortProperties;
+using ApiClientShared.Enums.SortProperties;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.Models.Entities;
-using Cv_Management.Models.Entities.Context;
 using Cv_Management.ViewModel;
 using Cv_Management.ViewModel.Skill;
 using Cv_Management.ViewModel.SkillCategory;
+using DbEntity.Models.Entities;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Controllers
 {
