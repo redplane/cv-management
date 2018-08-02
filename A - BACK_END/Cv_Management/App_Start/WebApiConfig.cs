@@ -2,8 +2,6 @@
 using System.Net.Http.Formatting;
 using System.Web.Http;
 using ApiMultiPartFormData;
-using Autofac;
-using Autofac.Integration.WebApi;
 using Newtonsoft.Json.Serialization;
 
 namespace Cv_Management
@@ -14,7 +12,7 @@ namespace Cv_Management
         {
             // Register DI.
             AutofacConfig.Register(options);
-
+            
             // Web API routes
             options.MapHttpAttributeRoutes();
 

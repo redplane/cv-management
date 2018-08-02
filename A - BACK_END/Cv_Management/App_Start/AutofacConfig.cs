@@ -4,7 +4,9 @@ using Autofac;
 using Autofac.Integration.WebApi;
 using AutoMapper;
 using AutoMapper.Configuration;
-using Cv_Management.Models.Entities.Context;
+using Cv_Management.Interfaces.Services;
+using Cv_Management.Services;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management
 {
@@ -32,7 +34,7 @@ namespace Cv_Management
             #region Controllers & hubs
 
             // Controllers & hubs
-            builder.RegisterApiControllers(typeof(WebApiApplication).Assembly);
+            builder.RegisterApiControllers(typeof(Startup).Assembly);
             builder.RegisterWebApiFilterProvider(httpConfiguration);
 
             #endregion
@@ -43,7 +45,10 @@ namespace Cv_Management
 
             #endregion
 
-            #region Database context
+            #region Services
+
+            builder.RegisterType<DbService>().As<IDbService>().InstancePerLifetimeScope();
+            builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
 
             #endregion
 

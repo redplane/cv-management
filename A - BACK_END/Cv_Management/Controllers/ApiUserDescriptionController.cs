@@ -1,138 +1,200 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
-using Cv_Management.Models.Entities;
-using Cv_Management.Models.Entities.Context;
+using System.Web.UI.WebControls;
+using ApiClientShared.Enums.SortProperties;
+using Cv_Management.Interfaces.Services;
 using Cv_Management.ViewModel;
-using Cv_Management.ViewModel.User;
 using Cv_Management.ViewModel.UserDescription;
+using DbEntity.Models.Entities;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Controllers
 {
-    [RoutePrefix("api/userDescription")]
+    [RoutePrefix("api/user-description")]
     public class ApiUserDescriptionController : ApiController
     {
-        #region Properties
-        public readonly CvManagementDbContext DbSet;
-        #endregion
-
         #region Contructors
 
-        public ApiUserDescriptionController()
+        /// <summary>
+        ///     Initialize controller with injectors.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="dbService"></param>
+        /// <param name="profileService"></param>
+        public ApiUserDescriptionController(DbContext dbContext, IDbService dbService, IProfileService profileService)
         {
-            DbSet = new CvManagementDbContext();
+            _dbContext = (CvManagementDbContext) dbContext;
+            _dbService = dbService;
+            _profileService = profileService;
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Context to access to database.
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
+
+        /// <summary>
+        ///     Service to handle database operation.
+        /// </summary>
+        private readonly IDbService _dbService;
+
+        /// <summary>
+        ///     Service to handle profile.
+        /// </summary>
+        private readonly IProfileService _profileService;
 
         #endregion
 
         #region  Methods
+
         /// <summary>
-        /// Get user description using specific conditions 
+        ///     Get user description using specific conditions
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="condition"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Search([FromBody]SearchUserDescriptionViewModel model)
+        public async Task<IHttpActionResult> Search([FromBody] SearchUserDescriptionViewModel condition)
         {
-            model = model ?? new SearchUserDescriptionViewModel();
-            var userDescriptions = DbSet.UserDescriptions.AsQueryable();
-            if (model.Ids != null)
+            if (condition == null)
             {
-                var ids = model.Ids.Where(x => x > 0).ToList();
+                condition = new SearchUserDescriptionViewModel();
+                Validate(condition);
+            }
+
+            if (ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+
+            if (condition.Ids != null && condition.Ids.Count > 0)
+            {
+                var ids = condition.Ids.Where(x => x > 0).ToList();
                 if (ids.Count > 0)
-                    userDescriptions = userDescriptions.Where(x => ids.Contains(x.Id));
-
+                    userDescriptions = userDescriptions.Where(userDescription => ids.Contains(userDescription.Id));
             }
-            if (model.UserId > 0)
-                userDescriptions = userDescriptions.Where(c => c.UserId == model.UserId);
-            if (!string.IsNullOrEmpty(model.Description))
-                userDescriptions = userDescriptions.Where(c => c.Description.Contains(model.Description));
-            var results = new SearchResultViewModel<IList<UserDescription>>();
-            results.Total = await userDescriptions.CountAsync();
-            var pagination = model.Pagination;
-            if (pagination != null)
+
+            if (condition.UserIds != null && condition.UserIds.Count > 0)
             {
-                if (pagination.Page < 1)
-                    pagination.Page = 1;
-                userDescriptions = userDescriptions.Skip((pagination.Page - 1) * pagination.Records)
-                    .Take(pagination.Records);
+                var userIds = condition.UserIds.Where(x => x > 0).ToList();
+                if (userIds.Count > 0)
+                    userDescriptions =
+                        userDescriptions.Where(userDescription => userIds.Contains(userDescription.UserId));
             }
-            results.Records = await userDescriptions.ToListAsync();
-            return Ok(results);
 
+            var loadUserDescriptionResult = new SearchResultViewModel<IList<UserDescription>>();
+            loadUserDescriptionResult.Total = await userDescriptions.CountAsync();
+
+            // Do sorting.
+            userDescriptions =
+                _dbService.Sort(userDescriptions, SortDirection.Ascending, UserDescriptionSortProperty.Id);
+
+            // Do pagination.
+            userDescriptions = _dbService.Paginate(userDescriptions, condition.Pagination);
+
+            loadUserDescriptionResult.Records = await userDescriptions.ToListAsync();
+            return Ok(loadUserDescriptionResult);
         }
+
         /// <summary>
-        /// Create User description
+        ///     Create User description
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async  Task<IHttpActionResult> Create([FromBody]CreateUserDescriptionViewModel model)
+        public async Task<IHttpActionResult> AddUserDescription([FromBody] AddUserDescriptionViewModel model)
         {
             if (model == null)
             {
-                model = new CreateUserDescriptionViewModel();
+                model = new AddUserDescriptionViewModel();
                 Validate(model);
             }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var userDescription = new UserDescription();
-            userDescription.UserId = model.UserId;
-            userDescription.Description = model.Description;
-            userDescription = DbSet.UserDescriptions.Add(userDescription);
-            await DbSet.SaveChangesAsync();
-            return Ok(userDescription);
 
+            // Get user profile.
+            var profile = _profileService.GetProfile(Request);
+
+            // Add user description into database.
+            var userDescription = new UserDescription();
+            userDescription.UserId = profile.Id;
+            userDescription.Description = model.Description;
+
+            // Add the description into database.
+            userDescription = _dbContext.UserDescriptions.Add(userDescription);
+
+            // Save changes into database.
+            await _dbContext.SaveChangesAsync();
+            return Ok(userDescription);
         }
+
         /// <summary>
-        /// Update User description 
+        ///     Update User description
         /// </summary>
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Update([FromUri] int id, [FromBody]UpdateUserDescriptionViewModel model)
+        public async Task<IHttpActionResult> EditUserDescription([FromUri] int id,
+            [FromBody] EditUserDescriptionViewModel model)
         {
             if (model == null)
             {
-                model = new UpdateUserDescriptionViewModel();
+                model = new EditUserDescriptionViewModel();
                 Validate(model);
             }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            //get UserDescription
-            var userDescription = DbSet.UserDescriptions.Find(id);
+
+            // Find the user description by using id.
+            var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+            var userDescription = await userDescriptions.FirstOrDefaultAsync(x => x.Id == id);
+
+            // Find the first record.
             if (userDescription == null)
                 return NotFound();
-            userDescription.UserId = model.UserId;
-            userDescription.Description = model.Description;
-            await DbSet.SaveChangesAsync();
-            return Ok(userDescription);
 
+            userDescription.Description = model.Description;
+
+            // Save changes.
+            await _dbContext.SaveChangesAsync();
+            return Ok(userDescription);
         }
+
         /// <summary>
-        /// Delete User Desciption from Id
+        ///     Delete User Desciption from Id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Delete([FromUri]int id)
+        public async Task<IHttpActionResult> DeleteUserDescription([FromUri] int id)
         {
-            var userDescription = DbSet.UserDescriptions.Find(id);
+            // Find the user description.
+            var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+
+            // Find the user description in the database.
+            var userDescription = await userDescriptions.FirstOrDefaultAsync(x => x.Id == id);
             if (userDescription == null)
                 return NotFound();
-            DbSet.UserDescriptions.Remove(userDescription);
-           await DbSet.SaveChangesAsync();
-            return Ok();
 
+            // Delete the description from database.
+            _dbContext.UserDescriptions.Remove(userDescription);
+
+            // Save changes in database.
+            await _dbContext.SaveChangesAsync();
+            return Ok();
         }
 
         #endregion
