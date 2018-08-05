@@ -2,3 +2,8 @@
 /A - BACK_END/packages
 /A - BACK_END/Cv_Management/bin
 /A - BACK_END/Cv_Management/obj
+/A - BACK_END/ApiClientShared/obj
+/A - BACK_END/ApiClientShared/bin
+/A - BACK_END/DbEntity/obj
+/A - BACK_END/DbEntity/bin
+/A - BACK_END/ApiClientShared/ApiClientShared.csproj.user
