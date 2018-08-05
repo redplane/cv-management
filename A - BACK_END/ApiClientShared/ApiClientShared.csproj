@@ -101,7 +101,8 @@
     <Compile Include="ViewModel\User\RegisterViewModel.cs" />
     <Compile Include="ViewModel\User\ResponsesLoginViewModel.cs" />
     <Compile Include="ViewModel\User\SearchUserViewModel.cs" />
-    <Compile Include="ViewModel\User\UpdateUserViewModel.cs" />
+    <Compile Include="ViewModel\User\AddUserViewModel.cs" />
+    <Compile Include="ViewModel\User\EditUserViewModel.cs" />
     <Compile Include="ViewModel\User\UserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\User\UserViewModel.cs" />
   </ItemGroup>
