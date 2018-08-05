@@ -29,12 +29,6 @@ namespace Cv_Management.Controllers
         /// Service to handle database operation
         /// </summary>
         private readonly IDbService _dbService;
-
-
-        /// <summary>
-        /// Service to handler profile
-        /// </summary>
-        private readonly IProfileService _profileService;
         #endregion
 
         #region Contructors
@@ -49,8 +43,6 @@ namespace Cv_Management.Controllers
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
-            _profileService = profileService;
-
 
         }
         #endregion
@@ -64,7 +56,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
-        public async Task<IHttpActionResult> SearchSkill(SearchSkillViewModel condition)
+        public async Task<IHttpActionResult> Search(SearchSkillViewModel condition)
         {
 
             if(condition == null)
@@ -164,7 +156,7 @@ namespace Cv_Management.Controllers
             await _dbContext.SaveChangesAsync();
             return Ok(skill);
         }
-
+            
         /// <summary>
         /// Delete skill from id
         /// </summary>
@@ -185,9 +177,6 @@ namespace Cv_Management.Controllers
             return Ok();
         }
         #endregion
-
-
-
 
     }
 }

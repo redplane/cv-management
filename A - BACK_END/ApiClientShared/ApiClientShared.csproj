@@ -83,9 +83,11 @@
     <Compile Include="ViewModel\Responsibility\UpdateResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\SearchResultViewModel.cs" />
     <Compile Include="ViewModel\SkillCategorySkillRelationship\SkillCategorySkillViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategory\CreateSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\ReadingSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\SearchSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\SkillCategoryViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategory\UpdateSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\Skill\AddSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\PersonalSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\ReadingSkillViewModel.cs" />
