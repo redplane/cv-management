@@ -3,8 +3,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Cv_Management.ViewModel;
-using Cv_Management.ViewModel.ProjectSkill;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.ProjectSkill;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 

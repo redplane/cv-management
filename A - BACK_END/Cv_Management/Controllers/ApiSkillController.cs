@@ -4,6 +4,7 @@ using ApiClientShared.ViewModel.Skill;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -112,9 +113,25 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> CreateSkill(CreateSkillViewModel model)
+        public async Task<IHttpActionResult> AddSkill(AddSkillViewModel model)
         {
-            return Ok();
+            if(model == null)
+            {
+                model = new AddSkillViewModel();
+                Validate(model);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var skill = new Skill();
+            skill.Name = model.Name;
+            skill.CreatedTime = DateTime.UtcNow.ToOADate();
+
+            skill = _dbContext.Skills.Add(skill);
+             await _dbContext.SaveChangesAsync();
+
+            return Ok(skill);
         }
 
 
@@ -125,9 +142,27 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> UpdateSkill(UpdateSkillViewModel model)
+        public async Task<IHttpActionResult> EditSkill([FromUri]int id,[FromBody]EditSkillViewModel model)
         {
-            return Ok();
+
+            if(model == null)
+            {
+                model = new EditSkillViewModel();
+                Validate(model);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var skill = await _dbContext.Skills.FindAsync(id);
+            if (skill == null)
+                return NotFound();
+
+            skill.Name = model.Name;
+            skill.LastModifiedTime = DateTime.UtcNow.ToOADate();
+
+            await _dbContext.SaveChangesAsync();
+            return Ok(skill);
         }
 
         /// <summary>
@@ -139,6 +174,14 @@ namespace Cv_Management.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult>  DeleteSkill( [FromUri]int id)
         {
+
+            var skill = await _dbContext.Skills.FindAsync(id);
+
+            if (skill == null)
+                return NotFound();
+
+            _dbContext.Skills.Remove(skill);
+            await _dbContext.SaveChangesAsync();
             return Ok();
         }
         #endregion

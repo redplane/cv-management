@@ -8,9 +8,9 @@ using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.ViewModel;
-using Cv_Management.ViewModel.Skill;
-using Cv_Management.ViewModel.SkillCategory;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.Skill;
+using ApiClientShared.ViewModel.SkillCategory;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
