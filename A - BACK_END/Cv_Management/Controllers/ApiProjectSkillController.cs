@@ -68,11 +68,11 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody] CreateProjectSkillViewModel model)
+        public async Task<IHttpActionResult> Create([FromBody] AddProjectSkillViewModel model)
         {
             if (model == null)
             {
-                model = new CreateProjectSkillViewModel();
+                model = new AddProjectSkillViewModel();
                 Validate(model);
             }
             if (!ModelState.IsValid)

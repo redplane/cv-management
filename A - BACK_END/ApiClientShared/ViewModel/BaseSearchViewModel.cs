@@ -11,6 +11,8 @@ namespace ApiClientShared.ViewModel
         /// </summary>
         public Pagination Pagination { get; set; }
 
+       
+
         #endregion
     }
 }

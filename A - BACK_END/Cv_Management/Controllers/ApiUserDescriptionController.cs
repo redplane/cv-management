@@ -182,7 +182,7 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> DeleteUserDescription([FromUri] int id)
         {
             // Find the user description.
-            var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+            var userDescriptions = _dbContext.UserDescriptions;
 
             // Find the user description in the database.
             var userDescription = await userDescriptions.FirstOrDefaultAsync(x => x.Id == id);

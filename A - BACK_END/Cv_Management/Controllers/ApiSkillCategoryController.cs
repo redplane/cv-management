@@ -154,11 +154,11 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody]CreateSkillCategoryViewModel model)
+        public async Task<IHttpActionResult> Create([FromBody]AddSkillCategoryViewModel model)
         {
             if (model == null)
             {
-                model = new CreateSkillCategoryViewModel();
+                model = new AddSkillCategoryViewModel();
                 Validate(model);
             }
             if (!ModelState.IsValid)
@@ -183,11 +183,11 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Update([FromUri] int id, [FromBody]UpdateSkillCategoryViewModel model)
+        public async Task<IHttpActionResult> Update([FromUri] int id, [FromBody]EditSkillCategoryViewModel model)
         {
             if (model == null)
             {
-                model = new UpdateSkillCategoryViewModel();
+                model = new EditSkillCategoryViewModel();
                 Validate(model);
             }
             if (!ModelState.IsValid)
