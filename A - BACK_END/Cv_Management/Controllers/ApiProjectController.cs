@@ -170,7 +170,8 @@ namespace Cv_Management.Controllers
             }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            //get Project
+
+            //find  Project
             var project = await _dbContext.Projects.FindAsync(id);
             if (project == null)
                 return NotFound();
