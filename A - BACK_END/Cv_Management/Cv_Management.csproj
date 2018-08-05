@@ -152,8 +152,11 @@
     <Compile Include="Controllers\ApiUserDescriptionController.cs" />
     <Compile Include="Controllers\ApiUserController.cs" />
     <Compile Include="Controllers\ApiSkillController.cs" />
+    <Compile Include="Interfaces\Services\ICaptchaService.cs" />
     <Compile Include="Interfaces\Services\IProfileService.cs" />
+    <Compile Include="Models\AppSettingModel.cs" />
     <Compile Include="Models\ProfileModel.cs" />
+    <Compile Include="Services\GoogleCaptchaService.cs" />
     <Compile Include="Services\DbService.cs" />
     <Compile Include="Interceptor\GlobalDbCommandInterceptor.cs" />
     <Compile Include="Interfaces\Services\IDbService.cs" />
