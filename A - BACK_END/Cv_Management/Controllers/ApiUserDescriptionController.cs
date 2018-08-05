@@ -6,8 +6,8 @@ using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.ViewModel;
-using Cv_Management.ViewModel.UserDescription;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.UserDescription;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
@@ -60,7 +60,7 @@ namespace Cv_Management.Controllers
         /// <param name="condition"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("")]
+        [Route("search")]
         public async Task<IHttpActionResult> Search([FromBody] SearchUserDescriptionViewModel condition)
         {
             if (condition == null)

@@ -4,8 +4,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Cv_Management.ViewModel;
-using Cv_Management.ViewModel.PersonalSkill;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.PersonalSkill;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
