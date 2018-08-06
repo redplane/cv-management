@@ -2,7 +2,7 @@
 
 namespace ApiClientShared.ViewModel.Project
 {
-    public class CreateProjectViewModel
+    public class EditProjectViewModel
     {
       
         public int UserId { get; set; }

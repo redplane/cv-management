@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ApiClientShared.Models;
+using System.Collections.Generic;
 
 namespace ApiClientShared.ViewModel.Skill
 {
@@ -14,6 +15,8 @@ namespace ApiClientShared.ViewModel.Skill
         /// Skill'name indexes
         /// </summary>
         public HashSet<string> Names { get; set; }
+
+        public RangeModel<double,double>  StartedTime { get; set; }
 
         #endregion
 

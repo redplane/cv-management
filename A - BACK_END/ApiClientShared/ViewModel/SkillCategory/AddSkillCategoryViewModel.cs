@@ -7,7 +7,7 @@ using ApiMultiPartFormData.Models;
 
 namespace ApiClientShared.ViewModel.SkillCategory
 {
-    public class CreateSkillCategoryViewModel
+    public class AddSkillCategoryViewModel
     {
         [Required]
         public int UserId { get; set; }

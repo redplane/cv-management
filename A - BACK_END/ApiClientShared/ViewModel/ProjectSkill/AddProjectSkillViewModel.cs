@@ -2,7 +2,7 @@
 
 namespace ApiClientShared.ViewModel.ProjectSkill
 {
-    public class CreateProjectSkillViewModel
+    public class AddProjectSkillViewModel
     {
         [Required]
         public int ProjectId { get; set; }

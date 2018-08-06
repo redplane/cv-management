@@ -2,7 +2,7 @@
 
 namespace ApiClientShared.ViewModel.Responsibility
 {
-    public class CreateResponsibilityViewModel
+    public class AddResponsibilityViewModel
     {
         [Required]
         public string Name { get; set; }

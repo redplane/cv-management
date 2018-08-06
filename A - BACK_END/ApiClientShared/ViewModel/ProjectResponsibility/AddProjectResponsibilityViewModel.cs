@@ -2,7 +2,7 @@
 
 namespace ApiClientShared.ViewModel.ProjectResponsibility
 {
-    public class CreateProjectResponsibilityViewModel
+    public class AddProjectResponsibilityViewModel
     {
         [Required]
         public int ProjectId { get; set; }

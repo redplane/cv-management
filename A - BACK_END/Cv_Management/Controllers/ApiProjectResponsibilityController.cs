@@ -72,11 +72,11 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody] CreateProjectResponsibilityViewModel model)
+        public async Task<IHttpActionResult> Create([FromBody] AddProjectResponsibilityViewModel model)
         {
             if (model == null)
             {
-                model = new CreateProjectResponsibilityViewModel();
+                model = new AddProjectResponsibilityViewModel();
                 Validate(model);
             }
             if (!ModelState.IsValid)

@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
@@ -29,12 +31,6 @@ namespace Cv_Management.Controllers
         /// Service to handle database operation
         /// </summary>
         private readonly IDbService _dbService;
-
-
-        /// <summary>
-        /// Service to handler profile
-        /// </summary>
-        private readonly IProfileService _profileService;
         #endregion
 
         #region Contructors
@@ -49,8 +45,6 @@ namespace Cv_Management.Controllers
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
-            _profileService = profileService;
-
 
         }
         #endregion
@@ -64,10 +58,10 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
-        public async Task<IHttpActionResult> SearchSkill(SearchSkillViewModel condition)
+        public async Task<IHttpActionResult> Search(SearchSkillViewModel condition)
         {
 
-            if(condition == null)
+            if (condition == null)
             {
                 condition = new SearchSkillViewModel();
                 Validate(condition);
@@ -78,19 +72,23 @@ namespace Cv_Management.Controllers
 
             var skills = _dbContext.Skills.AsQueryable();
 
-            if(condition.Ids != null && condition.Ids.Count >0)
+            if (condition.Ids != null && condition.Ids.Count > 0)
             {
                 var ids = condition.Ids.Where(c => c > 0).ToList();
                 if (ids.Count > 0)
                     skills = skills.Where(c => ids.Contains(c.Id));
             }
 
-            if(condition.Names != null && condition.Names.Count >0)
+            if (condition.Names != null && condition.Names.Count > 0)
             {
                 var names = condition.Names.Where(c => !string.IsNullOrEmpty(c)).ToList();
                 if (names.Count > 0)
                     skills = skills.Where(c => names.Contains(c.Name));
             }
+
+            if (condition.StartedTime != null)
+                skills = skills.Where(c => c.CreatedTime >= condition.StartedTime.From
+               && c.CreatedTime <= condition.StartedTime.To);
 
             var result = new SearchResultViewModel<IList<Skill>>();
             result.Total = await skills.CountAsync();
@@ -115,7 +113,7 @@ namespace Cv_Management.Controllers
         [Route("")]
         public async Task<IHttpActionResult> AddSkill(AddSkillViewModel model)
         {
-            if(model == null)
+            if (model == null)
             {
                 model = new AddSkillViewModel();
                 Validate(model);
@@ -124,12 +122,22 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            //Check exists skill in database
+            var isExists = await _dbContext.Skills.AnyAsync(c => c.Name.Equals(model.Name));
+            if (isExists)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict,
+                    "EXISTS_CODE_ERROR"));
+
+            //Inital skill object
             var skill = new Skill();
             skill.Name = model.Name;
-            skill.CreatedTime = DateTime.UtcNow.ToOADate();
+            skill.CreatedTime = DateTime.Now.ToOADate();
 
+            //add skill to database
             skill = _dbContext.Skills.Add(skill);
-             await _dbContext.SaveChangesAsync();
+
+            //save changes to database
+            await _dbContext.SaveChangesAsync();
 
             return Ok(skill);
         }
@@ -142,10 +150,10 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> EditSkill([FromUri]int id,[FromBody]EditSkillViewModel model)
+        public async Task<IHttpActionResult> EditSkill([FromUri]int id, [FromBody]EditSkillViewModel model)
         {
 
-            if(model == null)
+            if (model == null)
             {
                 model = new EditSkillViewModel();
                 Validate(model);
@@ -154,14 +162,18 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            //Find skill in database
             var skill = await _dbContext.Skills.FindAsync(id);
             if (skill == null)
                 return NotFound();
 
+            //Update information
             skill.Name = model.Name;
-            skill.LastModifiedTime = DateTime.UtcNow.ToOADate();
+            skill.LastModifiedTime = DateTime.Now.ToOADate();
 
+            //Save changes to database
             await _dbContext.SaveChangesAsync();
+
             return Ok(skill);
         }
 
@@ -172,22 +184,22 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IHttpActionResult>  DeleteSkill( [FromUri]int id)
+        public async Task<IHttpActionResult> DeleteSkill([FromUri]int id)
         {
-
+            //Find skill in database
             var skill = await _dbContext.Skills.FindAsync(id);
-
             if (skill == null)
                 return NotFound();
 
+            //Delete skill from database
             _dbContext.Skills.Remove(skill);
+
+            //Save changes in database
             await _dbContext.SaveChangesAsync();
+
             return Ok();
         }
         #endregion
-
-
-
 
     }
 }

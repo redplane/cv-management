@@ -7,7 +7,7 @@ using ApiMultiPartFormData.Models;
 
 namespace ApiClientShared.ViewModel.SkillCategory
 {
-    public class UpdateSkillCategoryViewModel
+    public class EditSkillCategoryViewModel
     {
         [Required]
         public int UserId { get; set; }

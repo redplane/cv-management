@@ -2,7 +2,7 @@
 
 namespace ApiClientShared.ViewModel.PersonalSkill
 {
-    public class CreatePersonalSkillViewModel
+    public class EditPersonalSkillViewModel
     {
         [Required]
         public int SkillCategoryId { get; set; }

@@ -75,11 +75,11 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody] CreatePersonalSkillViewModel model)
+        public async Task<IHttpActionResult> Create([FromBody] AddPersonalSkillViewModel model)
         {
             if (model == null)
             {
-                model = new CreatePersonalSkillViewModel();
+                model = new AddPersonalSkillViewModel();
                 Validate(model);
             }
             if (!ModelState.IsValid)
@@ -102,11 +102,11 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("")]
-        public async Task<IHttpActionResult> Update([FromBody] UpdatePersonalSkillViewModel model)
+        public async Task<IHttpActionResult> Update([FromBody] EditPersonalSkillViewModel model)
         {
             if (model == null)
             {
-                model = new UpdatePersonalSkillViewModel();
+                model = new EditPersonalSkillViewModel();
                 Validate(model);
             }
             if (!ModelState.IsValid)
