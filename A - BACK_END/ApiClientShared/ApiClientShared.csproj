@@ -73,6 +73,7 @@
     <Compile Include="ViewModel\ProjectResponsibility\ReadingProjectResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\ProjectResponsibility\SearchProjectResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\ProjectSkill\AddProjectSkillViewModel.cs" />
+    <Compile Include="ViewModel\Project\ProjectViewModel.cs" />
     <Compile Include="ViewModel\ProjectSkill\ReadingProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\ProjectSkill\SearchProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\Project\AddProjectViewModel.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="ViewModel\Project\EditProjectViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\AddResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\ReadingResponsibilityViewModel.cs" />
+    <Compile Include="ViewModel\Responsibility\ResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\SearchResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\EditResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\SearchResultViewModel.cs" />
@@ -95,6 +97,7 @@
     <Compile Include="ViewModel\Skill\ReadingSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\SearchSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\EditSkillViewModel.cs" />
+    <Compile Include="ViewModel\Skill\SkillViewModel.cs" />
     <Compile Include="ViewModel\UserDescription\AddUserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\UserDescription\EditUserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\UserDescription\ReadingUserDescriptionViewModel.cs" />

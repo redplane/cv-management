@@ -9,13 +9,16 @@ using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Project;
+using ApiClientShared.ViewModel.ProjectSkill;
+using ApiClientShared.ViewModel.Responsibility;
+using ApiClientShared.ViewModel.Skill;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Controllers
 {
-    [RoutePrefix("api/projet")]
+    [RoutePrefix("api/project")]
     public class ApiProjectController : ApiController
     {
         #region Properties
@@ -39,10 +42,10 @@ namespace Cv_Management.Controllers
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
-        public ApiProjectController( CvManagementDbContext dbContext,
+        public ApiProjectController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = dbContext;
+            _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
         }
 
@@ -55,11 +58,11 @@ namespace Cv_Management.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("search")]
         public async Task<IHttpActionResult> Search([FromBody] SearchProjectViewModel condition)
         {
-            if(condition == null )
+            if (condition == null)
             {
                 condition = new SearchProjectViewModel();
                 Validate(condition);
@@ -76,15 +79,15 @@ namespace Cv_Management.Controllers
                 if (ids.Count > 0)
                     projects = projects.Where(x => ids.Contains(x.Id));
             }
-           
-          if(condition.Names != null)
+
+            if (condition.Names != null)
             {
                 var names = condition.Names.Where(c => !string.IsNullOrEmpty(c)).ToList();
                 if (names.Count > 0)
                     projects = projects.Where(c => condition.Names.Contains(c.Name));
             }
 
-          if(condition.UserIds != null)
+            if (condition.UserIds != null)
             {
                 var userIds = condition.UserIds.Where(c => c > 0).ToList();
                 if (userIds.Count > 0)
@@ -99,17 +102,71 @@ namespace Cv_Management.Controllers
                 projects = projects.Where(c => c.FinishedTime >= condition.FinishedTime.From
                 && c.FinishedTime <= condition.FinishedTime.To);
 
+            #region Search project skills & responsibilities.
 
-            var result = new SearchResultViewModel<IList<Project>>();
+            IQueryable<Skill> skills = Enumerable.Empty<Skill>().AsQueryable();
+            IQueryable<ProjectSkill> projectSkills = Enumerable.Empty<ProjectSkill>().AsQueryable();
+
+            if (condition.IncludeSkills)
+            {
+                skills = _dbContext.Skills.AsQueryable();
+                projectSkills = _dbContext.ProjectSkills.AsQueryable();
+            }
+
+
+            IQueryable<Responsibility> responsibilities = Enumerable.Empty<Responsibility>().AsQueryable();
+            IQueryable<ProjectResponsibility> projectResponsibilities = Enumerable.Empty<ProjectResponsibility>().AsQueryable();
+            if (condition.IncludeResponsibilities)
+            {
+                responsibilities = _dbContext.Responsibilities.AsQueryable();
+                projectResponsibilities = _dbContext.ProjectResponsibilities.AsQueryable();
+            }
+
+            var loadedProjects = from project in projects
+                                 select new ProjectViewModel
+                                 {
+                                     Id = project.Id,
+                                     UserId = project.UserId,
+                                     Name = project.Name,
+                                     Description = project.Description,
+                                     StartedTime = project.StatedTime,
+                                     FinishedTime = project.FinishedTime,
+                                     Skills = from projectSkill in projectSkills
+                                              from skill in skills
+                                              where projectSkill.ProjectId == project.Id && projectSkill.SkillId == skill.Id
+                                              select new SkillViewModel
+                                              {
+                                                  Id = skill.Id,
+                                                  Name = skill.Name,
+                                                  CreatedTime = skill.CreatedTime,
+                                                  LastModifiedTime = skill.LastModifiedTime
+                                              },
+                                     Responsibilities = from projectResponsibility in projectResponsibilities
+                                                        from responsibility in responsibilities
+                                                        where projectResponsibility.ProjectId == project.Id && projectResponsibility.ResponsibilityId == responsibility.Id
+                                                        select new ResponsibilityViewModel
+                                                        {
+                                                            Id = responsibility.Id,
+                                                            Name = responsibility.Name,
+                                                            CreatedTime = responsibility.CreatedTime,
+                                                            LastModifiedTime = responsibility.LastModifiedTime
+                                                        }
+
+
+                                 };
+
+                                 #endregion
+
+            var result = new SearchResultViewModel<IList<ProjectViewModel>>();
             result.Total = await projects.CountAsync();
 
             //sort
-            projects = _dbService.Sort(projects, SortDirection.Ascending, ProjectSortProperty.Id);
+            loadedProjects = _dbService.Sort(loadedProjects, SortDirection.Ascending, ProjectSortProperty.Id);
 
             //pagination
-            projects = _dbService.Paginate(projects, condition.Pagination);
+            loadedProjects = _dbService.Paginate(loadedProjects, condition.Pagination);
 
-            result.Records = await projects.ToListAsync();
+            result.Records = await loadedProjects.ToListAsync();
             return Ok(result);
         }
 
@@ -175,7 +232,7 @@ namespace Cv_Management.Controllers
             var project = await _dbContext.Projects.FindAsync(id);
             if (project == null)
                 return NotFound();
-            
+
             //Update information
             project.UserId = model.UserId;
             project.Name = model.Name;
