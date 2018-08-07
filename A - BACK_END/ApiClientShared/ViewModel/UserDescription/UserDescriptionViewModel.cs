@@ -1,4 +1,4 @@
-﻿namespace ApiClientShared.ViewModel.User
+﻿namespace ApiClientShared.ViewModel.UserDescription
 {
     public class UserDescriptionViewModel
     {

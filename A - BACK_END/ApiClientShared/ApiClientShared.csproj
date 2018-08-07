@@ -65,6 +65,7 @@
     <Compile Include="Models\TextSearch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\BaseSearchViewModel.cs" />
+    <Compile Include="ViewModel\Hobby\HobbyViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\AddPersonalSkillViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\ReadingPersonalSkillViewModel.cs" />
     <Compile Include="ViewModel\PersonalSkill\SearchPersonalSkillViewModel.cs" />
@@ -110,7 +111,7 @@
     <Compile Include="ViewModel\User\SearchUserViewModel.cs" />
     <Compile Include="ViewModel\User\AddUserViewModel.cs" />
     <Compile Include="ViewModel\User\EditUserViewModel.cs" />
-    <Compile Include="ViewModel\User\UserDescriptionViewModel.cs" />
+    <Compile Include="ViewModel\UserDescription\UserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\User\UserViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

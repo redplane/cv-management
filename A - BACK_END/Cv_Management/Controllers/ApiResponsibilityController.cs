@@ -35,10 +35,10 @@ namespace Cv_Management.Controllers
 
         #region Contructors
 
-        public ApiResponsibilityController(CvManagementDbContext dbContext,
+        public ApiResponsibilityController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = dbContext;
+            _dbContext =(CvManagementDbContext) dbContext;
             _dbService = dbService;
         }
 

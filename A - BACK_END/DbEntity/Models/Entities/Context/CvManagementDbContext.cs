@@ -108,6 +108,11 @@ namespace DbEntity.Models.Entities.Context
         /// </summary>
         public DbSet<UserDescription> UserDescriptions { get; set; }
 
+        /// <summary>
+        /// List of user hobbies
+        /// </summary>
+        public DbSet<Hobby> Hobbies { get; set; }
+
         #endregion
 
         #region Table initialization
@@ -225,6 +230,18 @@ namespace DbEntity.Models.Entities.Context
                 .WithMany(x => x.SkillCategorySkillRelationships).HasForeignKey(x => x.SkillCategoryId);
         }
 
+        /// <summary>
+        /// Initialize hobby
+        /// </summary>
+        /// <param name="dbModelBuilder"></param>
+        private void InitializeHobbyTable (DbModelBuilder dbModelBuilder)
+        {
+            var hobby = dbModelBuilder.Entity<Hobby>();
+            hobby.HasKey(x => x.Id);
+            hobby.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            hobby.HasRequired(x => x.User).WithMany(x => x.Hobbies).HasForeignKey(x => x.UserId);
+
+        }
         #endregion
     }
 }

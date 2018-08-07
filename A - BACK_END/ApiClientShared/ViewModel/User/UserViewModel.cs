@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using ApiClientShared.Enums;
+using ApiClientShared.ViewModel.Hobby;
+using ApiClientShared.ViewModel.UserDescription;
 
 namespace ApiClientShared.ViewModel.User
 {
@@ -25,6 +27,11 @@ namespace ApiClientShared.ViewModel.User
         /// List of description.
         /// </summary>
         public IEnumerable<UserDescriptionViewModel> Descriptions { get; set; }
+
+        /// <summary>
+        /// List of hobby
+        /// </summary>
+        public IEnumerable<HobbyViewModel> Hobbies { get; set; }
 
         #endregion
     }

@@ -1,6 +1,8 @@
 ﻿using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.Hobby;
 using ApiClientShared.ViewModel.User;
+using ApiClientShared.ViewModel.UserDescription;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
@@ -34,10 +36,10 @@ namespace Cv_Management.Controllers
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
-        public ApiUserController(CvManagementDbContext dbContext,
+        public ApiUserController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = dbContext;
+            _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
 
         }
@@ -86,17 +88,58 @@ namespace Cv_Management.Controllers
             if (condition.Birthday > 0)
                 users = users.Where(c => c.Birthday == condition.Birthday);
 
-            var result = new SearchResultViewModel<IList<User >>();
+            #region Search user descriptions && hobbies
+
+            //user descriptions
+            IQueryable<UserDescription> userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
+
+            if (condition.IncludeDescriptions)
+                userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+
+            //hobbies
+            IQueryable<Hobby> hobbies = Enumerable.Empty<Hobby>().AsQueryable();
+            if (condition.IncludeHobbies)
+                hobbies = _dbContext.Hobbies.AsQueryable();
+
+            var loadedUsers = from user in users
+                              select new UserViewModel
+                              {
+                                  Id = user.Id,
+                                  Birthday = user.Birthday,
+                                  Email = user.Email,
+                                  FirstName = user.FirstName,
+                                  LastName = user.LastName,
+                                  Photo = user.Photo,
+                                  Role = user.Role,
+                                  Descriptions = from description in userDescriptions
+                                                 select new UserDescriptionViewModel
+                                                 {
+                                                     Id = description.Id,
+                                                     Description = description.Description,
+                                                     UserId = description.UserId
+                                                 },
+                                  Hobbies = from hobby in hobbies
+                                            select new HobbyViewModel
+                                            {
+                                                Id = hobby.Id,
+                                                Name = hobby.Name,
+                                                UserId = hobby.UserId,
+                                                Description = hobby.Description
+                                            }
+                              };
+            #endregion
+
+            var result = new SearchResultViewModel<IList<UserViewModel>>();
             result.Total = await users.CountAsync();
 
             //do sort
-            users = _dbService.Sort(users,SortDirection.Ascending,UserSortProperty.Id);
+            loadedUsers = _dbService.Sort(loadedUsers, SortDirection.Ascending, UserSortProperty.Id);
 
             //do pagination
 
-            users = _dbService.Paginate(users, condition.Pagination);
+            loadedUsers = _dbService.Paginate(loadedUsers, condition.Pagination);
 
-            result.Records = await users.ToListAsync();
+            result.Records = await loadedUsers.ToListAsync();
 
             return Ok(result);
 
@@ -113,7 +156,7 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> AddUser([FromBody] AddUserViewModel model)
         {
 
-            if(model == null)
+            if (model == null)
             {
                 model = new AddUserViewModel();
                 Validate(model);
@@ -125,7 +168,7 @@ namespace Cv_Management.Controllers
             var user = new User();
             user.LastName = model.LastName;
             user.FirstName = model.FirstName;
-            
+
             return Ok();
         }
 
