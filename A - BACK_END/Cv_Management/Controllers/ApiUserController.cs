@@ -6,6 +6,7 @@ using ApiClientShared.ViewModel.UserDescription;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -46,6 +47,26 @@ namespace Cv_Management.Controllers
         #endregion
 
         #region Methods
+
+        #region common function 
+
+        /// <summary>
+        /// Mapping data from Entity to model for create
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="model"></param>
+        public void MappingData(User entity,AddUserViewModel model)
+        {
+            entity.FirstName = model.FirstName;
+            entity.LastName = model.LastName;
+            entity.Birthday = model.Birthday;
+            if (model.Photo != null)
+                entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
+           // entity.Role = model.Role;
+            entity.Email = model.Email;
+            entity.Password = model.Password;
+        }
+        #endregion
         /// <summary>
         /// Get users using specific conditions
         /// </summary>
@@ -168,7 +189,11 @@ namespace Cv_Management.Controllers
             var user = new User();
             user.LastName = model.LastName;
             user.FirstName = model.FirstName;
-
+            user.Email = model.Email;
+            user.Birthday = model.Birthday;
+            user.Password = model.Password;
+           
+           
             return Ok();
         }
 
@@ -183,6 +208,7 @@ namespace Cv_Management.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> EditUser([FromUri]int id, [FromBody] EditUserViewModel model)
         {
+
             return Ok();
         }
 
@@ -198,6 +224,8 @@ namespace Cv_Management.Controllers
         {
             return Ok();
         }
+
+
         #endregion
 
     }

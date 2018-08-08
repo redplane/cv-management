@@ -18,7 +18,7 @@ namespace ApiClientShared.ViewModel.User
         [Required]
         public string Role { get; set; }
 
-        public HttpFile photo { get; set; }
+        public HttpFile Photo { get; set; }
 
         [Required]
         public string Password { get; set; }
