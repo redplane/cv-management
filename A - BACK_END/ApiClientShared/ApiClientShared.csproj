@@ -75,14 +75,12 @@
     <Compile Include="ViewModel\ProjectResponsibility\SearchProjectResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\ProjectSkill\AddProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\Project\ProjectViewModel.cs" />
-    <Compile Include="ViewModel\ProjectSkill\ReadingProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\ProjectSkill\SearchProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\Project\AddProjectViewModel.cs" />
     <Compile Include="ViewModel\Project\ReadingProjectViewModel.cs" />
     <Compile Include="ViewModel\Project\SearchProjectViewModel.cs" />
     <Compile Include="ViewModel\Project\EditProjectViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\AddResponsibilityViewModel.cs" />
-    <Compile Include="ViewModel\Responsibility\ReadingResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\ResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\SearchResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\EditResponsibilityViewModel.cs" />
@@ -95,7 +93,6 @@
     <Compile Include="ViewModel\SkillCategory\EditSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\Skill\AddSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\PersonalSkillViewModel.cs" />
-    <Compile Include="ViewModel\Skill\ReadingSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\SearchSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\EditSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\SkillViewModel.cs" />
@@ -107,7 +104,7 @@
     <Compile Include="ViewModel\User\LoginViewModel.cs" />
     <Compile Include="ViewModel\User\ReadingUserViewModel.cs" />
     <Compile Include="ViewModel\User\RegisterViewModel.cs" />
-    <Compile Include="ViewModel\User\ResponsesLoginViewModel.cs" />
+    <Compile Include="ViewModel\User\TokenViewModel.cs" />
     <Compile Include="ViewModel\User\SearchUserViewModel.cs" />
     <Compile Include="ViewModel\User\AddUserViewModel.cs" />
     <Compile Include="ViewModel\User\EditUserViewModel.cs" />
@@ -116,6 +113,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
