@@ -1,4 +1,5 @@
-﻿using ApiMultiPartFormData.Models;
+﻿using ApiClientShared.Enums;
+using ApiMultiPartFormData.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace ApiClientShared.ViewModel.User
@@ -16,7 +17,7 @@ namespace ApiClientShared.ViewModel.User
         public string Email { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public UserRoles Role { get; set; }
 
         public HttpFile Photo { get; set; }
 

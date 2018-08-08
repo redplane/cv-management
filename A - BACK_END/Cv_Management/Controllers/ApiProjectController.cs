@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -155,7 +156,7 @@ namespace Cv_Management.Controllers
 
                                  };
 
-                                 #endregion
+            #endregion
 
             var result = new SearchResultViewModel<IList<ProjectViewModel>>();
             result.Total = await projects.CountAsync();
@@ -193,21 +194,92 @@ namespace Cv_Management.Controllers
             if (isExists)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict, "EXISTS_CODE_ERROR"));
 
-            //Inial Project object
-            var project = new Project();
-            project.UserId = model.UserId;
-            project.Name = model.Name;
-            project.Description = model.Description;
-            project.FinishedTime = model.FinishedTime;
-            project.StatedTime = model.StatedTime;
+            var transaction = _dbContext.Database.BeginTransaction();
+            try
+            {
+                //Inial Project object
+                var project = new Project();
 
-            //Add project to database
-            project = _dbContext.Projects.Add(project);
+                project.UserId = model.UserId;
+                project.Name = model.Name;
+                project.Description = model.Description;
+                project.FinishedTime = model.FinishedTime;
+                project.StatedTime = model.StatedTime;
 
-            //Save changes to database
-            await _dbContext.SaveChangesAsync();
+                //Add project to database
+                project = _dbContext.Projects.Add(project);
+                if (model.SkillIds != null)
+                {
+                    #region add project skill
 
-            return Ok(project);
+                    //check exists skill
+                    var countSkills = await _dbContext.Skills.Where(c => model.SkillIds.Contains(c.Id)).CountAsync();
+                    var isExistSkills = countSkills == model.SkillIds.Count;
+
+                    if (!isExistSkills)
+                        return NotFound();
+
+                    //Insert to projectSkill table
+                    foreach (var skillId in model.SkillIds)
+                    {
+                        var projectSkill = new ProjectSkill();
+
+                        projectSkill.ProjectId = project.Id;
+                        projectSkill.SkillId = skillId;
+
+                        //add to db context
+                        _dbContext.ProjectSkills.Add(projectSkill);
+
+                    }
+
+                    #endregion
+                }
+
+                if (model.ResponsibilityIds != null)
+                {
+                    #region Project responsibilitis
+
+                    // check exists responsibilities
+                    var countRespon = await _dbContext.Responsibilities
+                        .Where(c => model.ResponsibilityIds.Contains(c.Id)).CountAsync();
+                    var isExistsRespon = countRespon == model.ResponsibilityIds.Count;
+
+                    if (!isExistsRespon)
+                        return NotFound();
+
+                    //insert project responsibility to db context
+                    foreach (var responsibilityId in model.ResponsibilityIds)
+                    {
+                        var projectResponsibility = new ProjectResponsibility();
+
+                        projectResponsibility.ProjectId = project.Id;
+                        projectResponsibility.ResponsibilityId = responsibilityId;
+                        projectResponsibility.CreatedTime = DateTime.UtcNow.ToOADate();
+
+                        //add to db context
+                        _dbContext.ProjectResponsibilities.Add(projectResponsibility);
+
+                    }
+
+                    #endregion
+                }
+                
+
+                //Save changes to database
+                await _dbContext.SaveChangesAsync();
+
+                //commit transaction
+                transaction.Commit();
+
+                //success
+                return Ok(project);
+            }
+            catch (Exception e)
+            {
+                transaction.Rollback();
+                return Conflict();
+            }
+
         }
 
         /// <summary>

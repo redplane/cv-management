@@ -57,9 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201808041551224_InitalMigration.cs" />
-    <Compile Include="Migrations\201808041551224_InitalMigration.Designer.cs">
-      <DependentUpon>201808041551224_InitalMigration.cs</DependentUpon>
+    <Compile Include="Migrations\201808081510356_InitalDatabase.cs" />
+    <Compile Include="Migrations\201808081510356_InitalDatabase.Designer.cs">
+      <DependentUpon>201808081510356_InitalDatabase.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Entities\Context\CvManagementDbContext.cs" />
@@ -86,8 +86,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201808041551224_InitalMigration.resx">
-      <DependentUpon>201808041551224_InitalMigration.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201808081510356_InitalDatabase.resx">
+      <DependentUpon>201808081510356_InitalDatabase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

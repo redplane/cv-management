@@ -13,6 +13,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
+using Cv_Management.Constant;
+using JWT;
+using JWT.Algorithms;
+using JWT.Serializers;
 
 namespace Cv_Management.Controllers
 {
@@ -62,11 +66,31 @@ namespace Cv_Management.Controllers
             entity.Birthday = model.Birthday;
             if (model.Photo != null)
                 entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
-           // entity.Role = model.Role;
+            entity.Role = model.Role;
             entity.Email = model.Email;
             entity.Password = model.Password;
         }
+
+        /// <summary>
+        /// Mapping data from entity to model for update
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="model"></param>
+        public void MappingDataForUpdate(User entity, EditUserViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.FirstName))
+                entity.FirstName = model.FirstName;
+            if (!string.IsNullOrEmpty(model.LastName))
+                entity.LastName = model.LastName;
+            if (model.Birthday != null)
+                entity.Birthday = model.Birthday.GetValueOrDefault();
+            if (model.Photo != null)
+                entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
+
+        }
         #endregion
+
+
         /// <summary>
         /// Get users using specific conditions
         /// </summary>
@@ -187,14 +211,13 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             var user = new User();
-            user.LastName = model.LastName;
-            user.FirstName = model.FirstName;
-            user.Email = model.Email;
-            user.Birthday = model.Birthday;
-            user.Password = model.Password;
            
-           
-            return Ok();
+            MappingData(user, model);
+
+            user = _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+            return Ok(user);
+          
         }
 
 
@@ -208,8 +231,27 @@ namespace Cv_Management.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> EditUser([FromUri]int id, [FromBody] EditUserViewModel model)
         {
+           //validate model
+            if (model == null)
+            {
+                model = new EditUserViewModel();
+                Validate(model);
+            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return Ok();
+            //Find user
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null)
+                return NotFound();
+
+            //map informaiton
+             MappingDataForUpdate(user, model);
+
+            //Save to database
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(user);
         }
 
 
@@ -222,9 +264,113 @@ namespace Cv_Management.Controllers
         [HttpDelete]
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
+
+            //Find use
+            var user = await _dbContext.Users.FindAsync(id);
+            if (user == null)
+                return NotFound();
+
+            //Remove user
+            _dbContext.Users.Remove(user);
+
+            //save change to database
+            await _dbContext.SaveChangesAsync();
             return Ok();
         }
 
+        #region Login
+        /// <summary>
+        /// Login 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("login")]
+        public async Task<IHttpActionResult> Login([FromBody] LoginViewModel model)
+        {
+            if (model == null)
+            {
+                model = new LoginViewModel();
+                Validate(model);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            //get user by username and password
+            var user = await _dbContext.Users.FirstOrDefaultAsync(c =>
+                c.Email.Equals(model.Email) && c.Password.Equals(model.Password));
+            if (user == null)
+                return NotFound();
+
+            var result = new TokenViewModel();
+            result.LifeTime = 3600;
+            result.AccessToken = GetToken(user);
+            result.Type = "Bearer";
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get token using web token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public string GetToken(User user)
+        {
+            var userToken = new AcountViewModel()
+            {
+                Username = user.Email,
+                Password = user.Password,
+                Role = user.Role
+
+            };
+
+            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
+            IJsonSerializer serializer = new JsonNetSerializer();
+            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
+            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
+
+            string token = encoder.Encode(userToken, GlobalConstant.Secret);
+            return token;
+        }
+        #endregion
+
+        #region Register
+        /// <summary>
+        /// Register new user
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("register")]
+        public async Task<IHttpActionResult> Register([FromBody]RegisterViewModel model)
+        {
+            if (model == null)
+            {
+                model = new RegisterViewModel();
+                Validate(model);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            //check duplicate
+            var isDuplicate = await _dbContext.Users.AnyAsync(c => c.Email == model.Email && c.Password == model.Password);
+            if (isDuplicate)
+                return Conflict();
+
+            var user = new User();
+            user.Email = model.Email;
+            user.LastName = model.LastName;
+            user.FirstName = model.FirstName;
+            user.Password = model.Password;
+
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+            return Ok(user);
+        }
+
+        #endregion
 
         #endregion
 

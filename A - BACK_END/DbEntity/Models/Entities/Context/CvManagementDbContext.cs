@@ -56,6 +56,9 @@ namespace DbEntity.Models.Entities.Context
             // Initialize skill category skill relationship table.
             InitializeSkillCategorySkillRelationshipTable(dbModelBuilder);
 
+            //Initialize hobby table
+            InitializeHobbyTable(dbModelBuilder);
+
             base.OnModelCreating(dbModelBuilder);
         }
 
@@ -187,7 +190,7 @@ namespace DbEntity.Models.Entities.Context
             projectResponsibility.HasKey(x => new { x.ProjectId, x.ResponsibilityId });
 
             projectResponsibility.HasRequired(x => x.Project).WithMany(x => x.ProjectResponsibilities)
-                .HasForeignKey(x => x.ResponsibilityId);
+                .HasForeignKey(x => x.ProjectId);
 
             projectResponsibility.HasRequired(x => x.Responsibility).WithMany(x => x.ProjectResponsibilities)
                 .HasForeignKey(x => x.ResponsibilityId);
