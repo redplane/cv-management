@@ -61,7 +61,7 @@ namespace Cv_Management
             builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
             builder.RegisterType<GoogleCaptchaService>().As<ICaptchaService>().SingleInstance();
-
+            builder.RegisterType<TokenService>().As<ITokenService>().SingleInstance();
             #endregion
 
             var containerBuilder = builder.Build();

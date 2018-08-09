@@ -154,6 +154,7 @@
     <Compile Include="Controllers\ApiSkillController.cs" />
     <Compile Include="Interfaces\Services\ICaptchaService.cs" />
     <Compile Include="Interfaces\Services\IProfileService.cs" />
+    <Compile Include="Interfaces\Services\ITokenService.cs" />
     <Compile Include="Models\AppSettingModel.cs" />
     <Compile Include="Models\ProfileModel.cs" />
     <Compile Include="Services\GoogleCaptchaService.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Interfaces\Services\IDbService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ProfileService.cs" />
+    <Compile Include="Services\TokenService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

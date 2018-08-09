@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
@@ -34,6 +35,8 @@ namespace Cv_Management.Controllers
         /// </summary>
         private readonly IDbService _dbService;
 
+
+        private readonly ITokenService _tokenService;
         #endregion
 
         #region Contructors
@@ -43,10 +46,12 @@ namespace Cv_Management.Controllers
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
         public ApiUserController(DbContext dbContext,
-            IDbService dbService)
+            IDbService dbService,
+            ITokenService tokenService)
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
+            _tokenService = tokenService;
 
         }
         #endregion
@@ -284,35 +289,17 @@ namespace Cv_Management.Controllers
 
             var result = new TokenViewModel();
             result.LifeTime = 3600;
-            result.AccessToken = GetToken(user);
+
+            var claims = new List<Claim>();
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            claims.Add(new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"));
+            claims.Add(new Claim(ClaimTypes.Role, $"{user.Role}"));
+
+            result.AccessToken = _tokenService.Encode(claims);
             result.Type = "Bearer";
             return Ok(result);
         }
-
-        /// <summary>
-        /// Get token using web token
-        /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        public string GetToken(User user)
-        {
-            var userToken = new AcountViewModel()
-            {
-                Username = user.Email,
-                Password = user.Password,
-                Role = user.Role
-
-            };
-
-            IJwtAlgorithm algorithm = new HMACSHA256Algorithm();
-            IJsonSerializer serializer = new JsonNetSerializer();
-            IBase64UrlEncoder urlEncoder = new JwtBase64UrlEncoder();
-            IJwtEncoder encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-
-            string token = encoder.Encode(userToken, GlobalConstant.Secret);
-            return token;
-        }
-
+        
 
         /// <summary>
         /// Register new user

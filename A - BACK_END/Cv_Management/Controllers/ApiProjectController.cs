@@ -161,10 +161,10 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<ProjectViewModel>>();
             result.Total = await projects.CountAsync();
 
-            //sort
+            //Do sort
             loadedProjects = _dbService.Sort(loadedProjects, SortDirection.Ascending, ProjectSortProperty.Id);
 
-            //pagination
+            //Do Pagination
             loadedProjects = _dbService.Paginate(loadedProjects, condition.Pagination);
 
             result.Records = await loadedProjects.ToListAsync();
@@ -227,7 +227,7 @@ namespace Cv_Management.Controllers
                         projectSkill.ProjectId = project.Id;
                         projectSkill.SkillId = skillId;
 
-                        //add to db context
+                        //Add to db context
                         _dbContext.ProjectSkills.Add(projectSkill);
 
                     }
@@ -247,7 +247,7 @@ namespace Cv_Management.Controllers
                     if (!isExistsRespon)
                         return NotFound();
 
-                    //insert project responsibility to db context
+                    //Insert project responsibility to db context
                     foreach (var responsibilityId in model.ResponsibilityIds)
                     {
                         var projectResponsibility = new ProjectResponsibility();
@@ -256,7 +256,7 @@ namespace Cv_Management.Controllers
                         projectResponsibility.ResponsibilityId = responsibilityId;
                         projectResponsibility.CreatedTime = DateTime.UtcNow.ToOADate();
 
-                        //add to db context
+                        //Add to db context
                         _dbContext.ProjectResponsibilities.Add(projectResponsibility);
 
                     }
@@ -268,10 +268,10 @@ namespace Cv_Management.Controllers
                 //Save changes to database
                 await _dbContext.SaveChangesAsync();
 
-                //commit transaction
+                //Commit transaction
                 transaction.Commit();
 
-                //success
+                //Success
                 return Ok(project);
             }
             catch (Exception e)
@@ -300,7 +300,7 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //find  Project
+            //Find  Project
             var project = await _dbContext.Projects.FindAsync(id);
             if (project == null)
                 return NotFound();
