@@ -33,6 +33,7 @@ namespace Cv_Management.Controllers
         /// Service to handler database operation
         /// </summary>
         private readonly IDbService _dbService;
+
         #endregion
 
         #region Contructors
@@ -52,45 +53,6 @@ namespace Cv_Management.Controllers
 
         #region Methods
 
-        #region common function 
-
-        /// <summary>
-        /// Mapping data from Entity to model for create
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="model"></param>
-        public void MappingData(User entity,AddUserViewModel model)
-        {
-            entity.FirstName = model.FirstName;
-            entity.LastName = model.LastName;
-            entity.Birthday = model.Birthday;
-            if (model.Photo != null)
-                entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
-            entity.Role = model.Role;
-            entity.Email = model.Email;
-            entity.Password = model.Password;
-        }
-
-        /// <summary>
-        /// Mapping data from entity to model for update
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="model"></param>
-        public void MappingDataForUpdate(User entity, EditUserViewModel model)
-        {
-            if (!string.IsNullOrEmpty(model.FirstName))
-                entity.FirstName = model.FirstName;
-            if (!string.IsNullOrEmpty(model.LastName))
-                entity.LastName = model.LastName;
-            if (model.Birthday != null)
-                entity.Birthday = model.Birthday.GetValueOrDefault();
-            if (model.Photo != null)
-                entity.Photo = Convert.ToBase64String(model.Photo.Buffer);
-
-        }
-        #endregion
-
-
         /// <summary>
         /// Get users using specific conditions
         /// </summary>
@@ -98,7 +60,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [Route("search")]
         [HttpPost]
-        public async Task<IHttpActionResult> Search([FromBody]SearchUserViewModel condition)
+        public async Task<IHttpActionResult> Search([FromBody] SearchUserViewModel condition)
         {
             if (condition == null)
             {
@@ -120,18 +82,27 @@ namespace Cv_Management.Controllers
 
             if (condition.LastNames != null)
             {
-                var lastNames = condition.LastNames.Where(c => !string.IsNullOrEmpty(c));
-                users = users.Where(c => condition.LastNames.Contains(c.LastName));
+                var lastNames = condition.LastNames.Where(c => !string.IsNullOrEmpty(c)).ToList();
+                if (lastNames.Count > 0)
+                    users = users.Where(c => lastNames.Contains(c.LastName));
             }
 
             if (condition.FirstNames != null)
             {
-                var firstNames = condition.FirstNames.Where(c => !string.IsNullOrEmpty(c));
-                users = users.Where(c => condition.FirstNames.Contains(c.FirstName));
+                var firstNames = condition.FirstNames.Where(c => !string.IsNullOrEmpty(c)).ToList();
+                if (firstNames.Count > 0)
+                    users = users.Where(c => firstNames.Contains(c.FirstName));
             }
 
-            if (condition.Birthday > 0)
-                users = users.Where(c => c.Birthday == condition.Birthday);
+            if (condition.Birthday != null)
+            {
+                var birthday = condition.Birthday;
+                if (birthday.From != null)
+                    users = users.Where(c => c.Birthday >= birthday.From);
+
+                if (birthday.To != null)
+                    users = users.Where(user => user.Birthday <= birthday.To);
+            }
 
             #region Search user descriptions && hobbies
 
@@ -141,7 +112,7 @@ namespace Cv_Management.Controllers
             if (condition.IncludeDescriptions)
                 userDescriptions = _dbContext.UserDescriptions.AsQueryable();
 
-            //hobbies
+            // Get all hobbies.
             IQueryable<Hobby> hobbies = Enumerable.Empty<Hobby>().AsQueryable();
             if (condition.IncludeHobbies)
                 hobbies = _dbContext.Hobbies.AsQueryable();
@@ -177,19 +148,16 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<UserViewModel>>();
             result.Total = await users.CountAsync();
 
-            //do sort
+            // Do sort
             loadedUsers = _dbService.Sort(loadedUsers, SortDirection.Ascending, UserSortProperty.Id);
 
-            //do pagination
-
+            // Do pagination
             loadedUsers = _dbService.Paginate(loadedUsers, condition.Pagination);
 
             result.Records = await loadedUsers.ToListAsync();
 
             return Ok(result);
-
         }
-
 
         /// <summary>
         /// Add an user
@@ -200,7 +168,6 @@ namespace Cv_Management.Controllers
         [HttpPost]
         public async Task<IHttpActionResult> AddUser([FromBody] AddUserViewModel model)
         {
-
             if (model == null)
             {
                 model = new AddUserViewModel();
@@ -211,13 +178,18 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             var user = new User();
-           
-            MappingData(user, model);
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Birthday = model.Birthday;
+            if (model.Photo != null)
+                user.Photo = Convert.ToBase64String(model.Photo.Buffer);
+            user.Role = model.Role;
+            user.Email = model.Email;
+            user.Password = model.Password;
 
             user = _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
             return Ok(user);
-          
         }
 
 
@@ -231,7 +203,7 @@ namespace Cv_Management.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> EditUser([FromUri]int id, [FromBody] EditUserViewModel model)
         {
-           //validate model
+            //validate model
             if (model == null)
             {
                 model = new EditUserViewModel();
@@ -245,8 +217,17 @@ namespace Cv_Management.Controllers
             if (user == null)
                 return NotFound();
 
-            //map informaiton
-             MappingDataForUpdate(user, model);
+            if (!string.IsNullOrEmpty(model.FirstName))
+                user.FirstName = model.FirstName;
+
+            if (!string.IsNullOrEmpty(model.LastName))
+                user.LastName = model.LastName;
+
+            if (model.Birthday != null)
+                user.Birthday = model.Birthday.Value;
+
+            if (model.Photo != null)
+                user.Photo = Convert.ToBase64String(model.Photo.Buffer);
 
             //Save to database
             await _dbContext.SaveChangesAsync();
@@ -264,8 +245,7 @@ namespace Cv_Management.Controllers
         [HttpDelete]
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
-
-            //Find use
+            //Find user by id
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
                 return NotFound();
@@ -278,7 +258,6 @@ namespace Cv_Management.Controllers
             return Ok();
         }
 
-        #region Login
         /// <summary>
         /// Login 
         /// </summary>
@@ -333,9 +312,8 @@ namespace Cv_Management.Controllers
             string token = encoder.Encode(userToken, GlobalConstant.Secret);
             return token;
         }
-        #endregion
 
-        #region Register
+
         /// <summary>
         /// Register new user
         /// </summary>
@@ -371,8 +349,5 @@ namespace Cv_Management.Controllers
         }
 
         #endregion
-
-        #endregion
-
     }
 }
