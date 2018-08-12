@@ -258,7 +258,7 @@ namespace Cv_Management.Controllers
             //Remove user
             _dbContext.Users.Remove(user);
 
-            //save change to database
+            //Save change to database
             await _dbContext.SaveChangesAsync();
             return Ok();
         }
@@ -281,7 +281,7 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //get user by username and password
+            //Get user by username and password
             var user = await _dbContext.Users.FirstOrDefaultAsync(c =>
                 c.Email.Equals(model.Email) && c.Password.Equals(model.Password));
             if (user == null)
@@ -290,16 +290,15 @@ namespace Cv_Management.Controllers
             var result = new TokenViewModel();
             result.LifeTime = 3600;
 
-            var claims = new List<Claim>();
-            claims.Add(new Claim(ClaimTypes.Email, user.Email));
-            claims.Add(new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"));
-            claims.Add(new Claim(ClaimTypes.Role, $"{user.Role}"));
+            var payload = new Dictionary<string, string>();
+            payload.Add(ClaimTypes.Email, user.Email);
+            payload.Add(ClaimTypes.Name, $"{user.FirstName} {user.LastName}");
 
-            result.AccessToken = _tokenService.Encode(claims);
+            result.AccessToken = _tokenService.Encode(payload);
             result.Type = "Bearer";
             return Ok(result);
         }
-        
+
 
         /// <summary>
         /// Register new user
@@ -319,7 +318,7 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //check duplicate
+            //Check duplicate
             var isDuplicate = await _dbContext.Users.AnyAsync(c => c.Email == model.Email && c.Password == model.Password);
             if (isDuplicate)
                 return Conflict();

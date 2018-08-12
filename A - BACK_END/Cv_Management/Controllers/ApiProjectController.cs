@@ -263,7 +263,7 @@ namespace Cv_Management.Controllers
 
                     #endregion
                 }
-                
+
 
                 //Save changes to database
                 await _dbContext.SaveChangesAsync();
@@ -311,6 +311,28 @@ namespace Cv_Management.Controllers
             project.Description = model.Description;
             project.FinishedTime = model.FinishedTime;
             project.StatedTime = model.StatedTime;
+
+            #region  Update skills
+
+            //Remove skill
+            if (model.SkillIds != null)
+            {
+                var skills = _dbContext.Skills.Where(c => model.SkillIds.Contains(c.Id));
+                var isExists = skills.Count() == model.SkillIds.Count;
+                if (!isExists)
+                    NotFound();
+
+                foreach (var projectSkill in project.ProjectSkills.ToList())
+                {
+                    project.ProjectSkills.Remove(projectSkill);
+                }
+
+
+
+            }
+            
+
+            #endregion
 
             //Save changes to database
             await _dbContext.SaveChangesAsync();
