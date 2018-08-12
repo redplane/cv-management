@@ -8,7 +8,7 @@ namespace Cv_Management.Interfaces.Services
         #region Methods
 
         /// <summary>
-        /// Validate captcha code to check whether it is valid or not.
+        ///     Validate captcha code to check whether it is valid or not.
         /// </summary>
         /// <param name="code"></param>
         /// <param name="clientAddress"></param>

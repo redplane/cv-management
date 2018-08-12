@@ -13,7 +13,7 @@ namespace Cv_Management
         {
             // Register DI.
             AutofacConfig.Register(options);
-            
+
             // Web API routes
             options.MapHttpAttributeRoutes();
 
@@ -26,7 +26,7 @@ namespace Cv_Management
                 "api/{controller}/{id}",
                 new {id = RouteParameter.Optional}
             );
-            
+
             var jsonFormatter = options.Formatters.OfType<JsonMediaTypeFormatter>().First();
             jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             options.Formatters.Add(new MultipartFormDataFormatter());

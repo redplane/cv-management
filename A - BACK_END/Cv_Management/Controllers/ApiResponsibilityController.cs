@@ -19,28 +19,28 @@ namespace Cv_Management.Controllers
     [RoutePrefix("api/responsibility")]
     public class ApiResponsibilityController : ApiController
     {
-        #region Properties 
-
-        /// <summary>
-        /// Context to access to database
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
-        /// <summary>
-        /// Service to handler database operation
-        /// </summary>
-        private readonly IDbService _dbService;
-
-        #endregion
-
         #region Contructors
 
         public ApiResponsibilityController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext =(CvManagementDbContext) dbContext;
+            _dbContext = (CvManagementDbContext) dbContext;
             _dbService = dbService;
         }
+
+        #endregion
+
+        #region Properties 
+
+        /// <summary>
+        ///     Context to access to database
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
+
+        /// <summary>
+        ///     Service to handler database operation
+        /// </summary>
+        private readonly IDbService _dbService;
 
         #endregion
 
@@ -55,7 +55,7 @@ namespace Cv_Management.Controllers
         [Route("search")]
         public async Task<IHttpActionResult> Search([FromBody] SearchResponsibilityViewModel condition)
         {
-            if(condition == null)
+            if (condition == null)
             {
                 condition = new SearchResponsibilityViewModel();
                 Validate(condition);
@@ -82,20 +82,21 @@ namespace Cv_Management.Controllers
 
             if (condition.CreatedTime != null)
                 responsibilities = responsibilities.Where(c => c.CreatedTime >= condition.CreatedTime.From
-                && c.CreatedTime <= condition.CreatedTime.To);
+                                                               && c.CreatedTime <= condition.CreatedTime.To);
 
             if (condition.LastModifiedTime != null)
                 responsibilities = responsibilities.Where(c => c.LastModifiedTime >= condition.LastModifiedTime.From
-                && c.LastModifiedTime <= condition.LastModifiedTime.To);
+                                                               && c.LastModifiedTime <= condition.LastModifiedTime.To);
 
             var result = new SearchResultViewModel<IList<Responsibility>>();
             result.Total = await responsibilities.CountAsync();
 
             //sort
-            responsibilities = _dbService.Sort(responsibilities, SortDirection.Ascending, ResponsibilitySortProperty.Id);
+            responsibilities =
+                _dbService.Sort(responsibilities, SortDirection.Ascending, ResponsibilitySortProperty.Id);
 
             // pagination
-            responsibilities = _dbService.Paginate(responsibilities,condition.Pagination);
+            responsibilities = _dbService.Paginate(responsibilities, condition.Pagination);
 
             result.Records = await responsibilities.ToListAsync();
             return Ok(result);
@@ -161,10 +162,8 @@ namespace Cv_Management.Controllers
             if (responsibility == null)
                 return NotFound();
 
-            if(!string.IsNullOrEmpty(model.Name))
-            {
+            if (!string.IsNullOrEmpty(model.Name))
                 responsibility.Name = model.Name;
-            }           
             responsibility.LastModifiedTime = DateTime.Now.ToOADate();
 
             //Save changes to database
@@ -182,7 +181,6 @@ namespace Cv_Management.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult> Delete([FromUri] int id)
         {
-
             //Find responsibility in database
             var responsibility = await _dbContext.Responsibilities.FindAsync(id);
             if (responsibility == null)

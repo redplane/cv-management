@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -17,7 +16,7 @@ namespace Cv_Management.Attributes
         private readonly ITokenService _tokenService;
 
 
-        public ApiAuthorizeAttribute( CvManagementDbContext dbContext,
+        public ApiAuthorizeAttribute(CvManagementDbContext dbContext,
             ITokenService tokenService)
         {
             _dbContext = dbContext;
@@ -38,12 +37,10 @@ namespace Cv_Management.Attributes
                     actionContext.Response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
 
                 actionContext.ActionArguments["User"] = user;
-
             }
             catch (TokenExpiredException)
             {
                 Console.WriteLine("Token has expired");
-
             }
             catch (SignatureVerificationException)
             {

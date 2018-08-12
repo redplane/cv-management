@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using ApiClientShared.ViewModel.User;
+﻿using System.Collections.Generic;
 
 namespace Cv_Management.Interfaces.Services
 {
     public interface ITokenService
     {
         /// <summary>
-        /// Get token from user information
+        ///     Get token from user information
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
@@ -19,7 +13,7 @@ namespace Cv_Management.Interfaces.Services
 
 
         /// <summary>
-        /// Decode token
+        ///     Decode token
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>

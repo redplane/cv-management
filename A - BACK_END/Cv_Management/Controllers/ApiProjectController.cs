@@ -10,7 +10,6 @@ using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Project;
-using ApiClientShared.ViewModel.ProjectSkill;
 using ApiClientShared.ViewModel.Responsibility;
 using ApiClientShared.ViewModel.Skill;
 using Cv_Management.Interfaces.Services;
@@ -22,33 +21,34 @@ namespace Cv_Management.Controllers
     [RoutePrefix("api/project")]
     public class ApiProjectController : ApiController
     {
-        #region Properties
-        /// <summary>
-        /// Context to access to database
-        /// </summary>
-        public readonly CvManagementDbContext _dbContext;
-
-
-        /// <summary>
-        /// Service to handler controller operation
-        /// </summary>
-        public readonly IDbService _dbService;
-
-        #endregion
-
         #region Contructors
 
         /// <summary>
-        /// Initialize controller with injectors
+        ///     Initialize controller with injectors
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
         public ApiProjectController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (CvManagementDbContext) dbContext;
             _dbService = dbService;
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Context to access to database
+        /// </summary>
+        public readonly CvManagementDbContext _dbContext;
+
+
+        /// <summary>
+        ///     Service to handler controller operation
+        /// </summary>
+        public readonly IDbService _dbService;
 
         #endregion
 
@@ -97,16 +97,16 @@ namespace Cv_Management.Controllers
 
             if (condition.StartedTime != null)
                 projects = projects.Where(c => c.StatedTime >= condition.StartedTime.From
-                && c.StatedTime <= condition.StartedTime.To);
+                                               && c.StatedTime <= condition.StartedTime.To);
 
             if (condition.FinishedTime != null)
                 projects = projects.Where(c => c.FinishedTime >= condition.FinishedTime.From
-                && c.FinishedTime <= condition.FinishedTime.To);
+                                               && c.FinishedTime <= condition.FinishedTime.To);
 
             #region Search project skills & responsibilities.
 
-            IQueryable<Skill> skills = Enumerable.Empty<Skill>().AsQueryable();
-            IQueryable<ProjectSkill> projectSkills = Enumerable.Empty<ProjectSkill>().AsQueryable();
+            var skills = Enumerable.Empty<Skill>().AsQueryable();
+            var projectSkills = Enumerable.Empty<ProjectSkill>().AsQueryable();
 
             if (condition.IncludeSkills)
             {
@@ -115,8 +115,8 @@ namespace Cv_Management.Controllers
             }
 
 
-            IQueryable<Responsibility> responsibilities = Enumerable.Empty<Responsibility>().AsQueryable();
-            IQueryable<ProjectResponsibility> projectResponsibilities = Enumerable.Empty<ProjectResponsibility>().AsQueryable();
+            var responsibilities = Enumerable.Empty<Responsibility>().AsQueryable();
+            var projectResponsibilities = Enumerable.Empty<ProjectResponsibility>().AsQueryable();
             if (condition.IncludeResponsibilities)
             {
                 responsibilities = _dbContext.Responsibilities.AsQueryable();
@@ -124,37 +124,36 @@ namespace Cv_Management.Controllers
             }
 
             var loadedProjects = from project in projects
-                                 select new ProjectViewModel
-                                 {
-                                     Id = project.Id,
-                                     UserId = project.UserId,
-                                     Name = project.Name,
-                                     Description = project.Description,
-                                     StartedTime = project.StatedTime,
-                                     FinishedTime = project.FinishedTime,
-                                     Skills = from projectSkill in projectSkills
-                                              from skill in skills
-                                              where projectSkill.ProjectId == project.Id && projectSkill.SkillId == skill.Id
-                                              select new SkillViewModel
-                                              {
-                                                  Id = skill.Id,
-                                                  Name = skill.Name,
-                                                  CreatedTime = skill.CreatedTime,
-                                                  LastModifiedTime = skill.LastModifiedTime
-                                              },
-                                     Responsibilities = from projectResponsibility in projectResponsibilities
-                                                        from responsibility in responsibilities
-                                                        where projectResponsibility.ProjectId == project.Id && projectResponsibility.ResponsibilityId == responsibility.Id
-                                                        select new ResponsibilityViewModel
-                                                        {
-                                                            Id = responsibility.Id,
-                                                            Name = responsibility.Name,
-                                                            CreatedTime = responsibility.CreatedTime,
-                                                            LastModifiedTime = responsibility.LastModifiedTime
-                                                        }
-
-
-                                 };
+                select new ProjectViewModel
+                {
+                    Id = project.Id,
+                    UserId = project.UserId,
+                    Name = project.Name,
+                    Description = project.Description,
+                    StartedTime = project.StatedTime,
+                    FinishedTime = project.FinishedTime,
+                    Skills = from projectSkill in projectSkills
+                        from skill in skills
+                        where projectSkill.ProjectId == project.Id && projectSkill.SkillId == skill.Id
+                        select new SkillViewModel
+                        {
+                            Id = skill.Id,
+                            Name = skill.Name,
+                            CreatedTime = skill.CreatedTime,
+                            LastModifiedTime = skill.LastModifiedTime
+                        },
+                    Responsibilities = from projectResponsibility in projectResponsibilities
+                        from responsibility in responsibilities
+                        where projectResponsibility.ProjectId == project.Id &&
+                              projectResponsibility.ResponsibilityId == responsibility.Id
+                        select new ResponsibilityViewModel
+                        {
+                            Id = responsibility.Id,
+                            Name = responsibility.Name,
+                            CreatedTime = responsibility.CreatedTime,
+                            LastModifiedTime = responsibility.LastModifiedTime
+                        }
+                };
 
             #endregion
 
@@ -229,7 +228,6 @@ namespace Cv_Management.Controllers
 
                         //Add to db context
                         _dbContext.ProjectSkills.Add(projectSkill);
-
                     }
 
                     #endregion
@@ -258,7 +256,6 @@ namespace Cv_Management.Controllers
 
                         //Add to db context
                         _dbContext.ProjectResponsibilities.Add(projectResponsibility);
-
                     }
 
                     #endregion
@@ -279,7 +276,6 @@ namespace Cv_Management.Controllers
                 transaction.Rollback();
                 return Conflict();
             }
-
         }
 
         /// <summary>
@@ -323,14 +319,8 @@ namespace Cv_Management.Controllers
                     NotFound();
 
                 foreach (var projectSkill in project.ProjectSkills.ToList())
-                {
                     project.ProjectSkills.Remove(projectSkill);
-                }
-
-
-
             }
-            
 
             #endregion
 

@@ -36,7 +36,7 @@ namespace Cv_Management.Services
         #region Methods
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="claims"></param>
         /// <param name="secret"></param>
@@ -53,7 +53,7 @@ namespace Cv_Management.Services
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="jwt"></param>
@@ -71,7 +71,7 @@ namespace Cv_Management.Services
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="httpRequestMessage"></param>
         /// <returns></returns>
@@ -80,11 +80,11 @@ namespace Cv_Management.Services
             if (!httpRequestMessage.Properties.ContainsKey(ClaimTypes.Actor))
                 return null;
 
-            return (ProfileModel)httpRequestMessage.Properties[ClaimTypes.Actor];
+            return (ProfileModel) httpRequestMessage.Properties[ClaimTypes.Actor];
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="httpRequestMessage"></param>
         /// <param name="profile"></param>
@@ -94,7 +94,7 @@ namespace Cv_Management.Services
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="originalPassword"></param>
         /// <returns></returns>
