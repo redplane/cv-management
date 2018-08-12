@@ -1,12 +1,4 @@
-﻿using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.ViewModel;
-using ApiClientShared.ViewModel.Hobby;
-using ApiClientShared.ViewModel.User;
-using ApiClientShared.ViewModel.UserDescription;
-using Cv_Management.Interfaces.Services;
-using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -14,34 +6,24 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
-using Cv_Management.Constant;
-using JWT;
-using JWT.Algorithms;
-using JWT.Serializers;
+using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.Hobby;
+using ApiClientShared.ViewModel.User;
+using ApiClientShared.ViewModel.UserDescription;
+using Cv_Management.Interfaces.Services;
+using DbEntity.Models.Entities;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Controllers
 {
     [RoutePrefix("api/user")]
     public class ApiUserController : ApiController
     {
-        #region Properties
-        /// <summary>
-        /// Context to access to database
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
-        /// <summary>
-        /// Service to handler database operation
-        /// </summary>
-        private readonly IDbService _dbService;
-
-
-        private readonly ITokenService _tokenService;
-        #endregion
-
         #region Contructors
+
         /// <summary>
-        /// Initalize controller with Injectors
+        ///     Initalize controller with Injectors
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
@@ -49,17 +31,34 @@ namespace Cv_Management.Controllers
             IDbService dbService,
             ITokenService tokenService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (CvManagementDbContext) dbContext;
             _dbService = dbService;
             _tokenService = tokenService;
-
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Context to access to database
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
+
+        /// <summary>
+        ///     Service to handler database operation
+        /// </summary>
+        private readonly IDbService _dbService;
+
+
+        private readonly ITokenService _tokenService;
+
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Get users using specific conditions
+        ///     Get users using specific conditions
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
@@ -112,42 +111,43 @@ namespace Cv_Management.Controllers
             #region Search user descriptions && hobbies
 
             //user descriptions
-            IQueryable<UserDescription> userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
+            var userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
 
             if (condition.IncludeDescriptions)
                 userDescriptions = _dbContext.UserDescriptions.AsQueryable();
 
             // Get all hobbies.
-            IQueryable<Hobby> hobbies = Enumerable.Empty<Hobby>().AsQueryable();
+            var hobbies = Enumerable.Empty<Hobby>().AsQueryable();
             if (condition.IncludeHobbies)
                 hobbies = _dbContext.Hobbies.AsQueryable();
 
             var loadedUsers = from user in users
-                              select new UserViewModel
-                              {
-                                  Id = user.Id,
-                                  Birthday = user.Birthday,
-                                  Email = user.Email,
-                                  FirstName = user.FirstName,
-                                  LastName = user.LastName,
-                                  Photo = user.Photo,
-                                  Role = user.Role,
-                                  Descriptions = from description in userDescriptions
-                                                 select new UserDescriptionViewModel
-                                                 {
-                                                     Id = description.Id,
-                                                     Description = description.Description,
-                                                     UserId = description.UserId
-                                                 },
-                                  Hobbies = from hobby in hobbies
-                                            select new HobbyViewModel
-                                            {
-                                                Id = hobby.Id,
-                                                Name = hobby.Name,
-                                                UserId = hobby.UserId,
-                                                Description = hobby.Description
-                                            }
-                              };
+                select new UserViewModel
+                {
+                    Id = user.Id,
+                    Birthday = user.Birthday,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Photo = user.Photo,
+                    Role = user.Role,
+                    Descriptions = from description in userDescriptions
+                        select new UserDescriptionViewModel
+                        {
+                            Id = description.Id,
+                            Description = description.Description,
+                            UserId = description.UserId
+                        },
+                    Hobbies = from hobby in hobbies
+                        select new HobbyViewModel
+                        {
+                            Id = hobby.Id,
+                            Name = hobby.Name,
+                            UserId = hobby.UserId,
+                            Description = hobby.Description
+                        }
+                };
+
             #endregion
 
             var result = new SearchResultViewModel<IList<UserViewModel>>();
@@ -165,7 +165,7 @@ namespace Cv_Management.Controllers
         }
 
         /// <summary>
-        /// Add an user
+        ///     Add an user
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -199,14 +199,14 @@ namespace Cv_Management.Controllers
 
 
         /// <summary>
-        /// Edit an user
+        ///     Edit an user
         /// </summary>
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [Route("{id}")]
         [HttpPut]
-        public async Task<IHttpActionResult> EditUser([FromUri]int id, [FromBody] EditUserViewModel model)
+        public async Task<IHttpActionResult> EditUser([FromUri] int id, [FromBody] EditUserViewModel model)
         {
             //validate model
             if (model == null)
@@ -242,7 +242,7 @@ namespace Cv_Management.Controllers
 
 
         /// <summary>
-        /// Delete an user
+        ///     Delete an user
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -264,7 +264,7 @@ namespace Cv_Management.Controllers
         }
 
         /// <summary>
-        /// Login 
+        ///     Login
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -301,13 +301,13 @@ namespace Cv_Management.Controllers
 
 
         /// <summary>
-        /// Register new user
+        ///     Register new user
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("register")]
-        public async Task<IHttpActionResult> Register([FromBody]RegisterViewModel model)
+        public async Task<IHttpActionResult> Register([FromBody] RegisterViewModel model)
         {
             if (model == null)
             {
@@ -319,7 +319,8 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             //Check duplicate
-            var isDuplicate = await _dbContext.Users.AnyAsync(c => c.Email == model.Email && c.Password == model.Password);
+            var isDuplicate =
+                await _dbContext.Users.AnyAsync(c => c.Email == model.Email && c.Password == model.Password);
             if (isDuplicate)
                 return Conflict();
 

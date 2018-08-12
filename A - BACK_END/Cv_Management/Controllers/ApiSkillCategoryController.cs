@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
-using Cv_Management.Interfaces.Services;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Skill;
 using ApiClientShared.ViewModel.SkillCategory;
+using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
@@ -19,24 +18,10 @@ namespace Cv_Management.Controllers
     [RoutePrefix("api/skill-category")]
     public class ApiSkillCategoryController : ApiController
     {
-        #region Properties
-
-        /// <summary>
-        /// Database context.
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
-        /// <summary>
-        /// Service which is for handling database operation.
-        /// </summary>
-        private readonly IDbService _dbService;
-
-        #endregion
-
         #region Contructors
 
         /// <summary>
-        /// Initialize controller with injectors.
+        ///     Initialize controller with injectors.
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
@@ -48,9 +33,24 @@ namespace Cv_Management.Controllers
 
         #endregion
 
-        #region Methods
+        #region Properties
+
         /// <summary>
-        /// Get Skill category using specific conditions
+        ///     Database context.
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
+
+        /// <summary>
+        ///     Service which is for handling database operation.
+        /// </summary>
+        private readonly IDbService _dbService;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        ///     Get Skill category using specific conditions
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
@@ -108,7 +108,7 @@ namespace Cv_Management.Controllers
 
             if (condition.IncludePersonalSkills)
                 skills = _dbContext.Skills.AsQueryable();
-            
+
             // Get offline skill categories.
             var loadSkillCategoryResult = new SearchResultViewModel<IList<SkillCategoryViewModel>>();
             loadSkillCategoryResult.Total = await skillCategories.CountAsync();
@@ -144,17 +144,16 @@ namespace Cv_Management.Controllers
             // Get the records list.
             loadSkillCategoryResult.Records = await loadedSkillCategories.ToListAsync();
             return Ok(loadSkillCategoryResult);
-
         }
 
         /// <summary>
-        /// Create Skill category
+        ///     Create Skill category
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody]AddSkillCategoryViewModel model)
+        public async Task<IHttpActionResult> Create([FromBody] AddSkillCategoryViewModel model)
         {
             if (model == null)
             {
@@ -172,18 +171,17 @@ namespace Cv_Management.Controllers
             skillCategory = _dbContext.SkillCategories.Add(skillCategory);
             await _dbContext.SaveChangesAsync();
             return Ok(skillCategory);
-
         }
 
         /// <summary>
-        /// Update skill category
+        ///     Update skill category
         /// </summary>
         /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Update([FromUri] int id, [FromBody]EditSkillCategoryViewModel model)
+        public async Task<IHttpActionResult> Update([FromUri] int id, [FromBody] EditSkillCategoryViewModel model)
         {
             if (model == null)
             {
@@ -202,17 +200,16 @@ namespace Cv_Management.Controllers
                 skillCategory.Photo = Convert.ToBase64String(model.Photo.Buffer);
             await _dbContext.SaveChangesAsync();
             return Ok(skillCategory);
-
         }
 
         /// <summary>
-        /// Delete skill category with Id
+        ///     Delete skill category with Id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Delete([FromUri]int id)
+        public async Task<IHttpActionResult> Delete([FromUri] int id)
         {
             var skillCategory = _dbContext.SkillCategories.Find(id);
             if (skillCategory == null)
@@ -220,10 +217,8 @@ namespace Cv_Management.Controllers
             _dbContext.SkillCategories.Remove(skillCategory);
             await _dbContext.SaveChangesAsync();
             return Ok();
-
         }
 
         #endregion
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Web.Http;
-using AutoMapper;
 using Cv_Management;
 using Microsoft.Owin;
 using Owin;
@@ -17,7 +16,7 @@ namespace Cv_Management
 
             // Register web api configuration.
             WebApiConfig.Register(httpConfiguration);
-            
+
             // Register web API module.
             app.UseWebApi(httpConfiguration);
         }

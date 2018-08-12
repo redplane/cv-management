@@ -62,6 +62,7 @@ namespace Cv_Management
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
             builder.RegisterType<GoogleCaptchaService>().As<ICaptchaService>().SingleInstance();
             builder.RegisterType<TokenService>().As<ITokenService>().SingleInstance();
+
             #endregion
 
             var containerBuilder = builder.Build();
@@ -69,17 +70,17 @@ namespace Cv_Management
         }
 
         /// <summary>
-        /// Find app settings.
+        ///     Find app settings.
         /// </summary>
         /// <returns></returns>
         private static AppSettingModel FindAppSettings()
         {
             var appSettingModel = new AppSettingModel();
             appSettingModel.GCaptchaSecret = ConfigurationManager.AppSettings[nameof(AppSettingModel.GCaptchaSecret)];
-            appSettingModel.GCaptchaValidationEndpoint = ConfigurationManager.AppSettings[nameof(AppSettingModel.GCaptchaValidationEndpoint)];
+            appSettingModel.GCaptchaValidationEndpoint =
+                ConfigurationManager.AppSettings[nameof(AppSettingModel.GCaptchaValidationEndpoint)];
 
             return appSettingModel;
         }
-
     }
 }

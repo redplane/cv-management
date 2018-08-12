@@ -1,10 +1,4 @@
-﻿using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.ViewModel;
-using ApiClientShared.ViewModel.Skill;
-using Cv_Management.Interfaces.Services;
-using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -13,46 +7,53 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
+using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.Skill;
+using Cv_Management.Interfaces.Services;
+using DbEntity.Models.Entities;
+using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Controllers
 {
     [RoutePrefix("api/skill")]
     public class ApiSkillController : ApiController
     {
-
-        #region Properties
-        /// <summary>
-        /// Context to access to database
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
-
-        /// <summary>
-        /// Service to handle database operation
-        /// </summary>
-        private readonly IDbService _dbService;
-        #endregion
-
         #region Contructors
 
         /// <summary>
-        /// Initialize controller with injectors
+        ///     Initialize controller with injectors
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
         /// <param name="profileService"></param>
         public ApiSkillController(DbContext dbContext, IDbService dbService, IProfileService profileService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (CvManagementDbContext) dbContext;
             _dbService = dbService;
-
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Context to access to database
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
+
+
+        /// <summary>
+        ///     Service to handle database operation
+        /// </summary>
+        private readonly IDbService _dbService;
+
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Get skills using specific conditions
+        ///     Get skills using specific conditions
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
@@ -60,7 +61,6 @@ namespace Cv_Management.Controllers
         [Route("search")]
         public async Task<IHttpActionResult> Search(SearchSkillViewModel condition)
         {
-
             if (condition == null)
             {
                 condition = new SearchSkillViewModel();
@@ -88,7 +88,7 @@ namespace Cv_Management.Controllers
 
             if (condition.StartedTime != null)
                 skills = skills.Where(c => c.CreatedTime >= condition.StartedTime.From
-               && c.CreatedTime <= condition.StartedTime.To);
+                                           && c.CreatedTime <= condition.StartedTime.To);
 
             var result = new SearchResultViewModel<IList<Skill>>();
             result.Total = await skills.CountAsync();
@@ -105,7 +105,7 @@ namespace Cv_Management.Controllers
         }
 
         /// <summary>
-        /// Create skill
+        ///     Create skill
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -144,15 +144,14 @@ namespace Cv_Management.Controllers
 
 
         /// <summary>
-        /// Update skill
+        ///     Update skill
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> EditSkill([FromUri]int id, [FromBody]EditSkillViewModel model)
+        public async Task<IHttpActionResult> EditSkill([FromUri] int id, [FromBody] EditSkillViewModel model)
         {
-
             if (model == null)
             {
                 model = new EditSkillViewModel();
@@ -178,13 +177,13 @@ namespace Cv_Management.Controllers
         }
 
         /// <summary>
-        /// Delete skill from id
+        ///     Delete skill from id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IHttpActionResult> DeleteSkill([FromUri]int id)
+        public async Task<IHttpActionResult> DeleteSkill([FromUri] int id)
         {
             //Find skill in database
             var skill = await _dbContext.Skills.FindAsync(id);
@@ -199,7 +198,7 @@ namespace Cv_Management.Controllers
 
             return Ok();
         }
-        #endregion
 
+        #endregion
     }
 }

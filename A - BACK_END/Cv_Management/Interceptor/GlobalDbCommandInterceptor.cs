@@ -9,7 +9,7 @@ namespace Cv_Management.Interceptor
         #region Methods
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="command"></param>
         /// <param name="interceptionContext"></param>
@@ -19,7 +19,7 @@ namespace Cv_Management.Interceptor
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="command"></param>
         /// <param name="interceptionContext"></param>
@@ -29,7 +29,7 @@ namespace Cv_Management.Interceptor
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="command"></param>
         /// <param name="interceptionContext"></param>
@@ -39,7 +39,7 @@ namespace Cv_Management.Interceptor
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="command"></param>
         /// <param name="interceptionContext"></param>
@@ -49,7 +49,7 @@ namespace Cv_Management.Interceptor
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="command"></param>
         /// <param name="interceptionContext"></param>
@@ -59,7 +59,7 @@ namespace Cv_Management.Interceptor
         }
 
         /// <summary>
-        /// <inheritdoc />
+        ///     <inheritdoc />
         /// </summary>
         /// <param name="command"></param>
         /// <param name="interceptionContext"></param>
