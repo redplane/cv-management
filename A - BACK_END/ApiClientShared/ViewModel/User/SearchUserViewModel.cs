@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ApiClientShared.Enums;
 using ApiClientShared.Models;
 
 namespace ApiClientShared.ViewModel.User
@@ -15,6 +16,16 @@ namespace ApiClientShared.ViewModel.User
         /// Birthday range.
         /// </summary>
         public RangeModel<double?, double?> Birthday { get; set; }
+
+        /// <summary>
+        /// List of roles that used for searching for users.
+        /// </summary>
+        public HashSet<UserRoles> Roles { get; set; }
+
+        /// <summary>
+        /// List of statuses that used for searching for users.
+        /// </summary>
+        public HashSet<UserStatuses> Statuses { get; set; }
 
         /// <summary>
         /// Response include descriptions of user

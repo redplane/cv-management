@@ -2,15 +2,21 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
+using ApiClientShared.Enums;
 using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Hobby;
 using ApiClientShared.ViewModel.User;
 using ApiClientShared.ViewModel.UserDescription;
+using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
@@ -27,13 +33,19 @@ namespace Cv_Management.Controllers
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
+        /// <param name="tokenService"></param>
+        /// <param name="profileService"></param>
+        /// <param name="captchaService"></param>
         public ApiUserController(DbContext dbContext,
             IDbService dbService,
-            ITokenService tokenService)
+            ITokenService tokenService, IProfileService profileService, 
+            ICaptchaService captchaService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
             _tokenService = tokenService;
+            _profileService = profileService;
+            _captchaService = captchaService;
         }
 
         #endregion
@@ -50,8 +62,20 @@ namespace Cv_Management.Controllers
         /// </summary>
         private readonly IDbService _dbService;
 
-
+        /// <summary>
+        /// Service which is for handling token generation.
+        /// </summary>
         private readonly ITokenService _tokenService;
+
+        /// <summary>
+        /// Service which handles profile operation.
+        /// </summary>
+        private readonly IProfileService _profileService;
+
+        /// <summary>
+        /// Service for verifying captcha code.
+        /// </summary>
+        private readonly ICaptchaService _captchaService;
 
         #endregion
 
@@ -64,6 +88,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [Route("search")]
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search([FromBody] SearchUserViewModel condition)
         {
             if (condition == null)
@@ -75,8 +100,10 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // Get list of users.
             var users = _dbContext.Users.AsQueryable();
 
+            // Ids are defined.
             if (condition.Ids != null)
             {
                 var ids = condition.Ids.Where(c => c > 0).ToList();
@@ -84,6 +111,7 @@ namespace Cv_Management.Controllers
                     users = users.Where(c => condition.Ids.Contains(c.Id));
             }
 
+            // Last names are defined.
             if (condition.LastNames != null)
             {
                 var lastNames = condition.LastNames.Where(c => !string.IsNullOrEmpty(c)).ToList();
@@ -91,6 +119,7 @@ namespace Cv_Management.Controllers
                     users = users.Where(c => lastNames.Contains(c.LastName));
             }
 
+            // First names are defined.
             if (condition.FirstNames != null)
             {
                 var firstNames = condition.FirstNames.Where(c => !string.IsNullOrEmpty(c)).ToList();
@@ -98,6 +127,7 @@ namespace Cv_Management.Controllers
                     users = users.Where(c => firstNames.Contains(c.FirstName));
             }
 
+            // Birthday range is defined.
             if (condition.Birthday != null)
             {
                 var birthday = condition.Birthday;
@@ -107,7 +137,32 @@ namespace Cv_Management.Controllers
                 if (birthday.To != null)
                     users = users.Where(user => user.Birthday <= birthday.To);
             }
+            
+            // Get request profile.
+            var profile = _profileService.GetProfile(Request);
 
+            // User is anonymous or ordinary.
+            if (profile == null || profile.Role != UserRoles.Admin)
+            {
+                // Statuses are defined.
+                if (condition.Statuses != null)
+                {
+                    var statuses = condition.Statuses.Where(x => Enum.IsDefined(typeof(UserRoles), x)).ToList();
+                    if (statuses.Count > 0)
+                        users = users.Where(x => statuses.Contains(x.Status));
+                }
+
+                // Roles are defined.
+                if (condition.Roles != null)
+                {
+                    var roles = condition.Roles.Where(x => Enum.IsDefined(typeof(UserRoles), x)).ToList();
+                    if (roles.Count > 0)
+                        users = users.Where(x => roles.Contains(x.Role));
+                }
+            }
+            else
+                users = users.Where(x => x.Status == UserStatuses.Active);
+            
             #region Search user descriptions && hobbies
 
             //user descriptions
@@ -122,31 +177,31 @@ namespace Cv_Management.Controllers
                 hobbies = _dbContext.Hobbies.AsQueryable();
 
             var loadedUsers = from user in users
-                select new UserViewModel
-                {
-                    Id = user.Id,
-                    Birthday = user.Birthday,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Photo = user.Photo,
-                    Role = user.Role,
-                    Descriptions = from description in userDescriptions
-                        select new UserDescriptionViewModel
-                        {
-                            Id = description.Id,
-                            Description = description.Description,
-                            UserId = description.UserId
-                        },
-                    Hobbies = from hobby in hobbies
-                        select new HobbyViewModel
-                        {
-                            Id = hobby.Id,
-                            Name = hobby.Name,
-                            UserId = hobby.UserId,
-                            Description = hobby.Description
-                        }
-                };
+                              select new UserViewModel
+                              {
+                                  Id = user.Id,
+                                  Birthday = user.Birthday,
+                                  Email = user.Email,
+                                  FirstName = user.FirstName,
+                                  LastName = user.LastName,
+                                  Photo = user.Photo,
+                                  Role = user.Role,
+                                  Descriptions = from description in userDescriptions
+                                                 select new UserDescriptionViewModel
+                                                 {
+                                                     Id = description.Id,
+                                                     Description = description.Description,
+                                                     UserId = description.UserId
+                                                 },
+                                  Hobbies = from hobby in hobbies
+                                            select new HobbyViewModel
+                                            {
+                                                Id = hobby.Id,
+                                                Name = hobby.Name,
+                                                UserId = hobby.UserId,
+                                                Description = hobby.Description
+                                            }
+                              };
 
             #endregion
 
@@ -196,8 +251,7 @@ namespace Cv_Management.Controllers
             await _dbContext.SaveChangesAsync();
             return Ok(user);
         }
-
-
+        
         /// <summary>
         ///     Edit an user
         /// </summary>
@@ -239,8 +293,7 @@ namespace Cv_Management.Controllers
 
             return Ok(user);
         }
-
-
+        
         /// <summary>
         ///     Delete an user
         /// </summary>
@@ -270,6 +323,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("login")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Login([FromBody] LoginViewModel model)
         {
             if (model == null)
@@ -281,25 +335,37 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //Get user by username and password
-            var user = await _dbContext.Users.FirstOrDefaultAsync(c =>
-                c.Email.Equals(model.Email) && c.Password.Equals(model.Password));
-            if (user == null)
-                return NotFound();
+#if !BY_PASS_CAPTCHA
+            // Verify the capcha first.
+            var bIsCaptchaValid = await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+            if (!bIsCaptchaValid)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden,
+                    HttpMessages.CaptchaInvalid));
 
-            var result = new TokenViewModel();
-            result.LifeTime = 3600;
+#endif
+            // Hash the input password.
+            var hashedPassword = _profileService.HashPassword(model.Password);
+
+            // Get user by username and password
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x =>
+                x.Email.Equals(model.Email) && x.Password.Equals(hashedPassword, StringComparison.InvariantCultureIgnoreCase) && x.Status == UserStatuses.Active);
+
+            // User is not found.
+            if (user == null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
+
+            var token = new TokenViewModel();
+            token.LifeTime = 3600;
 
             var payload = new Dictionary<string, string>();
             payload.Add(ClaimTypes.Email, user.Email);
             payload.Add(ClaimTypes.Name, $"{user.FirstName} {user.LastName}");
 
-            result.AccessToken = _tokenService.Encode(payload);
-            result.Type = "Bearer";
-            return Ok(result);
+            token.AccessToken = _tokenService.Encode(payload);
+            token.Type = "Bearer";
+            return Ok(token);
         }
-
-
+        
         /// <summary>
         ///     Register new user
         /// </summary>
@@ -307,6 +373,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("register")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Register([FromBody] RegisterViewModel model)
         {
             if (model == null)
@@ -332,6 +399,43 @@ namespace Cv_Management.Controllers
 
             _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
+            return Ok(user);
+        }
+
+        /// <summary>
+        /// Get profile by using user id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("personal-profile/{id}")]
+        public async Task<IHttpActionResult> GetProfile([FromUri] int? id)
+        {
+            // Get profile from request.
+            var profile = _profileService.GetProfile(Request);
+
+            // No profile is found.
+            if (id == null || id < 1)
+            {
+                if (profile == null)
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                        HttpMessages.ProfileNotFound));
+
+                return Ok(profile);
+            }
+
+            // Find profile.
+            var users = _dbContext.Users.AsQueryable();
+            users = users.Where(x => x.Id == id);
+            if (profile.Role != UserRoles.Admin)
+                users = users.Where(x => x.Status == UserStatuses.Active);
+
+            // Find the first matched record.
+            var user = await users.FirstOrDefaultAsync();
+            if (user == null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                    HttpMessages.ProfileNotFound));
+
             return Ok(user);
         }
 

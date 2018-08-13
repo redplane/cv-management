@@ -23,7 +23,27 @@ namespace DbEntity.Models.Entities
 
         public double Birthday { get; set; }
 
+        /// <summary>
+        /// User role in the system.
+        /// </summary>
         public UserRoles Role { get; set; }
+
+        /// <summary>
+        /// User status in the system.
+        /// </summary>
+        public UserStatuses Status { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initialize user object with default settings.
+        /// </summary>
+        public User()
+        {
+            Status = UserStatuses.Pending;
+        }
 
         #endregion
 

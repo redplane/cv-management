@@ -3,6 +3,7 @@ using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using ApiMultiPartFormData;
+using Cv_Management.Attributes;
 using Newtonsoft.Json.Serialization;
 
 namespace Cv_Management
@@ -16,11 +17,13 @@ namespace Cv_Management
 
             // Web API routes
             options.MapHttpAttributeRoutes();
-
-
+            
             //Cors 
             options.EnableCors(new EnableCorsAttribute("*","*", "*"));
 
+            // Register filters.
+            ApiFilterConfig.Register(options);
+            
             options.Routes.MapHttpRoute(
                 "DefaultApi",
                 "api/{controller}/{id}",

@@ -61,6 +61,10 @@
     <Compile Include="Migrations\201808090220447_InitialMigration.Designer.cs">
       <DependentUpon>201808090220447_InitialMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201808130414516_AddUserStatus.cs" />
+    <Compile Include="Migrations\201808130414516_AddUserStatus.Designer.cs">
+      <DependentUpon>201808130414516_AddUserStatus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Entities\Context\CvManagementDbContext.cs" />
     <Compile Include="Models\Entities\Hobby.cs" />
@@ -88,6 +92,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201808090220447_InitialMigration.resx">
       <DependentUpon>201808090220447_InitialMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808130414516_AddUserStatus.resx">
+      <DependentUpon>201808130414516_AddUserStatus.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

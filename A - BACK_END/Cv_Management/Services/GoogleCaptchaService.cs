@@ -1,4 +1,7 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Cv_Management.Interfaces.Services;
@@ -34,9 +37,16 @@ namespace Cv_Management.Services
         public async Task<bool> IsCaptchaValidAsync(string code, string clientAddress,
             CancellationToken cancellationToken)
         {
-            var uri =
-                $"{_appSetting.GCaptchaValidationEndpoint}?secret=${_appSetting.GCaptchaSecret}&response=${code}&remoteip=${clientAddress}";
+            var queries = new List<KeyValuePair<string, string>>();
+            queries.Add(new KeyValuePair<string, string>("secret", _appSetting.GCaptchaSecret));
+            queries.Add(new KeyValuePair<string, string>("response", code));
 
+            if (!string.IsNullOrWhiteSpace(clientAddress))
+                queries.Add(new KeyValuePair<string, string>("remoteip", clientAddress));
+            
+            var queryStringParamters = queries.Select(x => $"{x.Key}={x.Value}");
+            var queryString = string.Join("&", queryStringParamters);
+            var uri = $"{_appSetting.GCaptchaValidationEndpoint}?{queryString}";
             var httpResponseMessage = await _httpClient.PostAsync(uri, new StringContent("{}"), cancellationToken);
 
             // Read the http response content.

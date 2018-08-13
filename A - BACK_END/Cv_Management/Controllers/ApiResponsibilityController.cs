@@ -49,10 +49,11 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Get Responsibilities using specific conditions
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="condition"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("search")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search([FromBody] SearchResponsibilityViewModel condition)
         {
             if (condition == null)
@@ -72,6 +73,7 @@ namespace Cv_Management.Controllers
                 if (ids.Count > 0)
                     responsibilities = responsibilities.Where(x => ids.Contains(x.Id));
             }
+
             if (condition.Names != null)
             {
                 var names = condition.Names.Where(c => !string.IsNullOrEmpty(c)).ToList();
@@ -91,11 +93,11 @@ namespace Cv_Management.Controllers
             var result = new SearchResultViewModel<IList<Responsibility>>();
             result.Total = await responsibilities.CountAsync();
 
-            //sort
+            // Sort
             responsibilities =
                 _dbService.Sort(responsibilities, SortDirection.Ascending, ResponsibilitySortProperty.Id);
 
-            // pagination
+            // Paging
             responsibilities = _dbService.Paginate(responsibilities, condition.Pagination);
 
             result.Records = await responsibilities.ToListAsync();

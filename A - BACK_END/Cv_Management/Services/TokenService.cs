@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using Cv_Management.Constant;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Security.Claims;
 using Cv_Management.Interfaces.Services;
 using JWT;
 using JWT.Algorithms;
@@ -12,6 +14,25 @@ namespace Cv_Management.Services
     {
         #region Contructors
 
+        public TokenService()
+        {
+            JwtSecret = ConfigurationManager.AppSettings[nameof(JwtSecret)];
+            JwtName = ConfigurationManager.AppSettings[nameof(JwtName)];
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Token secret.
+        /// </summary>
+        public string JwtSecret { get; set; }
+
+        /// <summary>
+        /// Token name.
+        /// </summary>
+        public string JwtName { get; set; }
         #endregion
 
         #region Methods
@@ -21,14 +42,14 @@ namespace Cv_Management.Services
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
-        public string Encode(Dictionary<string, string> payload)
+        public string Encode(IDictionary payload)
         {
             var algorithm = new HMACSHA256Algorithm();
             var serializer = new JsonNetSerializer();
             var urlEncoder = new JwtBase64UrlEncoder();
             var encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
 
-            var token = encoder.Encode(payload, GlobalConstant.Secret);
+            var token = encoder.Encode(payload, JwtSecret);
 
             return token;
         }
@@ -39,7 +60,7 @@ namespace Cv_Management.Services
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public Dictionary<string, string> Decode(string token)
+        public T Decode<T>(string token)
         {
             var serializer = new JsonNetSerializer();
             var provider = new UtcDateTimeProvider();
@@ -47,10 +68,32 @@ namespace Cv_Management.Services
             var urlEncoder = new JwtBase64UrlEncoder();
             var decoder = new JwtDecoder(serializer, validator, urlEncoder);
 
-            var json = decoder.Decode(token, GlobalConstant.Secret, true);
-            var claims = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            var json = decoder.Decode(token, JwtSecret, false);
+            var claims = JsonConvert.DeserializeObject<T>(json);
 
             return claims;
+        }
+
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public ClaimsPrincipal ToPrinciple(string token)
+        {
+            // Decode the token.
+            var claims = Decode<Dictionary<string, string>>(token);
+            var claimsIdentity = new ClaimsIdentity(null, JwtName);
+            foreach (var key in claims.Keys)
+            {
+                if (string.IsNullOrEmpty(claims[key]))
+                    continue;
+
+                claimsIdentity.AddClaim(new Claim(key, claims[key]));
+            }
+
+            // Authenticate the request.
+            return new ClaimsPrincipal(claimsIdentity);
         }
 
         #endregion

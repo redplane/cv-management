@@ -61,10 +61,16 @@
     <Compile Include="Enums\SortProperties\UserSortProperty.cs" />
     <Compile Include="Enums\TextSearchMode.cs" />
     <Compile Include="Enums\UserRoles.cs" />
+    <Compile Include="Enums\UserStatuses.cs" />
     <Compile Include="Models\Pagination.cs" />
     <Compile Include="Models\RangeModel.cs" />
     <Compile Include="Models\TextSearch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\HttpMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>HttpMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="ViewModel\BaseSearchViewModel.cs" />
     <Compile Include="ViewModel\Hobby\AddHobbyViewModel.cs" />
     <Compile Include="ViewModel\Hobby\EditHobbyViewModel.cs" />
@@ -118,8 +124,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <EmbeddedResource Include="Resources\HttpMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HttpMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

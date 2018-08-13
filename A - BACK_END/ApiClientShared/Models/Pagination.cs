@@ -9,7 +9,7 @@
         ///     Min: 0
         ///     Max: (infinite)
         /// </summary>
-        public int Index { get; set; }
+        public int Page { get; set; }
 
         /// <summary>
         ///     Maximum records can be displayed per page.

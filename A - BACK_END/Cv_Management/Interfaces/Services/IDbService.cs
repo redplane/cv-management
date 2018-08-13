@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Web.UI.WebControls;
 using ApiClientShared.Models;
-using Cv_Management.Models;
 
 namespace Cv_Management.Interfaces.Services
 {
@@ -18,7 +17,7 @@ namespace Cv_Management.Interfaces.Services
         /// <param name="pagination"></param>
         /// <returns></returns>
         IQueryable<T> Paginate<T>(IQueryable<T> list, Pagination pagination);
-        
+
         /// <summary>
         ///     Sort a list by using specific property enumeration.
         /// </summary>

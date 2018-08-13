@@ -14,62 +14,8 @@ namespace Cv_Management.Services
 {
     public class ProfileService : IProfileService
     {
-        #region Properties
-
-        /// <summary>
-        ///     Find secret key.
-        /// </summary>
-        public string JwtSecret => ConfigurationManager.AppSettings["jwt.secret"];
-
-        /// <summary>
-        ///     Jwt life time (in seconds)
-        /// </summary>
-        public int JwtLifeTime => int.Parse(ConfigurationManager.AppSettings["jwt.token.lifeTime"]);
-
-        /// <summary>
-        ///     Jwt name
-        /// </summary>
-        public string JwtName => ConfigurationManager.AppSettings["jwt.token.name"];
-
-        #endregion
-
         #region Methods
-
-        /// <summary>
-        ///     <inheritdoc />
-        /// </summary>
-        /// <param name="claims"></param>
-        /// <param name="secret"></param>
-        /// <returns></returns>
-        public string EncodeJwt(Dictionary<string, string> claims, string secret)
-        {
-            var bytes = Encoding.UTF8.GetBytes(secret);
-
-            var algorithm = new HMACSHA256Algorithm();
-            var serializer = new JsonNetSerializer();
-            var urlEncoder = new JwtBase64UrlEncoder();
-            var encoder = new JwtEncoder(algorithm, serializer, urlEncoder);
-            return encoder.Encode(claims, bytes);
-        }
-
-        /// <summary>
-        ///     <inheritdoc />
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="jwt"></param>
-        /// <param name="secret"></param>
-        /// <returns></returns>
-        public T DecodeJwt<T>(string jwt, string secret)
-        {
-            var serializer = new JsonNetSerializer();
-            var provider = new UtcDateTimeProvider();
-            var validator = new JwtValidator(serializer, provider);
-            var urlEncoder = new JwtBase64UrlEncoder();
-            var decoder = new JwtDecoder(serializer, validator, urlEncoder);
-
-            return decoder.DecodeToObject<T>(jwt, secret, true);
-        }
-
+        
         /// <summary>
         ///     <inheritdoc />
         /// </summary>

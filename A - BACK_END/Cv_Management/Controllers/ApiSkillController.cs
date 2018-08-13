@@ -59,6 +59,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search(SearchSkillViewModel condition)
         {
             if (condition == null)

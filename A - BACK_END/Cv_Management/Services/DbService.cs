@@ -23,7 +23,8 @@ namespace Cv_Management.Services
         {
             if (pagination == null)
                 return list;
-            return list.Skip(pagination.Index * pagination.Records).Take(pagination.Records);
+
+            return list.Skip((pagination.Page - 1) * pagination.Records).Take(pagination.Records);
         }
 
         /// <summary>

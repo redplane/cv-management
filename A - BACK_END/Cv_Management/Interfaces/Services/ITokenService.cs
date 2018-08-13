@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Cv_Management.Interfaces.Services
 {
     public interface ITokenService
     {
+        #region Methods
+
         /// <summary>
         ///     Get token from user information
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
-        string Encode(Dictionary<string, string> payload);
+        string Encode(IDictionary payload);
 
 
         /// <summary>
@@ -17,6 +21,15 @@ namespace Cv_Management.Interfaces.Services
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        Dictionary<string, string> Decode(string token);
+        T Decode<T>(string token);
+
+        /// <summary>
+        /// Decode a token and initialize a claim principle which can be attached to request.
+        /// </summary>
+        /// <param name="token"></param>
+        ClaimsPrincipal ToPrinciple(string token);
+
+
+        #endregion
     }
 }

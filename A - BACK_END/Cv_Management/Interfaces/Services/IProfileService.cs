@@ -6,22 +6,7 @@ namespace Cv_Management.Interfaces.Services
 {
     public interface IProfileService
     {
-        /// <summary>
-        ///     Encode claims to JWT with defined secret.
-        /// </summary>
-        /// <param name="claims"></param>
-        /// <param name="secret"></param>
-        /// <returns></returns>
-        string EncodeJwt(Dictionary<string, string> claims, string secret);
-
-        /// <summary>
-        ///     Decode jwt string to an object.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="jwt"></param>
-        /// <param name="secret"></param>
-        /// <returns></returns>
-        T DecodeJwt<T>(string jwt, string secret);
+        #region Methods
 
         /// <summary>
         ///     Get profile from Http request.
@@ -43,5 +28,7 @@ namespace Cv_Management.Interfaces.Services
         /// <param name="originalPassword"></param>
         /// <returns></returns>
         string HashPassword(string originalPassword);
+
+        #endregion
     }
 }

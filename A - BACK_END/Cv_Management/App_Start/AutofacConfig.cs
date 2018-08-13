@@ -9,6 +9,7 @@ using AutoMapper.Configuration;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using Cv_Management.Services;
+using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management
@@ -21,17 +22,17 @@ namespace Cv_Management
             builder.RegisterApiControllers();
 
             #region Automapper
+            
+            var mapper = new Mapper(new MapperConfiguration(options =>
+            {
+                options.CreateMap<User, ProfileModel>();
+                options.CreateMap<ProfileModel, User>();
+            }));
 
-            var options = new MapperConfigurationExpression();
-            //options.CreateMap<SkillCategory, SkillCategoryModel>();
-
-            //builder.Register(c => options)
-            //    .AsImplementedInterfaces()
-            //    .SingleInstance();
-
-            builder.Register(c => c.Resolve<IConfigurationProvider>().CreateMapper())
-                .As<IMapper>();
-
+            builder.RegisterInstance(mapper)
+                .As<IMapper>()
+                .SingleInstance();
+            
             #endregion
 
             #region Controllers & hubs
@@ -59,9 +60,10 @@ namespace Cv_Management
 
             builder.RegisterType<DbService>().As<IDbService>().InstancePerLifetimeScope();
             builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
+            builder.RegisterType<GoogleCaptchaService>().As<ICaptchaService>().InstancePerLifetimeScope();
+            builder.RegisterType<TokenService>().As<ITokenService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
-            builder.RegisterType<GoogleCaptchaService>().As<ICaptchaService>().SingleInstance();
-            builder.RegisterType<TokenService>().As<ITokenService>().SingleInstance();
+            builder.RegisterInstance(new ProfileCacheService()).SingleInstance();
 
             #endregion
 
