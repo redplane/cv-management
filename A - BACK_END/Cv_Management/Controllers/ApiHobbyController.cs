@@ -123,9 +123,10 @@ namespace Cv_Management.Controllers
             hobby.Description = model.Description;
 
             //Add to db context
-            _dbContext.Hobbies.Add(hobby);
-          
-            return Ok();
+            hobby = _dbContext.Hobbies.Add(hobby);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(hobby);
         }
 
         /// <summary>
@@ -137,14 +138,54 @@ namespace Cv_Management.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult> EditHobby([FromUri]int id,[FromBody]EditHobbyViewModel model)
         {
-            return Ok();
+            //Check null for model
+            if (model == null)
+            {
+                model = new EditHobbyViewModel();
+                Validate(model);
+            }
+
+            //Validate model
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            //Find hobby by id
+            var hobby = await _dbContext.Hobbies.FindAsync(id);
+            if (hobby == null)
+                return NotFound();
+
+            //Update hobby
+            if (!string.IsNullOrEmpty(model.Name))
+                hobby.Name = model.Name;
+
+            if (!string.IsNullOrEmpty(model.Description))
+                hobby.Description = model.Description;
+
+            //Save change to database
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(hobby);
         }
 
+        /// <summary>
+        /// Delete an hobby
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete]
         [Route("{id}")]
         public async Task<IHttpActionResult> DeleteHobby([FromUri]int id)
         {
-            return Ok();
+            //Find hobby
+            var hobby = await _dbContext.Hobbies.FindAsync(id);
+            if (hobby == null)
+                return NotFound();
+            var result= _dbContext.Hobbies.Remove(hobby);
+            
+            //Save change to db
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(result);
         }
         #endregion
     }

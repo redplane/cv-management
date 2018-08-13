@@ -58,6 +58,7 @@
     <Compile Include="Enums\SortProperties\SkillCategorySortProperty.cs" />
     <Compile Include="Enums\SortProperties\UserDescriptionSortProperty.cs" />
     <Compile Include="Enums\SortProperties\ProjectSortProperty.cs" />
+    <Compile Include="Enums\SortProperties\ProjectSkillSortProperty.cs" />
     <Compile Include="Enums\SortProperties\UserSortProperty.cs" />
     <Compile Include="Enums\TextSearchMode.cs" />
     <Compile Include="Enums\UserRoles.cs" />

@@ -155,21 +155,30 @@ namespace Cv_Management.Controllers
         [Route("")]
         public async Task<IHttpActionResult> Create([FromBody] AddSkillCategoryViewModel model)
         {
+            //Check null for model
             if (model == null)
             {
                 model = new AddSkillCategoryViewModel();
                 Validate(model);
             }
+
+            // Validate for model
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
             var skillCategory = new SkillCategory();
             skillCategory.Name = model.Name;
             skillCategory.UserId = model.UserId;
             if (model.Photo != null)
                 skillCategory.Photo = Convert.ToBase64String(model.Photo.Buffer);
             skillCategory.CreatedTime = DateTime.Now.ToOADate();
+
+            //Save to db context
             skillCategory = _dbContext.SkillCategories.Add(skillCategory);
+
+            //save change to db
             await _dbContext.SaveChangesAsync();
+
             return Ok(skillCategory);
         }
 
@@ -190,15 +199,21 @@ namespace Cv_Management.Controllers
             }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            //get SkillCategory
+
+            //Get SkillCategory
             var skillCategory = _dbContext.SkillCategories.Find(id);
             if (skillCategory == null)
                 return NotFound();
+
+            //Update information
             skillCategory.Name = model.Name;
             skillCategory.UserId = model.UserId;
             if (model.Photo != null)
                 skillCategory.Photo = Convert.ToBase64String(model.Photo.Buffer);
+
+            //Save change to db
             await _dbContext.SaveChangesAsync();
+
             return Ok(skillCategory);
         }
 
