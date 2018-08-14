@@ -20,17 +20,28 @@ namespace Cv_Management.Controllers
     {
         #region Properties
 
-        public readonly CvManagementDbContext _dbContext;
+        /// <summary>
+        /// Database context.
+        /// </summary>
+        private readonly CvManagementDbContext _dbContext;
 
-        public readonly IDbService _dbService;
+        /// <summary>
+        /// Service which handles database operation.
+        /// </summary>
+        private readonly IDbService _dbService;
 
         #endregion
 
         #region Contructors
 
+        /// <summary>
+        /// Initialize controller with injectors.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="dbService"></param>
         public ApiHobbyController(DbContext dbContext, IDbService dbService)
         {
-            _dbContext =(CvManagementDbContext) dbContext;
+            _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
 
         }
@@ -45,12 +56,13 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search([FromBody]SearchHobbyViewModel condition)
         {
             //Check model is null
             if (condition == null)
             {
-                condition = new  SearchHobbyViewModel();
+                condition = new SearchHobbyViewModel();
                 Validate(condition);
             }
             //Validate model
@@ -136,7 +148,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> EditHobby([FromUri]int id,[FromBody]EditHobbyViewModel model)
+        public async Task<IHttpActionResult> EditHobby([FromUri]int id, [FromBody]EditHobbyViewModel model)
         {
             //Check null for model
             if (model == null)
@@ -180,8 +192,8 @@ namespace Cv_Management.Controllers
             var hobby = await _dbContext.Hobbies.FindAsync(id);
             if (hobby == null)
                 return NotFound();
-            var result= _dbContext.Hobbies.Remove(hobby);
-            
+            var result = _dbContext.Hobbies.Remove(hobby);
+
             //Save change to db
             await _dbContext.SaveChangesAsync();
 

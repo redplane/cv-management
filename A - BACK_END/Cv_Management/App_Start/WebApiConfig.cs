@@ -16,19 +16,22 @@ namespace Cv_Management
             AutofacConfig.Register(options);
 
             // Web API routes
-            options.MapHttpAttributeRoutes();
+            //options.MapHttpAttributeRoutes();
             
             //Cors 
             options.EnableCors(new EnableCorsAttribute("*","*", "*"));
 
             // Register filters.
             ApiFilterConfig.Register(options);
-            
-            options.Routes.MapHttpRoute(
-                "DefaultApi",
-                "api/{controller}/{id}",
-                new {id = RouteParameter.Optional}
-            );
+
+            // Allow routes to be inherited by inheriting controller.
+            options.MapHttpAttributeRoutes(new InheritedRoutePrefixDirectRouteProvider());
+
+            //options.Routes.MapHttpRoute(
+            //    "DefaultApi",
+            //    "api/{controller}/{id}",
+            //    new {id = RouteParameter.Optional}
+            //);
 
             var jsonFormatter = options.Formatters.OfType<JsonMediaTypeFormatter>().First();
             jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();

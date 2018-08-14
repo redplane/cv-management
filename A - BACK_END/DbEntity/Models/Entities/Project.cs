@@ -15,7 +15,7 @@ namespace DbEntity.Models.Entities
 
         public string Description { get; set; }
 
-        public double StatedTime { get; set; }
+        public double StartedTime { get; set; }
 
         public double? FinishedTime { get; set; }
 

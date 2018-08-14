@@ -56,6 +56,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search([FromBody] SearchSkillCategoryViewModel condition)
         {
             #region Parameters validation
@@ -153,7 +154,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody] AddSkillCategoryViewModel model)
+        public async Task<IHttpActionResult> AddSkillCategory([FromBody] AddSkillCategoryViewModel model)
         {
             //Check null for model
             if (model == null)
@@ -190,7 +191,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Update([FromUri] int id, [FromBody] EditSkillCategoryViewModel model)
+        public async Task<IHttpActionResult> EditSkillCategory([FromUri] int id, [FromBody] EditSkillCategoryViewModel model)
         {
             if (model == null)
             {
@@ -224,7 +225,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IHttpActionResult> Delete([FromUri] int id)
+        public async Task<IHttpActionResult> DeleteSkillCategory([FromUri] int id)
         {
             var skillCategory = _dbContext.SkillCategories.Find(id);
             if (skillCategory == null)

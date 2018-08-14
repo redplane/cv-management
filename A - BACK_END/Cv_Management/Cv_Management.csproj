@@ -149,7 +149,9 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Attributes\ApiAuthorizeAttribute.cs" />
     <Compile Include="Attributes\ApiRoleAttribute.cs" />
+    <Compile Include="Attributes\ApiUnhandledExceptionFilter.cs" />
     <Compile Include="Attributes\BearerAuthenticationFilter.cs" />
+    <Compile Include="Attributes\InheritedRoutePrefixDirectRouteProvider.cs" />
     <Compile Include="Controllers\ApiHobbyController.cs" />
     <Compile Include="Controllers\ApiPersonalSkillController.cs" />
     <Compile Include="Controllers\ApiProjectResponsibilityController.cs" />

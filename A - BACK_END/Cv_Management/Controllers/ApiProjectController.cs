@@ -42,13 +42,13 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Context to access to database
         /// </summary>
-        public readonly CvManagementDbContext _dbContext;
+        private readonly CvManagementDbContext _dbContext;
 
 
         /// <summary>
         ///     Service to handler controller operation
         /// </summary>
-        public readonly IDbService _dbService;
+        private readonly IDbService _dbService;
 
         #endregion
 
@@ -57,10 +57,11 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Get projects using specific conditions
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="condition"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search([FromBody] SearchProjectViewModel condition)
         {
             if (condition == null)
@@ -96,8 +97,8 @@ namespace Cv_Management.Controllers
             }
 
             if (condition.StartedTime != null)
-                projects = projects.Where(c => c.StatedTime >= condition.StartedTime.From
-                                               && c.StatedTime <= condition.StartedTime.To);
+                projects = projects.Where(c => c.StartedTime >= condition.StartedTime.From
+                                               && c.StartedTime <= condition.StartedTime.To);
 
             if (condition.FinishedTime != null)
                 projects = projects.Where(c => c.FinishedTime >= condition.FinishedTime.From
@@ -130,7 +131,7 @@ namespace Cv_Management.Controllers
                     UserId = project.UserId,
                     Name = project.Name,
                     Description = project.Description,
-                    StartedTime = project.StatedTime,
+                    StartedTime = project.StartedTime,
                     FinishedTime = project.FinishedTime,
                     Skills = from projectSkill in projectSkills
                         from skill in skills
@@ -203,7 +204,7 @@ namespace Cv_Management.Controllers
                 project.Name = model.Name;
                 project.Description = model.Description;
                 project.FinishedTime = model.FinishedTime;
-                project.StatedTime = model.StatedTime;
+                project.StartedTime = model.StatedTime;
 
                 //Add project to database
                 project = _dbContext.Projects.Add(project);
@@ -306,7 +307,7 @@ namespace Cv_Management.Controllers
             project.Name = model.Name;
             project.Description = model.Description;
             project.FinishedTime = model.FinishedTime;
-            project.StatedTime = model.StatedTime;
+            project.StartedTime = model.StatedTime;
 
             #region  Update skills
 
