@@ -121,8 +121,26 @@
     <value>CAPTCHA_INVALID</value>
     <comment>Captcha is invalid. Cannot be verified by Captcha provider.</comment>
   </data>
+  <data name="HasSkillNotFound" xml:space="preserve">
+    <value>HAS_SKILL_NOT_FOUND</value>
+  </data>
+  <data name="ProfileImageInvalid" xml:space="preserve">
+    <value>PROFILE_IMAGE_INVALID</value>
+  </data>
+  <data name="ProfileImageSizeInvalid" xml:space="preserve">
+    <value>PROFILE_IMAGE_SIZE_INVALID</value>
+  </data>
   <data name="ProfileNotFound" xml:space="preserve">
     <value>PROFILE_NOT_FOUND</value>
+  </data>
+  <data name="SkillCategoryImageSizeInvalid" xml:space="preserve">
+    <value>SKILL_CATEGORY_IMAGE_SIZE_INVALID</value>
+  </data>
+  <data name="SkillCategoryNotFound" xml:space="preserve">
+    <value>SKILL_CATEGORY_NOT_FOUND</value>
+  </data>
+  <data name="SkillInvalid" xml:space="preserve">
+    <value>SKILL_INVALID</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>USER_NOT_FOUND</value>

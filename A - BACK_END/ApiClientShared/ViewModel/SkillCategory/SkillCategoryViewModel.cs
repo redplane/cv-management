@@ -20,7 +20,7 @@ namespace ApiClientShared.ViewModel.SkillCategory
         /// <summary>
         /// List of skills belongs to skill
         /// </summary>
-        public IEnumerable<PersonalSkillViewModel> PersonalSkills { get; set; }
+        public IEnumerable<SkillCategorySkillRelationshipViewModel> Skills { get; set; }
 
         #endregion
     }

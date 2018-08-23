@@ -79,7 +79,7 @@ namespace DbEntity.Models.Entities.Context
         /// <summary>
         ///     List of personal skills.
         /// </summary>
-        public DbSet<SkillCategorySkillRelationship> PersonalSkills { get; set; }
+        public DbSet<SkillCategorySkillRelationship> SkillCategorySkillRelationships { get; set; }
 
         /// <summary>
         ///     List of project responsibilities.

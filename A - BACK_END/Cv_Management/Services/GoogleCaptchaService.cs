@@ -38,7 +38,7 @@ namespace Cv_Management.Services
             CancellationToken cancellationToken)
         {
             var queries = new List<KeyValuePair<string, string>>();
-            queries.Add(new KeyValuePair<string, string>("secret", _appSetting.GCaptchaSecret));
+            queries.Add(new KeyValuePair<string, string>("secret", _appSetting.GoogleCaptchaSecret));
             queries.Add(new KeyValuePair<string, string>("response", code));
 
             if (!string.IsNullOrWhiteSpace(clientAddress))
@@ -46,7 +46,7 @@ namespace Cv_Management.Services
             
             var queryStringParamters = queries.Select(x => $"{x.Key}={x.Value}");
             var queryString = string.Join("&", queryStringParamters);
-            var uri = $"{_appSetting.GCaptchaValidationEndpoint}?{queryString}";
+            var uri = $"{_appSetting.GoogleCaptchaValidationEndpoint}?{queryString}";
             var httpResponseMessage = await _httpClient.PostAsync(uri, new StringContent("{}"), cancellationToken);
 
             // Read the http response content.

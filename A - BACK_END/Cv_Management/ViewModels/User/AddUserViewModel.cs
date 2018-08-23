@@ -1,8 +1,8 @@
-﻿using ApiClientShared.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using ApiClientShared.Enums;
 using ApiMultiPartFormData.Models;
-using System.ComponentModel.DataAnnotations;
 
-namespace ApiClientShared.ViewModel.User
+namespace Cv_Management.ViewModels.User
 {
     public class AddUserViewModel
     {

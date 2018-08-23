@@ -70,11 +70,65 @@ namespace ApiClientShared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HAS_SKILL_NOT_FOUND.
+        /// </summary>
+        public static string HasSkillNotFound {
+            get {
+                return ResourceManager.GetString("HasSkillNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PROFILE_IMAGE_INVALID.
+        /// </summary>
+        public static string ProfileImageInvalid {
+            get {
+                return ResourceManager.GetString("ProfileImageInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PROFILE_IMAGE_SIZE_INVALID.
+        /// </summary>
+        public static string ProfileImageSizeInvalid {
+            get {
+                return ResourceManager.GetString("ProfileImageSizeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PROFILE_NOT_FOUND.
         /// </summary>
         public static string ProfileNotFound {
             get {
                 return ResourceManager.GetString("ProfileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKILL_CATEGORY_IMAGE_SIZE_INVALID.
+        /// </summary>
+        public static string SkillCategoryImageSizeInvalid {
+            get {
+                return ResourceManager.GetString("SkillCategoryImageSizeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKILL_CATEGORY_NOT_FOUND.
+        /// </summary>
+        public static string SkillCategoryNotFound {
+            get {
+                return ResourceManager.GetString("SkillCategoryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKILL_INVALID.
+        /// </summary>
+        public static string SkillInvalid {
+            get {
+                return ResourceManager.GetString("SkillInvalid", resourceCulture);
             }
         }
         

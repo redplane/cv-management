@@ -7,8 +7,10 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Hosting;
 using System.Web.Http;
 using System.Web.UI.WebControls;
+using ApiClientShared.Constants;
 using ApiClientShared.Enums;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.Resources;
@@ -18,6 +20,9 @@ using ApiClientShared.ViewModel.User;
 using ApiClientShared.ViewModel.UserDescription;
 using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
+using Cv_Management.Models;
+using Cv_Management.ViewModels;
+using Cv_Management.ViewModels.User;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
@@ -36,16 +41,20 @@ namespace Cv_Management.Controllers
         /// <param name="tokenService"></param>
         /// <param name="profileService"></param>
         /// <param name="captchaService"></param>
+        /// <param name="fileService"></param>
+        /// <param name="appPath"></param>
         public ApiUserController(DbContext dbContext,
             IDbService dbService,
             ITokenService tokenService, IProfileService profileService, 
-            ICaptchaService captchaService)
+            ICaptchaService captchaService, IFileService fileService, AppPathModel appPath)
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
             _tokenService = tokenService;
             _profileService = profileService;
             _captchaService = captchaService;
+            _fileService = fileService;
+            _appPath = appPath;
         }
 
         #endregion
@@ -76,6 +85,16 @@ namespace Cv_Management.Controllers
         /// Service for verifying captcha code.
         /// </summary>
         private readonly ICaptchaService _captchaService;
+
+        /// <summary>
+        /// Service for handling file operation.
+        /// </summary>
+        private readonly IFileService _fileService;
+
+        /// <summary>
+        /// Application path configuration.
+        /// </summary>
+        private readonly AppPathModel _appPath;
 
         #endregion
 
@@ -262,7 +281,8 @@ namespace Cv_Management.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> EditUser([FromUri] int id, [FromBody] EditUserViewModel model)
         {
-            //validate model
+            #region Model validation
+
             if (model == null)
             {
                 model = new EditUserViewModel();
@@ -271,10 +291,27 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            #endregion
+
+            #region Profile image validation
+
+            var photo = _fileService.GetImage(model.Photo?.Buffer);
+            if (photo != null)
+            {
+                if (photo.Width != ImageSizeConstant.StandardProfileImageSize ||
+                    photo.Height != ImageSizeConstant.StandardProfileImageSize)
+                {
+                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}", HttpMessages.ProfileImageSizeInvalid);
+                    return BadRequest(ModelState);
+                }
+            }
+
+            #endregion
+
             //Find user
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
             if (!string.IsNullOrEmpty(model.FirstName))
                 user.FirstName = model.FirstName;
@@ -285,8 +322,12 @@ namespace Cv_Management.Controllers
             if (model.Birthday != null)
                 user.Birthday = model.Birthday.Value;
 
+            // Photo is defined. Save photo to path.
             if (model.Photo != null)
-                user.Photo = Convert.ToBase64String(model.Photo.Buffer);
+            {
+                var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer, _appPath.ProfileImage, null, CancellationToken.None);
+                user.Photo = Url.Content(relativeProfileImagePath);
+;            }
 
             //Save to database
             await _dbContext.SaveChangesAsync();
@@ -304,9 +345,9 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
             //Find user by id
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.OK, HttpMessages.UserNotFound));
 
             //Remove user
             _dbContext.Users.Remove(user);
@@ -438,7 +479,7 @@ namespace Cv_Management.Controllers
 
             return Ok(user);
         }
-
+        
         #endregion
     }
 }

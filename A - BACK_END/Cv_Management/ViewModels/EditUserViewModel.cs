@@ -1,11 +1,11 @@
 ﻿using ApiMultiPartFormData.Models;
 
-namespace ApiClientShared.ViewModel.User
+namespace Cv_Management.ViewModels
 {
     public class EditUserViewModel
     {
         #region Properties
-
+        
         /// <summary>
         /// First name of user.
         /// </summary>

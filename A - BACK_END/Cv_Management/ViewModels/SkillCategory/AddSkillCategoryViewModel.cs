@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
+﻿using System.ComponentModel.DataAnnotations;
 using ApiMultiPartFormData.Models;
 
-namespace ApiClientShared.ViewModel.SkillCategory
+namespace Cv_Management.ViewModels.SkillCategory
 {
     public class AddSkillCategoryViewModel
     {
         [Required]
         public int UserId { get; set; }
+
         public HttpFile Photo { get; set; }
+
         [Required]
         public string Name { get; set; }
     }

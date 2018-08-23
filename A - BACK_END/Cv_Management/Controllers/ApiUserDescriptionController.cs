@@ -61,6 +61,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
+        [AllowAnonymous]
         public async Task<IHttpActionResult> Search([FromBody] SearchUserDescriptionViewModel condition)
         {
             if (condition == null)
@@ -69,7 +70,7 @@ namespace Cv_Management.Controllers
                 Validate(condition);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
