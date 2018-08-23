@@ -4,6 +4,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.UI.WebControls;
+using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.PersonalSkill;
 using Cv_Management.Interfaces.Services;
@@ -84,8 +86,13 @@ namespace Cv_Management.Controllers
             result.Total = await personalSkills.CountAsync();
            
             //Do Sort
-          //  personalSkills = 
+            personalSkills = _dbService.Sort(personalSkills, SortDirection.Ascending, ProjectSortProperty.Id);
+
+            //Do pagination
+            personalSkills = _dbService.Paginate(personalSkills, conditon.Pagination);
+
             result.Records = await personalSkills.ToListAsync();
+
             return Ok(result);
         }
 

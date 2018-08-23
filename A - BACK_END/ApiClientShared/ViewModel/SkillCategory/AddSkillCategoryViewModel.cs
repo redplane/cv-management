@@ -11,7 +11,9 @@ namespace ApiClientShared.ViewModel.SkillCategory
     {
         [Required]
         public int UserId { get; set; }
+
         public HttpFile Photo { get; set; }
+
         [Required]
         public string Name { get; set; }
     }
