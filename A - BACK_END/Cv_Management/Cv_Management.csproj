@@ -164,6 +164,7 @@
     <Compile Include="Controllers\ApiUserController.cs" />
     <Compile Include="Controllers\ApiSkillController.cs" />
     <Compile Include="Interfaces\Services\ICaptchaService.cs" />
+    <Compile Include="Interfaces\Services\IEmailService.cs" />
     <Compile Include="Interfaces\Services\IFileService.cs" />
     <Compile Include="Interfaces\Services\IProfileService.cs" />
     <Compile Include="Interfaces\Services\ITokenService.cs" />

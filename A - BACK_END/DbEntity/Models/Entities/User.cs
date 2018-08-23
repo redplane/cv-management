@@ -60,7 +60,7 @@ namespace DbEntity.Models.Entities
 
         [JsonIgnore]
         public virtual ICollection<Hobby> Hobbies { get; set; }
-
+        
         #endregion
     }
 }

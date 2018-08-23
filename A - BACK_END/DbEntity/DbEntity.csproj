@@ -65,9 +65,14 @@
     <Compile Include="Migrations\201808130414516_AddUserStatus.Designer.cs">
       <DependentUpon>201808130414516_AddUserStatus.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201808230257123_Add-ProfileActivationToken.cs" />
+    <Compile Include="Migrations\201808230257123_Add-ProfileActivationToken.Designer.cs">
+      <DependentUpon>201808230257123_Add-ProfileActivationToken.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Entities\Context\CvManagementDbContext.cs" />
     <Compile Include="Models\Entities\Hobby.cs" />
+    <Compile Include="Models\Entities\ProfileActivationToken.cs" />
     <Compile Include="Models\Entities\Project.cs" />
     <Compile Include="Models\Entities\ProjectResponsibility.cs" />
     <Compile Include="Models\Entities\ProjectSkill.cs" />
@@ -95,6 +100,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201808130414516_AddUserStatus.resx">
       <DependentUpon>201808130414516_AddUserStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808230257123_Add-ProfileActivationToken.resx">
+      <DependentUpon>201808230257123_Add-ProfileActivationToken.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

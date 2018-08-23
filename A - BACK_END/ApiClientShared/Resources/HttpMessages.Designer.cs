@@ -106,6 +106,15 @@ namespace ApiClientShared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to REGISTRATION_DUPLICATE.
+        /// </summary>
+        public static string RegistrationDuplicate {
+            get {
+                return ResourceManager.GetString("RegistrationDuplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SKILL_CATEGORY_IMAGE_SIZE_INVALID.
         /// </summary>
         public static string SkillCategoryImageSizeInvalid {

@@ -59,6 +59,9 @@ namespace DbEntity.Models.Entities.Context
             //Initialize hobby table
             InitializeHobbyTable(dbModelBuilder);
 
+            // Initialize profile activation token
+            InitializeProfileActivationToken(dbModelBuilder);
+
             base.OnModelCreating(dbModelBuilder);
         }
 
@@ -115,6 +118,11 @@ namespace DbEntity.Models.Entities.Context
         /// List of user hobbies
         /// </summary>
         public DbSet<Hobby> Hobbies { get; set; }
+
+        /// <summary>
+        /// List of profile activation tokens.
+        /// </summary>
+        public DbSet<ProfileActivationToken> ProfileActivationTokens { get; set; }
 
         #endregion
 
@@ -244,6 +252,17 @@ namespace DbEntity.Models.Entities.Context
             hobby.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
             hobby.HasRequired(x => x.User).WithMany(x => x.Hobbies).HasForeignKey(x => x.UserId);
 
+        }
+
+        /// <summary>
+        /// Initialize profile activation token.
+        /// </summary>
+        /// <param name="dbModelBuilder"></param>
+        public void InitializeProfileActivationToken(DbModelBuilder dbModelBuilder)
+        {
+            var profileActivationToken = dbModelBuilder.Entity<ProfileActivationToken>();
+            profileActivationToken.HasKey(x => x.Email);
+            profileActivationToken.Property(x => x.Email).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }
         #endregion
     }
