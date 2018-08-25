@@ -62,17 +62,30 @@ namespace Cv_Management.Services
         /// <returns></returns>
         public T Decode<T>(string token)
         {
+            return Decode<T>(token, false);
+        }
+
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="token"></param>
+        /// <param name="bValidate"></param>
+        /// <returns></returns>
+        public T Decode<T>(string token, bool bValidate)
+        {
             var serializer = new JsonNetSerializer();
             var provider = new UtcDateTimeProvider();
             var validator = new JwtValidator(serializer, provider);
             var urlEncoder = new JwtBase64UrlEncoder();
             var decoder = new JwtDecoder(serializer, validator, urlEncoder);
 
-            var json = decoder.Decode(token, JwtSecret, false);
+            var json = decoder.Decode(token, JwtSecret, bValidate);
             var claims = JsonConvert.DeserializeObject<T>(json);
 
             return claims;
         }
+
 
         /// <summary>
         /// <inheritdoc />
@@ -82,7 +95,10 @@ namespace Cv_Management.Services
         public ClaimsPrincipal ToPrinciple(string token)
         {
             // Decode the token.
-            var claims = Decode<Dictionary<string, string>>(token);
+            var claims = Decode<Dictionary<string, string>>(token, true);
+            if (claims == null)
+                return null;
+
             var claimsIdentity = new ClaimsIdentity(null, JwtName);
             foreach (var key in claims.Keys)
             {

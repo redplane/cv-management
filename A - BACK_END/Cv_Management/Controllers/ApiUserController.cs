@@ -19,9 +19,11 @@ using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Hobby;
 using ApiClientShared.ViewModel.User;
 using ApiClientShared.ViewModel.UserDescription;
+using AutoMapper;
 using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
+using Cv_Management.Services.CacheServices;
 using Cv_Management.ViewModels;
 using Cv_Management.ViewModels.User;
 using DbEntity.Models.Entities;
@@ -43,11 +45,16 @@ namespace Cv_Management.Controllers
         /// <param name="profileService"></param>
         /// <param name="captchaService"></param>
         /// <param name="fileService"></param>
+        /// <param name="profileCacheService"></param>
+        /// <param name="mapper"></param>
         /// <param name="appPath"></param>
         public ApiUserController(DbContext dbContext,
             IDbService dbService,
             ITokenService tokenService, IProfileService profileService,
-            ICaptchaService captchaService, IFileService fileService, AppPathModel appPath)
+            ICaptchaService captchaService, IFileService fileService,
+            IValueCacheService<string, ProfileModel> profileCacheService,
+            IMapper mapper,
+            AppPathModel appPath)
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
@@ -55,6 +62,8 @@ namespace Cv_Management.Controllers
             _profileService = profileService;
             _captchaService = captchaService;
             _fileService = fileService;
+            _profileCacheService = profileCacheService;
+            _mapper = mapper;
             _appPath = appPath;
         }
 
@@ -91,6 +100,16 @@ namespace Cv_Management.Controllers
         /// Service for handling file operation.
         /// </summary>
         private readonly IFileService _fileService;
+
+        /// <summary>
+        /// Profile cache service.
+        /// </summary>
+        private readonly IValueCacheService<string, ProfileModel> _profileCacheService;
+
+        /// <summary>
+        /// Automapper DI.
+        /// </summary>
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Application path configuration.
@@ -386,6 +405,7 @@ namespace Cv_Management.Controllers
                     HttpMessages.CaptchaInvalid));
 
 #endif
+
             // Hash the input password.
             var hashedPassword = _profileService.HashPassword(model.Password);
 
@@ -400,12 +420,20 @@ namespace Cv_Management.Controllers
             var token = new TokenViewModel();
             token.LifeTime = 3600;
 
+            // Add expired time.
+            var expiredAt = DateTime.UtcNow.AddSeconds(token.LifeTime);
+
             var payload = new Dictionary<string, string>();
             payload.Add(ClaimTypes.Email, user.Email);
             payload.Add(ClaimTypes.Name, $"{user.FirstName} {user.LastName}");
-
+            payload.Add(ClaimTypes.Expired, expiredAt.ToString("yyyy/MM/dd"));
             token.AccessToken = _tokenService.Encode(payload);
             token.Type = "Bearer";
+
+            // Add user to cache.
+            var profile = _mapper.Map<ProfileModel>(user);
+            _profileCacheService.Add(user.Email, profile, token.LifeTime);
+
             return Ok(token);
         }
 

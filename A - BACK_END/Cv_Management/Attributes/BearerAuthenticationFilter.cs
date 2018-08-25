@@ -1,26 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
 using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
 
 namespace Cv_Management.Attributes
 {
     public class BearerAuthenticationFilter : IAuthenticationFilter
     {
         #region Constructors
-
-        /// <summary>
-        ///     Initiate middleware instance with default logging.
-        /// </summary>
-        public BearerAuthenticationFilter()
-        {
-        }
 
         #endregion
 
@@ -30,7 +20,7 @@ namespace Cv_Management.Attributes
         ///     Whether multiple authentication is supported or not.
         /// </summary>
         public bool AllowMultiple => false;
-        
+
         #endregion
 
         #region Methods
@@ -46,7 +36,8 @@ namespace Cv_Management.Attributes
             CancellationToken cancellationToken)
         {
             // Get profile service from dependency scope.
-            var tokenService = (ITokenService) httpAuthenticationContext.Request.GetDependencyScope().GetService(typeof(ITokenService));
+            var tokenService = (ITokenService) httpAuthenticationContext.Request.GetDependencyScope()
+                .GetService(typeof(ITokenService));
 
             // Account has been authenticated before token is parsed.
             // Skip the authentication.
@@ -80,6 +71,7 @@ namespace Cv_Management.Attributes
             }
             catch (Exception exception)
             {
+                // Suppress the error.
                 Debug.WriteLine(exception);
             }
 
