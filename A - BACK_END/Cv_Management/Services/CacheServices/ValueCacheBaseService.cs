@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cv_Management.Interfaces.Services;
 
-namespace Cv_Management.Services
+namespace Cv_Management.Services.CacheServices
 {
     public class ValueCacheBaseService<TKey, TValue> : IValueCacheService<TKey, TValue>
     {
@@ -131,7 +131,7 @@ namespace Cv_Management.Services
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public virtual TKey FindKey(TKey key)
+        protected virtual TKey FindKey(TKey key)
         {
             return key;
         }
