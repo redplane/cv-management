@@ -1,6 +1,7 @@
 ﻿using System;
 using Autofac.Features.AttributeFilters;
 using Cv_Management.Constant;
+using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using ServiceStack.Redis;
 
@@ -14,7 +15,7 @@ namespace Cv_Management.Services.CacheServices
         /// Redis connection manager for access token caching.
         /// </summary>
         private readonly IRedisClientsManager _profileRedisClientManager;
-
+        
         #endregion
 
         #region Constructors

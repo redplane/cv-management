@@ -46,6 +46,7 @@ namespace Cv_Management.Controllers
         /// <param name="captchaService"></param>
         /// <param name="fileService"></param>
         /// <param name="profileCacheService"></param>
+        /// <param name="userService"></param>
         /// <param name="mapper"></param>
         /// <param name="appPath"></param>
         public ApiUserController(DbContext dbContext,
@@ -53,6 +54,7 @@ namespace Cv_Management.Controllers
             ITokenService tokenService, IProfileService profileService,
             ICaptchaService captchaService, IFileService fileService,
             IValueCacheService<string, ProfileModel> profileCacheService,
+            IUserService userService,
             IMapper mapper,
             AppPathModel appPath)
         {
@@ -63,6 +65,7 @@ namespace Cv_Management.Controllers
             _captchaService = captchaService;
             _fileService = fileService;
             _profileCacheService = profileCacheService;
+            _userService = userService;
             _mapper = mapper;
             _appPath = appPath;
         }
@@ -105,6 +108,11 @@ namespace Cv_Management.Controllers
         /// Profile cache service.
         /// </summary>
         private readonly IValueCacheService<string, ProfileModel> _profileCacheService;
+
+        /// <summary>
+        /// Service to handle user data.
+        /// </summary>
+        private readonly IUserService _userService;
 
         /// <summary>
         /// Automapper DI.
@@ -405,35 +413,34 @@ namespace Cv_Management.Controllers
                     HttpMessages.CaptchaInvalid));
 
 #endif
+            
+            // Get profile from system.
+            var profile = await _userService.LoginAsync(model.Email, model.Password, CancellationToken.None);
 
-            // Hash the input password.
-            var hashedPassword = _profileService.HashPassword(model.Password);
-
-            // Get user by username and password
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x =>
-                x.Email.Equals(model.Email) && x.Password.Equals(hashedPassword, StringComparison.InvariantCultureIgnoreCase) && x.Status == UserStatuses.Active);
-
-            // User is not found.
-            if (user == null)
+;            // User is not found.
+            if (profile == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
+            // Initialize access token.
             var token = new TokenViewModel();
             token.LifeTime = 3600;
-
-            // Add expired time.
-            var expiredAt = DateTime.UtcNow.AddSeconds(token.LifeTime);
-
-            var payload = new Dictionary<string, string>();
-            payload.Add(ClaimTypes.Email, user.Email);
-            payload.Add(ClaimTypes.Name, $"{user.FirstName} {user.LastName}");
-            payload.Add(ClaimTypes.Expired, expiredAt.ToString("yyyy/MM/dd"));
-            token.AccessToken = _tokenService.Encode(payload);
             token.Type = "Bearer";
 
-            // Add user to cache.
-            var profile = _mapper.Map<ProfileModel>(user);
-            _profileCacheService.Add(user.Email, profile, token.LifeTime);
+            if (string.IsNullOrWhiteSpace(profile.AccessToken))
+            {
+                // Add expired time.
+                var expiredAt = DateTime.UtcNow.AddSeconds(token.LifeTime);
 
+                var payload = new Dictionary<string, string>();
+                payload.Add(ClaimTypes.Email, profile.Email);
+                payload.Add(ClaimTypes.Name, $"{profile.FirstName} {profile.LastName}");
+                payload.Add(ClaimTypes.Expired, expiredAt.ToString("yyyy/MM/dd"));
+                profile.AccessToken = token.AccessToken = _tokenService.Encode(payload);
+                _profileCacheService.Add(profile.Email, profile, token.LifeTime);
+            }
+            else
+                token.AccessToken = profile.AccessToken;
+            
             return Ok(token);
         }
 
@@ -538,6 +545,7 @@ namespace Cv_Management.Controllers
         {
             // Get profile from request.
             var profile = _profileService.GetProfile(Request);
+            
 
             // No profile is found.
             if (id == null || id < 1)
@@ -546,6 +554,8 @@ namespace Cv_Management.Controllers
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
                         HttpMessages.ProfileNotFound));
 
+                profile.Password = null;
+                profile.AccessToken = null;
                 return Ok(profile);
             }
 

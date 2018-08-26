@@ -181,6 +181,7 @@
     <Compile Include="Interfaces\Services\IFileService.cs" />
     <Compile Include="Interfaces\Services\IProfileService.cs" />
     <Compile Include="Interfaces\Services\ITokenService.cs" />
+    <Compile Include="Interfaces\Services\IUserService.cs" />
     <Compile Include="Interfaces\Services\IValueCacheService.cs" />
     <Compile Include="Models\AppPathModel.cs" />
     <Compile Include="Models\AppSettingModel.cs" />
@@ -195,6 +196,7 @@
     <Compile Include="Services\ProfileService.cs" />
     <Compile Include="Services\TokenService.cs" />
     <Compile Include="Services\CacheServices\ValueCacheBaseService.cs" />
+    <Compile Include="Services\UserService.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="ViewModels\EditUserViewModel.cs" />
     <Compile Include="ViewModels\SkillCategory\AddSkillCategoryViewModel.cs" />

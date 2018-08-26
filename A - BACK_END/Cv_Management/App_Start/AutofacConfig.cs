@@ -88,8 +88,11 @@ namespace Cv_Management
             builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
             builder.RegisterType<ProfileCacheService>().As<IValueCacheService<string, ProfileModel>>().SingleInstance().WithAttributeFiltering();
-
+            
             RegisterRedisCachingServices(ref builder);
+
+            // Api services.
+            builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
 
             #endregion
 
