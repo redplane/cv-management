@@ -309,6 +309,8 @@ namespace Cv_Management.Controllers
             project.FinishedTime = model.FinishedTime;
             project.StartedTime = model.StatedTime;
 
+            // TODO: Update skills & responsibilities.
+
             #region  Update skills
 
             //Remove skill

@@ -60,7 +60,7 @@ namespace Cv_Management.Controllers
         [HttpPost]
         [Route("search")]
         [AllowAnonymous]
-        public async Task<IHttpActionResult> Search(SearchSkillViewModel condition)
+        public async Task<IHttpActionResult> Search([FromBody] SearchSkillViewModel condition)
         {
             if (condition == null)
             {
@@ -84,7 +84,7 @@ namespace Cv_Management.Controllers
             {
                 var names = condition.Names.Where(c => !string.IsNullOrEmpty(c)).ToList();
                 if (names.Count > 0)
-                    skills = skills.Where(c => names.Contains(c.Name));
+                    skills = skills.Where(c => names.Any(name => c.Name.Contains(name)));
             }
 
             if (condition.StartedTime != null)
