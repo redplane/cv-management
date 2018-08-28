@@ -24,6 +24,15 @@ namespace Cv_Management.Interfaces.Services
         T Decode<T>(string token);
 
         /// <summary>
+        /// Validate & decode token.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="token"></param>
+        /// <param name="bValidate"></param>
+        /// <returns></returns>
+        T Decode<T>(string token, bool bValidate);
+
+        /// <summary>
         /// Decode a token and initialize a claim principle which can be attached to request.
         /// </summary>
         /// <param name="token"></param>

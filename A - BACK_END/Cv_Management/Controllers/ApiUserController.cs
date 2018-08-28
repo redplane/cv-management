@@ -19,9 +19,11 @@ using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Hobby;
 using ApiClientShared.ViewModel.User;
 using ApiClientShared.ViewModel.UserDescription;
+using AutoMapper;
 using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
+using Cv_Management.Services.CacheServices;
 using Cv_Management.ViewModels;
 using Cv_Management.ViewModels.User;
 using DbEntity.Models.Entities;
@@ -43,11 +45,18 @@ namespace Cv_Management.Controllers
         /// <param name="profileService"></param>
         /// <param name="captchaService"></param>
         /// <param name="fileService"></param>
+        /// <param name="profileCacheService"></param>
+        /// <param name="userService"></param>
+        /// <param name="mapper"></param>
         /// <param name="appPath"></param>
         public ApiUserController(DbContext dbContext,
             IDbService dbService,
             ITokenService tokenService, IProfileService profileService,
-            ICaptchaService captchaService, IFileService fileService, AppPathModel appPath)
+            ICaptchaService captchaService, IFileService fileService,
+            IValueCacheService<string, ProfileModel> profileCacheService,
+            IUserService userService,
+            IMapper mapper,
+            AppPathModel appPath)
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
@@ -55,6 +64,9 @@ namespace Cv_Management.Controllers
             _profileService = profileService;
             _captchaService = captchaService;
             _fileService = fileService;
+            _profileCacheService = profileCacheService;
+            _userService = userService;
+            _mapper = mapper;
             _appPath = appPath;
         }
 
@@ -91,6 +103,21 @@ namespace Cv_Management.Controllers
         /// Service for handling file operation.
         /// </summary>
         private readonly IFileService _fileService;
+
+        /// <summary>
+        /// Profile cache service.
+        /// </summary>
+        private readonly IValueCacheService<string, ProfileModel> _profileCacheService;
+
+        /// <summary>
+        /// Service to handle user data.
+        /// </summary>
+        private readonly IUserService _userService;
+
+        /// <summary>
+        /// Automapper DI.
+        /// </summary>
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Application path configuration.
@@ -386,26 +413,34 @@ namespace Cv_Management.Controllers
                     HttpMessages.CaptchaInvalid));
 
 #endif
-            // Hash the input password.
-            var hashedPassword = _profileService.HashPassword(model.Password);
+            
+            // Get profile from system.
+            var profile = await _userService.LoginAsync(model.Email, model.Password, CancellationToken.None);
 
-            // Get user by username and password
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x =>
-                x.Email.Equals(model.Email) && x.Password.Equals(hashedPassword, StringComparison.InvariantCultureIgnoreCase) && x.Status == UserStatuses.Active);
-
-            // User is not found.
-            if (user == null)
+;            // User is not found.
+            if (profile == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
+            // Initialize access token.
             var token = new TokenViewModel();
             token.LifeTime = 3600;
-
-            var payload = new Dictionary<string, string>();
-            payload.Add(ClaimTypes.Email, user.Email);
-            payload.Add(ClaimTypes.Name, $"{user.FirstName} {user.LastName}");
-
-            token.AccessToken = _tokenService.Encode(payload);
             token.Type = "Bearer";
+
+            if (string.IsNullOrWhiteSpace(profile.AccessToken))
+            {
+                // Add expired time.
+                var expiredAt = DateTime.UtcNow.AddSeconds(token.LifeTime);
+
+                var payload = new Dictionary<string, string>();
+                payload.Add(ClaimTypes.Email, profile.Email);
+                payload.Add(ClaimTypes.Name, $"{profile.FirstName} {profile.LastName}");
+                payload.Add(ClaimTypes.Expired, expiredAt.ToString("yyyy/MM/dd"));
+                profile.AccessToken = token.AccessToken = _tokenService.Encode(payload);
+                _profileCacheService.Add(profile.Email, profile, token.LifeTime);
+            }
+            else
+                token.AccessToken = profile.AccessToken;
+            
             return Ok(token);
         }
 
@@ -510,6 +545,7 @@ namespace Cv_Management.Controllers
         {
             // Get profile from request.
             var profile = _profileService.GetProfile(Request);
+            
 
             // No profile is found.
             if (id == null || id < 1)
@@ -518,6 +554,8 @@ namespace Cv_Management.Controllers
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
                         HttpMessages.ProfileNotFound));
 
+                profile.Password = null;
+                profile.AccessToken = null;
                 return Ok(profile);
             }
 

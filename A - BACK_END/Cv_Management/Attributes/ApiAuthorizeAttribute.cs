@@ -12,6 +12,7 @@ using AutoMapper;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using Cv_Management.Services;
+using Cv_Management.Services.CacheServices;
 using DbEntity.Models.Entities.Context;
 
 namespace Cv_Management.Attributes
@@ -64,8 +65,8 @@ namespace Cv_Management.Attributes
 
             // Get profile cache service.
             var profileCacheService =
-                (ProfileCacheService)dependencyScope.GetService(
-                    typeof(ProfileCacheService));
+                (IValueCacheService<string, ProfileModel>)dependencyScope.GetService(
+                    typeof(IValueCacheService<string, ProfileModel>));
 
             // FullSearch the principle of request.
             var principle = httpActionContext.RequestContext.Principal;

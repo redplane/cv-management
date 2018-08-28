@@ -40,14 +40,7 @@ namespace Cv_Management.Interfaces.Services
         /// </summary>
         /// <param name="key"></param>
         void Remove(TKey key);
-
-        /// <summary>
-        ///     Find key in dictionary.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        TKey FindKey(TKey key);
-
+        
         #endregion
     }
 }

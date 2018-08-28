@@ -8,14 +8,18 @@ using System.Web.Hosting;
 using System.Web.Http;
 using ApiClientShared.ViewModel.SkillCategory;
 using Autofac;
+using Autofac.Features.AttributeFilters;
 using Autofac.Integration.WebApi;
 using AutoMapper;
 using AutoMapper.Configuration;
+using Cv_Management.Constant;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using Cv_Management.Services;
+using Cv_Management.Services.CacheServices;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using ServiceStack.Redis;
 
 namespace Cv_Management
 {
@@ -24,7 +28,8 @@ namespace Cv_Management
         public static void Register(HttpConfiguration httpConfiguration)
         {
             var builder = new ContainerBuilder();
-            builder.RegisterApiControllers();
+            builder.RegisterApiControllers()
+                .WithAttributeFiltering();
 
             #region Automapper
 
@@ -82,7 +87,12 @@ namespace Cv_Management
             builder.RegisterType<TokenService>().As<ITokenService>().InstancePerLifetimeScope();
             builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
-            builder.RegisterInstance(new ProfileCacheService()).SingleInstance();
+            builder.RegisterType<ProfileCacheService>().As<IValueCacheService<string, ProfileModel>>().SingleInstance().WithAttributeFiltering();
+            
+            RegisterRedisCachingServices(ref builder);
+
+            // Api services.
+            builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
 
             #endregion
 
@@ -126,6 +136,21 @@ namespace Cv_Management
                 Directory.CreateDirectory(absoluteSkillCategoryImagePath);
 
             return appPath;
+        }
+
+        /// <summary>
+        /// Register redis caching services.
+        /// </summary>
+        /// <param name="containerBuilder"></param>
+        private static void RegisterRedisCachingServices(ref ContainerBuilder containerBuilder)
+        {
+            // Redis registration.
+            var profileCachingRedisConnectionString = ConfigurationManager.AppSettings[$"Redis.{nameof(AutofacKeyConstant.ProfileRedisCaching)}"];
+            if (string.IsNullOrWhiteSpace(profileCachingRedisConnectionString))
+                throw new Exception("Access token - profile cache connection string is not found.");
+
+            containerBuilder.Register(c => new RedisManagerPool(profileCachingRedisConnectionString))
+                .Keyed<IRedisClientsManager>(AutofacKeyConstant.ProfileRedisCaching);
         }
     }
 }
