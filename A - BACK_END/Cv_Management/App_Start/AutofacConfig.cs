@@ -1,7 +1,12 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Data.Entity;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Web.Hosting;
 using System.Web.Http;
+using ApiClientShared.ViewModel.SkillCategory;
 using Autofac;
 using Autofac.Integration.WebApi;
 using AutoMapper;
@@ -22,17 +27,27 @@ namespace Cv_Management
             builder.RegisterApiControllers();
 
             #region Automapper
-            
-            var mapper = new Mapper(new MapperConfiguration(options =>
-            {
-                options.CreateMap<User, ProfileModel>();
-                options.CreateMap<ProfileModel, User>();
-            }));
 
+            var oMapperConfigurationExpression = new MapperConfigurationExpression();
+            oMapperConfigurationExpression.CreateMap<User, ProfileModel>();
+            oMapperConfigurationExpression.CreateMap<ProfileModel, User>();
+            oMapperConfigurationExpression.CreateMap<SkillCategory, SkillCategoryViewModel>();
+            oMapperConfigurationExpression.CreateMap<IQueryable<SkillCategory>, IQueryable<SkillCategoryViewModel>>();
+            //var autoMapperOptions = new MapperConfiguration(options =>
+            //{
+            //    options.CreateMap<User, ProfileModel>();
+            //    options.CreateMap<ProfileModel, User>();
+            //    options.CreateMap<SkillCategory, SkillCategoryViewModel>();
+            //    options.CreateMap<IQueryable<SkillCategory>, IQueryable<SkillCategoryViewModel>>();
+            //});
+
+            var autoMapperOptions = new MapperConfiguration(oMapperConfigurationExpression);
+            var mapper = new Mapper(autoMapperOptions);
+            Mapper.Initialize(oMapperConfigurationExpression);
             builder.RegisterInstance(mapper)
                 .As<IMapper>()
                 .SingleInstance();
-            
+
             #endregion
 
             #region Controllers & hubs
@@ -54,6 +69,9 @@ namespace Cv_Management
             var appSettings = FindAppSettings();
             builder.RegisterInstance(appSettings);
 
+            var appPaths = FindAppPathSettings();
+            builder.RegisterInstance(appPaths);
+
             #endregion
 
             #region Services
@@ -62,6 +80,7 @@ namespace Cv_Management
             builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
             builder.RegisterType<GoogleCaptchaService>().As<ICaptchaService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenService>().As<ITokenService>().InstancePerLifetimeScope();
+            builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
             builder.RegisterInstance(new ProfileCacheService()).SingleInstance();
 
@@ -78,11 +97,35 @@ namespace Cv_Management
         private static AppSettingModel FindAppSettings()
         {
             var appSettingModel = new AppSettingModel();
-            appSettingModel.GCaptchaSecret = ConfigurationManager.AppSettings[nameof(AppSettingModel.GCaptchaSecret)];
-            appSettingModel.GCaptchaValidationEndpoint =
-                ConfigurationManager.AppSettings[nameof(AppSettingModel.GCaptchaValidationEndpoint)];
+            appSettingModel.GoogleCaptchaSecret = ConfigurationManager.AppSettings[nameof(AppSettingModel.GoogleCaptchaSecret)];
+            appSettingModel.GoogleCaptchaValidationEndpoint =
+                ConfigurationManager.AppSettings[nameof(AppSettingModel.GoogleCaptchaValidationEndpoint)];
 
             return appSettingModel;
+        }
+
+        /// <summary>
+        /// Find app paths settings.
+        /// </summary>
+        /// <returns></returns>
+        private static AppPathModel FindAppPathSettings()
+        {
+            var appPath = new AppPathModel(HostingEnvironment.MapPath("~/"));
+            appPath.ProfileImage = ConfigurationManager.AppSettings[$"Path.{nameof(appPath.ProfileImage)}"];
+            appPath.SkillCategoryImage = ConfigurationManager.AppSettings[$"Path.{nameof(appPath.SkillCategoryImage)}"];
+
+            if (string.IsNullOrWhiteSpace(appPath.ProfileImage))
+                throw new Exception($"Invalid {nameof(appPath.ProfileImage)} setting");
+
+            var absoluteProfileImagePath = HostingEnvironment.MapPath(appPath.ProfileImage);
+            if (!string.IsNullOrWhiteSpace(absoluteProfileImagePath) && !Directory.Exists(absoluteProfileImagePath))
+                Directory.CreateDirectory(absoluteProfileImagePath);
+
+            var absoluteSkillCategoryImagePath = HostingEnvironment.MapPath(appPath.SkillCategoryImage);
+            if (!string.IsNullOrWhiteSpace(absoluteSkillCategoryImagePath) && !Directory.Exists(absoluteSkillCategoryImagePath))
+                Directory.CreateDirectory(absoluteSkillCategoryImagePath);
+
+            return appPath;
         }
     }
 }

@@ -9,9 +9,18 @@ using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Skill;
 using ApiClientShared.ViewModel.SkillCategory;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Cv_Management.Interfaces.Services;
+using Cv_Management.ViewModels.SkillCategory;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using System.Drawing.Imaging;
+using System.Threading;
+using ApiClientShared.Constants;
+using ApiClientShared.Resources;
+using Cv_Management.Models;
+using Image = System.Drawing.Image;
 
 namespace Cv_Management.Controllers
 {
@@ -25,10 +34,16 @@ namespace Cv_Management.Controllers
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
-        public ApiSkillCategoryController(DbContext dbContext, IDbService dbService)
+        /// <param name="mapper"></param>
+        /// <param name="fileService"></param>
+        /// <param name="appPath"></param>
+        public ApiSkillCategoryController(DbContext dbContext, IDbService dbService, IMapper mapper, IFileService fileService, AppPathModel appPath)
         {
             _dbContext = dbContext as CvManagementDbContext;
             _dbService = dbService;
+            _mapper = mapper;
+            _fileService = fileService;
+            _appPath = appPath;
         }
 
         #endregion
@@ -44,6 +59,21 @@ namespace Cv_Management.Controllers
         ///     Service which is for handling database operation.
         /// </summary>
         private readonly IDbService _dbService;
+
+        /// <summary>
+        /// Automapper DI.
+        /// </summary>
+        private readonly IMapper _mapper;
+
+        /// <summary>
+        /// Service to handle files.
+        /// </summary>
+        private readonly IFileService _fileService;
+
+        /// <summary>
+        /// App path option
+        /// </summary>
+        private readonly AppPathModel _appPath;
 
         #endregion
 
@@ -107,33 +137,39 @@ namespace Cv_Management.Controllers
             var skills = Enumerable.Empty<Skill>().AsQueryable();
             var skillCategorySkillRelationships = Enumerable.Empty<SkillCategorySkillRelationship>().AsQueryable();
 
-            if (condition.IncludePersonalSkills)
+            if (condition.IncludeSkills)
+            {
+                skillCategorySkillRelationships = _dbContext.SkillCategorySkillRelationships.AsQueryable();
                 skills = _dbContext.Skills.AsQueryable();
+            }
 
             // Get offline skill categories.
-            var loadSkillCategoryResult = new SearchResultViewModel<IList<SkillCategoryViewModel>>();
+            var loadSkillCategoryResult = new SearchResultViewModel<IEnumerable<SkillCategoryViewModel>>();
             loadSkillCategoryResult.Total = await skillCategories.CountAsync();
-
+            
+            // Load skill categories.
             var loadedSkillCategories = from skillCategory in skillCategories
-                select new SkillCategoryViewModel
-                {
-                    Id = skillCategory.Id,
-                    UserId = skillCategory.UserId,
-                    Photo = skillCategory.Photo,
-                    Name = skillCategory.Name,
-                    CreatedTime = skillCategory.CreatedTime,
-                    PersonalSkills = from skill in skills
-                        from skillCategorySkillRelationship in skillCategorySkillRelationships
-                        where skillCategorySkillRelationship.SkillCategoryId == skillCategory.Id &&
-                              skillCategorySkillRelationship.SkillId == skill.Id
-                        select new PersonalSkillViewModel
-                        {
-                            SkillCategoryId = skillCategorySkillRelationship.SkillCategoryId,
-                            SkillId = skillCategorySkillRelationship.SkillId,
-                            Point = skillCategorySkillRelationship.Point,
-                            SkillName = skill.Name
-                        }
-                };
+                                        select new SkillCategoryViewModel
+                                        {
+                                            Id = skillCategory.Id,
+                                            UserId = skillCategory.UserId,
+                                            Photo = skillCategory.Photo,
+                                            Name = skillCategory.Name,
+                                            CreatedTime = skillCategory.CreatedTime,
+                                            Skills = from skill in skills
+                                                     from skillCategorySkillRelationship in skillCategorySkillRelationships
+                                                     where skillCategorySkillRelationship.SkillCategoryId == skillCategory.Id &&
+                                                           skillCategorySkillRelationship.SkillId == skill.Id
+                                                     select new SkillCategorySkillRelationshipViewModel
+                                                     {
+                                                         UserId = skillCategory.UserId,
+                                                         SkillCategoryId = skillCategorySkillRelationship.SkillCategoryId,
+                                                         SkillId = skillCategorySkillRelationship.SkillId,
+                                                         Point = skillCategorySkillRelationship.Point,
+                                                         SkillName = skill.Name
+                                                     }
+                                        };
+
 
             // Do sorting.
             loadedSkillCategories = _dbService.Sort(loadedSkillCategories, SortDirection.Ascending,
@@ -141,9 +177,8 @@ namespace Cv_Management.Controllers
 
             // Do paging.
             loadedSkillCategories = _dbService.Paginate(loadedSkillCategories, condition.Pagination);
-
-            // Get the records list.
             loadSkillCategoryResult.Records = await loadedSkillCategories.ToListAsync();
+
             return Ok(loadSkillCategoryResult);
         }
 
@@ -193,13 +228,31 @@ namespace Cv_Management.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult> EditSkillCategory([FromUri] int id, [FromBody] EditSkillCategoryViewModel model)
         {
+            #region Parameter validation
+
             if (model == null)
             {
                 model = new EditSkillCategoryViewModel();
                 Validate(model);
             }
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            Image photo = null;
+            if (model.Photo != null)
+            {
+                var bytes = model.Photo.Buffer;
+                photo = _fileService.GetImage(bytes);
+                if (photo.Height != ImageSizeConstant.StandardSkillCategoryImageSize ||
+                    photo.Width != ImageSizeConstant.StandardSkillCategoryImageSize)
+                {
+                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}", HttpMessages.SkillCategoryImageSizeInvalid);
+                    return BadRequest(ModelState);
+                }
+            }
+            
+            #endregion
 
             //Get SkillCategory
             var skillCategory = _dbContext.SkillCategories.Find(id);
@@ -207,10 +260,15 @@ namespace Cv_Management.Controllers
                 return NotFound();
 
             //Update information
-            skillCategory.Name = model.Name;
-            skillCategory.UserId = model.UserId;
-            if (model.Photo != null)
-                skillCategory.Photo = Convert.ToBase64String(model.Photo.Buffer);
+            if (!string.IsNullOrWhiteSpace(model.Name))
+                skillCategory.Name = model.Name;
+
+            // Photo is defined.
+            if (photo != null)
+            {
+                var relativeSkillCategoryImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer, _appPath.ProfileImage, null, CancellationToken.None);
+                skillCategory.Photo = Url.Content(relativeSkillCategoryImagePath);
+            }
 
             //Save change to db
             await _dbContext.SaveChangesAsync();

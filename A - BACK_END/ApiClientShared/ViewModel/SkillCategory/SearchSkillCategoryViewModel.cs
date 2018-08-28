@@ -25,7 +25,7 @@ namespace ApiClientShared.ViewModel.SkillCategory
         /// <summary>
         /// Whether personal skills are included in search result or not.
         /// </summary>
-        public bool IncludePersonalSkills { get; set; }
+        public bool IncludeSkills { get; set; }
 
         /// <summary>
         /// Pagination information.

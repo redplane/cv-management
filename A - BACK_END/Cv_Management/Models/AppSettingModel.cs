@@ -5,16 +5,15 @@
         #region Properties
 
         /// <summary>
-        ///     Secret key that provided by google.
-        ///     More info: https://www.google.com/recaptcha/admin#site/342382560?setup
+        /// Google captcha secret.
         /// </summary>
-        public string GCaptchaSecret { get; set; }
+        public string GoogleCaptchaSecret { get; set; }
 
         /// <summary>
-        ///     Endpoint of Google captcha validation.
+        /// Google captcha remote end-point.
         /// </summary>
-        public string GCaptchaValidationEndpoint { get; set; }
-
+        public string GoogleCaptchaValidationEndpoint { get; set; }
+        
         #endregion
     }
 }

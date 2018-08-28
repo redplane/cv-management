@@ -105,6 +105,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -153,7 +154,7 @@
     <Compile Include="Attributes\BearerAuthenticationFilter.cs" />
     <Compile Include="Attributes\InheritedRoutePrefixDirectRouteProvider.cs" />
     <Compile Include="Controllers\ApiHobbyController.cs" />
-    <Compile Include="Controllers\ApiPersonalSkillController.cs" />
+    <Compile Include="Controllers\ApiSkillCategorySkillRelationshipController.cs" />
     <Compile Include="Controllers\ApiProjectResponsibilityController.cs" />
     <Compile Include="Controllers\ApiProjectSkillController.cs" />
     <Compile Include="Controllers\ApiProjectController.cs" />
@@ -163,11 +164,15 @@
     <Compile Include="Controllers\ApiUserController.cs" />
     <Compile Include="Controllers\ApiSkillController.cs" />
     <Compile Include="Interfaces\Services\ICaptchaService.cs" />
+    <Compile Include="Interfaces\Services\IEmailService.cs" />
+    <Compile Include="Interfaces\Services\IFileService.cs" />
     <Compile Include="Interfaces\Services\IProfileService.cs" />
     <Compile Include="Interfaces\Services\ITokenService.cs" />
     <Compile Include="Interfaces\Services\IValueCacheService.cs" />
+    <Compile Include="Models\AppPathModel.cs" />
     <Compile Include="Models\AppSettingModel.cs" />
     <Compile Include="Models\ProfileModel.cs" />
+    <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\GoogleCaptchaService.cs" />
     <Compile Include="Services\DbService.cs" />
     <Compile Include="Interceptor\GlobalDbCommandInterceptor.cs" />
@@ -178,6 +183,10 @@
     <Compile Include="Services\TokenService.cs" />
     <Compile Include="Services\ValueCacheBaseService.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="ViewModels\EditUserViewModel.cs" />
+    <Compile Include="ViewModels\SkillCategory\AddSkillCategoryViewModel.cs" />
+    <Compile Include="ViewModels\SkillCategory\EditSkillCategoryViewModel.cs" />
+    <Compile Include="ViewModels\User\AddUserViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -192,6 +201,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="App_Asset\Images\Profiles\" />
     <Folder Include="App_Data\" />
     <Folder Include="Constant\" />
     <Folder Include="Models\SkillCategory\" />

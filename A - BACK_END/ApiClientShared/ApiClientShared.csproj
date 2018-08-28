@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ApiMultiPartFormData, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ApiMultipartFormDataFormatter.1.0.3\lib\4.5\ApiMultiPartFormData.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -53,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants\ImageSizeConstant.cs" />
     <Compile Include="Enums\SortProperties\SkillSortProperty.cs" />
     <Compile Include="Enums\SortProperties\ResponsibilitySortProperty.cs" />
     <Compile Include="Enums\SortProperties\SkillCategorySortProperty.cs" />
@@ -73,6 +71,7 @@
       <DependentUpon>HttpMessages.resx</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\BaseSearchViewModel.cs" />
+    <Compile Include="ViewModel\HasSkillViewModel.cs" />
     <Compile Include="ViewModel\Hobby\AddHobbyViewModel.cs" />
     <Compile Include="ViewModel\Hobby\EditHobbyViewModel.cs" />
     <Compile Include="ViewModel\Hobby\HobbyViewModel.cs" />
@@ -96,14 +95,15 @@
     <Compile Include="ViewModel\Responsibility\SearchResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\Responsibility\EditResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\SearchResultViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategorySkillRelationship\AddHasSkillViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategorySkillRelationship\DeleteSkillCategorySkillRelationshipViewModel.cs" />
     <Compile Include="ViewModel\SkillCategorySkillRelationship\SkillCategorySkillViewModel.cs" />
-    <Compile Include="ViewModel\SkillCategory\AddSkillCategoryViewModel.cs" />
+    <Compile Include="ViewModel\SkillCategory\EditHasSkillViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\ReadingSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\SearchSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\SkillCategory\SkillCategoryViewModel.cs" />
-    <Compile Include="ViewModel\SkillCategory\EditSkillCategoryViewModel.cs" />
     <Compile Include="ViewModel\Skill\AddSkillViewModel.cs" />
-    <Compile Include="ViewModel\Skill\PersonalSkillViewModel.cs" />
+    <Compile Include="ViewModel\Skill\SkillCategorySkillRelationshipViewModel.cs" />
     <Compile Include="ViewModel\Skill\SearchSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\EditSkillViewModel.cs" />
     <Compile Include="ViewModel\Skill\SkillViewModel.cs" />
@@ -117,8 +117,6 @@
     <Compile Include="ViewModel\User\RegisterViewModel.cs" />
     <Compile Include="ViewModel\User\TokenViewModel.cs" />
     <Compile Include="ViewModel\User\SearchUserViewModel.cs" />
-    <Compile Include="ViewModel\User\AddUserViewModel.cs" />
-    <Compile Include="ViewModel\User\EditUserViewModel.cs" />
     <Compile Include="ViewModel\UserDescription\UserDescriptionViewModel.cs" />
     <Compile Include="ViewModel\User\UserViewModel.cs" />
   </ItemGroup>
@@ -130,6 +128,7 @@
     <EmbeddedResource Include="Resources\HttpMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>HttpMessages.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

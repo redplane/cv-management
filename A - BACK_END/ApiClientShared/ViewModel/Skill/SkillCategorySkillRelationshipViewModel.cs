@@ -1,7 +1,9 @@
 ﻿namespace ApiClientShared.ViewModel.Skill
 {
-    public class PersonalSkillViewModel
+    public class SkillCategorySkillRelationshipViewModel
     {
+        public int UserId { get; set; }
+
         public int SkillId { get; set; }
 
         public int SkillCategoryId { get; set; }

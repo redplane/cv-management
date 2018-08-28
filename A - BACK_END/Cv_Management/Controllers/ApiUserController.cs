@@ -7,8 +7,11 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
+using System.Web.Hosting;
 using System.Web.Http;
 using System.Web.UI.WebControls;
+using ApiClientShared.Constants;
 using ApiClientShared.Enums;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.Resources;
@@ -18,6 +21,9 @@ using ApiClientShared.ViewModel.User;
 using ApiClientShared.ViewModel.UserDescription;
 using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
+using Cv_Management.Models;
+using Cv_Management.ViewModels;
+using Cv_Management.ViewModels.User;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
@@ -36,16 +42,20 @@ namespace Cv_Management.Controllers
         /// <param name="tokenService"></param>
         /// <param name="profileService"></param>
         /// <param name="captchaService"></param>
+        /// <param name="fileService"></param>
+        /// <param name="appPath"></param>
         public ApiUserController(DbContext dbContext,
             IDbService dbService,
-            ITokenService tokenService, IProfileService profileService, 
-            ICaptchaService captchaService)
+            ITokenService tokenService, IProfileService profileService,
+            ICaptchaService captchaService, IFileService fileService, AppPathModel appPath)
         {
             _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
             _tokenService = tokenService;
             _profileService = profileService;
             _captchaService = captchaService;
+            _fileService = fileService;
+            _appPath = appPath;
         }
 
         #endregion
@@ -77,6 +87,16 @@ namespace Cv_Management.Controllers
         /// </summary>
         private readonly ICaptchaService _captchaService;
 
+        /// <summary>
+        /// Service for handling file operation.
+        /// </summary>
+        private readonly IFileService _fileService;
+
+        /// <summary>
+        /// Application path configuration.
+        /// </summary>
+        private readonly AppPathModel _appPath;
+        
         #endregion
 
         #region Methods
@@ -137,7 +157,7 @@ namespace Cv_Management.Controllers
                 if (birthday.To != null)
                     users = users.Where(user => user.Birthday <= birthday.To);
             }
-            
+
             // Get request profile.
             var profile = _profileService.GetProfile(Request);
 
@@ -162,7 +182,7 @@ namespace Cv_Management.Controllers
             }
             else
                 users = users.Where(x => x.Status == UserStatuses.Active);
-            
+
             #region Search user descriptions && hobbies
 
             //user descriptions
@@ -251,7 +271,7 @@ namespace Cv_Management.Controllers
             await _dbContext.SaveChangesAsync();
             return Ok(user);
         }
-        
+
         /// <summary>
         ///     Edit an user
         /// </summary>
@@ -262,7 +282,8 @@ namespace Cv_Management.Controllers
         [HttpPut]
         public async Task<IHttpActionResult> EditUser([FromUri] int id, [FromBody] EditUserViewModel model)
         {
-            //validate model
+            #region Model validation
+
             if (model == null)
             {
                 model = new EditUserViewModel();
@@ -271,10 +292,27 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            #endregion
+
+            #region Profile image validation
+
+            var photo = _fileService.GetImage(model.Photo?.Buffer);
+            if (photo != null)
+            {
+                if (photo.Width != ImageSizeConstant.StandardProfileImageSize ||
+                    photo.Height != ImageSizeConstant.StandardProfileImageSize)
+                {
+                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}", HttpMessages.ProfileImageSizeInvalid);
+                    return BadRequest(ModelState);
+                }
+            }
+
+            #endregion
+
             //Find user
             var user = await _dbContext.Users.FindAsync(id);
             if (user == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
             if (!string.IsNullOrEmpty(model.FirstName))
                 user.FirstName = model.FirstName;
@@ -285,15 +323,20 @@ namespace Cv_Management.Controllers
             if (model.Birthday != null)
                 user.Birthday = model.Birthday.Value;
 
+            // Photo is defined. Save photo to path.
             if (model.Photo != null)
-                user.Photo = Convert.ToBase64String(model.Photo.Buffer);
+            {
+                var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer, _appPath.ProfileImage, null, CancellationToken.None);
+                user.Photo = Url.Content(relativeProfileImagePath);
+                ;
+            }
 
             //Save to database
             await _dbContext.SaveChangesAsync();
 
             return Ok(user);
         }
-        
+
         /// <summary>
         ///     Delete an user
         /// </summary>
@@ -304,9 +347,9 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
             //Find user by id
-            var user = await _dbContext.Users.FindAsync(id);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (user == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.OK, HttpMessages.UserNotFound));
 
             //Remove user
             _dbContext.Users.Remove(user);
@@ -365,7 +408,7 @@ namespace Cv_Management.Controllers
             token.Type = "Bearer";
             return Ok(token);
         }
-        
+
         /// <summary>
         ///     Register new user
         /// </summary>
@@ -376,6 +419,8 @@ namespace Cv_Management.Controllers
         [AllowAnonymous]
         public async Task<IHttpActionResult> Register([FromBody] RegisterViewModel model)
         {
+            #region Model validation
+
             if (model == null)
             {
                 model = new RegisterViewModel();
@@ -385,20 +430,72 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //Check duplicate
-            var isDuplicate =
-                await _dbContext.Users.AnyAsync(c => c.Email == model.Email && c.Password == model.Password);
-            if (isDuplicate)
-                return Conflict();
+#if !BY_PASS_CAPTCHA
+            // Verify the capcha first.
+            var bIsCaptchaValid = await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+            if (!bIsCaptchaValid)
+            {
+                ModelState.AddModelError($"{nameof(model)}.{nameof(model.ClientCaptchaCode)}", HttpMessages.CaptchaInvalid);
+                return BadRequest(ModelState);
+            }
+#endif
 
-            var user = new User();
-            user.Email = model.Email;
-            user.LastName = model.LastName;
-            user.FirstName = model.FirstName;
-            user.Password = model.Password;
+            #endregion
 
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
+            #region Find user duplicated
+
+            var users = _dbContext.Users.AsQueryable();
+            var user = await users.FirstOrDefaultAsync(x => x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
+            if (user != null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict,
+                    HttpMessages.RegistrationDuplicate));
+
+            #endregion
+
+            using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                #region Initialize user
+
+                user = new User();
+                user.Email = model.Email;
+                user.LastName = model.LastName;
+                user.FirstName = model.FirstName;
+
+                // Mark account as pending.
+                user.Status = UserStatuses.Pending;
+
+                // Hash the password for user protection.
+                user.Password = _profileService.HashPassword(model.Password);
+
+                _dbContext.Users.Add(user);
+
+                #endregion
+
+                #region Initialize token
+
+                // Find list of profile activation tokens.
+                var profileActivationTokens = _dbContext.ProfileActivationTokens.AsQueryable();
+                profileActivationTokens = profileActivationTokens.Where(x =>
+                    x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
+
+                var profileActivationToken = new ProfileActivationToken();
+                profileActivationToken.Email = model.Email;
+                profileActivationToken.Token = Guid.NewGuid().ToString("D");
+                profileActivationToken.CreatedTime = 0;
+
+                // Delete previous activation token and add the new one.
+                _dbContext.ProfileActivationTokens.RemoveRange(profileActivationTokens);
+                _dbContext.ProfileActivationTokens.Add(profileActivationToken);
+
+                #endregion
+
+                // TODO: Send activation email.
+
+                await _dbContext.SaveChangesAsync();
+                transactionScope.Complete();
+            }
+            
+            
             return Ok(user);
         }
 
