@@ -5,7 +5,7 @@ namespace ApiClientShared.ViewModel.Project
 {
     public class AddProjectViewModel
     {
-      
+        [Required]
         public int UserId { get; set; }
 
         [Required]
@@ -17,7 +17,8 @@ namespace ApiClientShared.ViewModel.Project
         [Required]
         public double StatedTime { get; set; }
 
-        public double? FinishedTime { get; set; }
+        [Required]
+        public double FinishedTime { get; set; }
 
         public HashSet<int> SkillIds { get; set; }
 
