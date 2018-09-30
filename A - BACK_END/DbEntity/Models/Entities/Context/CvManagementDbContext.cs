@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -7,15 +8,20 @@ namespace DbEntity.Models.Entities.Context
     public class CvManagementDbContext : DbContext
     {
         #region Constructors
-
+        
         public CvManagementDbContext() : base("CvManagement")
         {
             Database.SetInitializer<CvManagementDbContext>(null);
         }
 
-        #endregion
+        public CvManagementDbContext(DbConnection connection)
+            : base(connection, false)
+        {
+        }
 
-        #region Overriden methods
+#endregion
+
+#region Overriden methods
 
         /// <summary>
         ///     Called when model is being created.
@@ -65,9 +71,9 @@ namespace DbEntity.Models.Entities.Context
             base.OnModelCreating(dbModelBuilder);
         }
 
-        #endregion
+#endregion
 
-        #region Properties
+#region Properties
 
         /// <summary>
         ///     List of projects.
@@ -124,9 +130,9 @@ namespace DbEntity.Models.Entities.Context
         /// </summary>
         public DbSet<ProfileActivationToken> ProfileActivationTokens { get; set; }
 
-        #endregion
+#endregion
 
-        #region Table initialization
+#region Table initialization
 
         /// <summary>
         ///     Initialize user table.
@@ -264,6 +270,6 @@ namespace DbEntity.Models.Entities.Context
             profileActivationToken.HasKey(x => x.Email);
             profileActivationToken.Property(x => x.Email).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }
-        #endregion
+#endregion
     }
 }

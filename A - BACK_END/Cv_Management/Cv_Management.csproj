@@ -176,7 +176,6 @@
     <Compile Include="App_Start\AutofacConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Attributes\ApiAuthorizeAttribute.cs" />
-    <Compile Include="Attributes\ApiRoleAttribute.cs" />
     <Compile Include="Attributes\ApiUnhandledExceptionFilter.cs" />
     <Compile Include="Attributes\BearerAuthenticationFilter.cs" />
     <Compile Include="Attributes\InheritedRoutePrefixDirectRouteProvider.cs" />

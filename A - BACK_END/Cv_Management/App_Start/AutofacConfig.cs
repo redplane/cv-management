@@ -19,6 +19,7 @@ using Cv_Management.Services;
 using Cv_Management.Services.CacheServices;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using ServiceStack.Data;
 using ServiceStack.Redis;
 
 namespace Cv_Management
@@ -65,7 +66,25 @@ namespace Cv_Management
 
             #region Database context
 
-            builder.RegisterType<CvManagementDbContext>().As<DbContext>().InstancePerLifetimeScope();
+            //builder.RegisterType<CvManagementDbContext>().As<DbContext>().InstancePerLifetimeScope();
+            builder.Register(c =>
+                {
+                    var dbConnectionFactory =
+                        Effort.DbConnectionFactory.CreatePersistent(nameof(CvManagementDbContext));
+                    return new CvManagementDbContext(dbConnectionFactory);
+                })
+                .As<DbContext>()
+                .SingleInstance();
+
+
+            //builder.RegisterType<CvManagementDbContext>().As<DbContext>()
+            //    .OnActivating(x =>
+            //    {
+            //        var dbConnectionFactory = Effort.DbConnectionFactory.CreatePersistent(nameof(CvManagementDbContext));
+            //        var dbContext = new CvManagementDbContext(dbConnectionFactory);
+            //        x.ReplaceInstance(dbContext);
+            //    })
+            //    .SingleInstance();
 
             #endregion
 
@@ -88,7 +107,7 @@ namespace Cv_Management
             builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
             builder.RegisterType<ProfileCacheService>().As<IValueCacheService<string, ProfileModel>>().SingleInstance().WithAttributeFiltering();
-            
+
             RegisterRedisCachingServices(ref builder);
 
             // Api services.
