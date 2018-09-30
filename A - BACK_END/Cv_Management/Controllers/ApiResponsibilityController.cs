@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,6 +12,7 @@ using ApiClientShared.ViewModel.Responsibility;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -24,7 +24,7 @@ namespace Cv_Management.Controllers
         public ApiResponsibilityController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
         }
 
@@ -35,7 +35,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Context to access to database
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         ///     Service to handler database operation
@@ -132,7 +132,7 @@ namespace Cv_Management.Controllers
             responsibility.CreatedTime = DateTime.Now.ToOADate();
 
             //Add responsibility to database
-            responsibility = _dbContext.Responsibilities.Add(responsibility);
+            _dbContext.Responsibilities.Add(responsibility);
 
             //Save changes to database
             await _dbContext.SaveChangesAsync();

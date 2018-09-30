@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -28,6 +27,7 @@ using Cv_Management.ViewModels;
 using Cv_Management.ViewModels.User;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -58,7 +58,7 @@ namespace Cv_Management.Controllers
             IMapper mapper,
             AppPathModel appPath)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
             _tokenService = tokenService;
             _profileService = profileService;
@@ -77,7 +77,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Context to access to database
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         ///     Service to handler database operation
@@ -123,7 +123,7 @@ namespace Cv_Management.Controllers
         /// Application path configuration.
         /// </summary>
         private readonly AppPathModel _appPath;
-        
+
         #endregion
 
         #region Methods
@@ -209,59 +209,17 @@ namespace Cv_Management.Controllers
             }
             else
                 users = users.Where(x => x.Status == UserStatuses.Active);
-
-            #region Search user descriptions && hobbies
-
-            //user descriptions
-            var userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
-
-            if (condition.IncludeDescriptions)
-                userDescriptions = _dbContext.UserDescriptions.AsQueryable();
-
-            // Get all hobbies.
-            var hobbies = Enumerable.Empty<Hobby>().AsQueryable();
-            if (condition.IncludeHobbies)
-                hobbies = _dbContext.Hobbies.AsQueryable();
-
-            var loadedUsers = from user in users
-                              select new UserViewModel
-                              {
-                                  Id = user.Id,
-                                  Birthday = user.Birthday,
-                                  Email = user.Email,
-                                  FirstName = user.FirstName,
-                                  LastName = user.LastName,
-                                  Photo = user.Photo,
-                                  Role = user.Role,
-                                  Descriptions = from description in userDescriptions
-                                                 select new UserDescriptionViewModel
-                                                 {
-                                                     Id = description.Id,
-                                                     Description = description.Description,
-                                                     UserId = description.UserId
-                                                 },
-                                  Hobbies = from hobby in hobbies
-                                            select new HobbyViewModel
-                                            {
-                                                Id = hobby.Id,
-                                                Name = hobby.Name,
-                                                UserId = hobby.UserId,
-                                                Description = hobby.Description
-                                            }
-                              };
-
-            #endregion
-
-            var result = new SearchResultViewModel<IList<UserViewModel>>();
+            
+            var result = new SearchResultViewModel<IList<User>>();
             result.Total = await users.CountAsync();
 
             // Do sort
-            loadedUsers = _dbService.Sort(loadedUsers, SortDirection.Ascending, UserSortProperty.Id);
+            users = _dbService.Sort(users, SortDirection.Ascending, UserSortProperty.Id);
 
             // Do pagination
-            loadedUsers = _dbService.Paginate(loadedUsers, condition.Pagination);
+            users = _dbService.Paginate(users, condition.Pagination);
 
-            result.Records = await loadedUsers.ToListAsync();
+            result.Records = await users.ToListAsync();
 
             return Ok(result);
         }
@@ -294,7 +252,7 @@ namespace Cv_Management.Controllers
             user.Email = model.Email;
             user.Password = model.Password;
 
-            user = _dbContext.Users.Add(user);
+            _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync();
             return Ok(user);
         }
@@ -413,11 +371,11 @@ namespace Cv_Management.Controllers
                     HttpMessages.CaptchaInvalid));
 
 #endif
-            
+
             // Get profile from system.
             var profile = await _userService.LoginAsync(model.Email, model.Password, CancellationToken.None);
 
-;            // User is not found.
+            ;            // User is not found.
             if (profile == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
@@ -440,7 +398,7 @@ namespace Cv_Management.Controllers
             }
             else
                 token.AccessToken = profile.AccessToken;
-            
+
             return Ok(token);
         }
 
@@ -529,8 +487,8 @@ namespace Cv_Management.Controllers
                 await _dbContext.SaveChangesAsync();
                 transactionScope.Complete();
             }
-            
-            
+
+
             return Ok(user);
         }
 
@@ -545,7 +503,7 @@ namespace Cv_Management.Controllers
         {
             // Get profile from request.
             var profile = _profileService.GetProfile(Request);
-            
+
 
             // No profile is found.
             if (id == null || id < 1)

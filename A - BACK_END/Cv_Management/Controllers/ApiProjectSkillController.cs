@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ using ApiClientShared.ViewModel.ProjectSkill;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -19,7 +19,7 @@ namespace Cv_Management.Controllers
     {
         #region Properties
 
-        public readonly CvManagementDbContext _dbContext;
+        public readonly BaseCvManagementDbContext _dbContext;
 
         public readonly IDbService _dbService;
 
@@ -30,7 +30,7 @@ namespace Cv_Management.Controllers
         public ApiProjectSkillController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext =  (CvManagementDbContext)dbContext;
+            _dbContext =  (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
         }
 
@@ -41,7 +41,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     get projects skill using specific conditions
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="condition"></param>
         /// <returns></returns>
         [HttpPost]
         [Route("search")]
@@ -78,7 +78,7 @@ namespace Cv_Management.Controllers
             result.Total = await projectSkills.CountAsync();
             
             //Do sort
-            projectSkills = _dbService.Sort(projectSkills, SortDirection.Ascending, ProjectSkillSortProperty.Id);
+            projectSkills = _dbService.Sort(projectSkills, SortDirection.Ascending, ProjectSkillSortProperty.ProjectId);
 
             //Do pagination
             projectSkills = _dbService.Paginate(projectSkills, condition.Pagination);

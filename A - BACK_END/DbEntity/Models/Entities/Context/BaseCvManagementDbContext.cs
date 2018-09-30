@@ -1,79 +1,73 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Common;
-using System.Data.Entity;
-using System.Data.Entity.ModelConfiguration.Conventions;
+﻿using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DbEntity.Models.Entities.Context
 {
-    public class CvManagementDbContext : DbContext
+    public class BaseCvManagementDbContext : DbContext
     {
         #region Constructors
-        
-        public CvManagementDbContext() : base("CvManagement")
-        {
-            Database.SetInitializer<CvManagementDbContext>(null);
-        }
 
-        public CvManagementDbContext(DbConnection connection)
-            : base(connection, false)
-        {
-        }
+        public BaseCvManagementDbContext(DbContextOptions<BaseCvManagementDbContext> options)
+            : base(options)
+        { }
 
-#endregion
+        #endregion
 
-#region Overriden methods
+        #region Methods
 
         /// <summary>
         ///     Called when model is being created.
         /// </summary>
-        /// <param name="dbModelBuilder"></param>
-        protected override void OnModelCreating(DbModelBuilder dbModelBuilder)
+        /// <param name="modelBuilder"></param>
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Remove pluralizing naming convention.
-            dbModelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
-            // Prevent database from cascade deleting.
-            dbModelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
-
             // Initialize user table.
-            InitializeUserTable(dbModelBuilder);
+            InitializeUserTable(modelBuilder);
 
             // Initialize user description table.
-            InitializeUserDescriptionTable(dbModelBuilder);
+            InitializeUserDescriptionTable(modelBuilder);
 
             // Initialize project table.
-            InitializeProjectTable(dbModelBuilder);
+            InitializeProjectTable(modelBuilder);
 
             // Initialize project skill table.
-            InitializeProjectSkillTable(dbModelBuilder);
+            InitializeProjectSkillTable(modelBuilder);
 
             // Initialize skill table.
-            InitializeSkillTable(dbModelBuilder);
+            InitializeSkillTable(modelBuilder);
 
             // Initialize project responsibility table.
-            InitializeProjectResponsibilityTable(dbModelBuilder);
+            InitializeProjectResponsibilityTable(modelBuilder);
 
             // Initialize responsibility table.
-            InitializeResponsibilityTable(dbModelBuilder);
+            InitializeResponsibilityTable(modelBuilder);
 
             // Initialize skill table.
-            InitializeSkillCategory(dbModelBuilder);
+            InitializeSkillCategory(modelBuilder);
 
             // Initialize skill category skill relationship table.
-            InitializeSkillCategorySkillRelationshipTable(dbModelBuilder);
+            InitializeSkillCategorySkillRelationshipTable(modelBuilder);
 
             //Initialize hobby table
-            InitializeHobbyTable(dbModelBuilder);
+            InitializeHobbyTable(modelBuilder);
 
             // Initialize profile activation token
-            InitializeProfileActivationToken(dbModelBuilder);
+            InitializeProfileActivationToken(modelBuilder);
 
-            base.OnModelCreating(dbModelBuilder);
+            // This is for remove pluralization naming convention in database defined by Entity Framework.
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+                entity.Relational().TableName = entity.DisplayName();
+
+            // Disable cascade delete.
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+                relationship.DeleteBehavior = DeleteBehavior.Restrict;
+            
         }
 
-#endregion
+        #endregion
 
-#region Properties
+        #region Properties
 
         /// <summary>
         ///     List of projects.
@@ -130,83 +124,83 @@ namespace DbEntity.Models.Entities.Context
         /// </summary>
         public DbSet<ProfileActivationToken> ProfileActivationTokens { get; set; }
 
-#endregion
+        #endregion
 
-#region Table initialization
+        #region Table initialization
 
         /// <summary>
         ///     Initialize user table.
         /// </summary>
-        private void InitializeUserTable(DbModelBuilder dbModelBuilder)
+        private void InitializeUserTable(ModelBuilder dbModelBuilder)
         {
             var user = dbModelBuilder.Entity<User>();
             user.HasKey(x => x.Id);
-            user.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            user.Property(x => x.Id).UseSqlServerIdentityColumn();
         }
 
         /// <summary>
         /// Initialize user description tabe,
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeUserDescriptionTable(DbModelBuilder dbModelBuilder)
+        private void InitializeUserDescriptionTable(ModelBuilder dbModelBuilder)
         {
             var userDescription = dbModelBuilder.Entity<UserDescription>();
             userDescription.HasKey(x => x.Id);
-            userDescription.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            userDescription.Property(x => x.Id).UseSqlServerIdentityColumn();
 
-            userDescription.HasRequired(x => x.User).WithMany(x => x.UserDescriptions).HasForeignKey(x => x.UserId);
+            userDescription.HasOne(x => x.User).WithMany(x => x.UserDescriptions).HasForeignKey(x => x.UserId);
         }
 
         /// <summary>
         ///     Initialize project table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeProjectTable(DbModelBuilder dbModelBuilder)
+        private void InitializeProjectTable(ModelBuilder dbModelBuilder)
         {
             var project = dbModelBuilder.Entity<Project>();
             project.HasKey(x => x.Id);
-            project.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            project.Property(x => x.Id).UseSqlServerIdentityColumn();
 
-            project.HasRequired(x => x.User).WithMany(x => x.Projects).HasForeignKey(x => x.UserId);
+            project.HasOne(x => x.User).WithMany(x => x.Projects).HasForeignKey(x => x.UserId);
         }
 
         /// <summary>
         ///     Initialize project skill table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeProjectSkillTable(DbModelBuilder dbModelBuilder)
+        private void InitializeProjectSkillTable(ModelBuilder dbModelBuilder)
         {
             var projectSkill = dbModelBuilder.Entity<ProjectSkill>();
             projectSkill.HasKey(x => new { x.ProjectId, x.SkillId });
 
-            projectSkill.HasRequired(x => x.Skill).WithMany(x => x.ProjectSkills).HasForeignKey(x => x.SkillId);
-            projectSkill.HasRequired(x => x.Project).WithMany(x => x.ProjectSkills).HasForeignKey(x => x.ProjectId);
+            projectSkill.HasOne(x => x.Skill).WithMany(x => x.ProjectSkills).HasForeignKey(x => x.SkillId);
+            projectSkill.HasOne(x => x.Project).WithMany(x => x.ProjectSkills).HasForeignKey(x => x.ProjectId);
         }
 
         /// <summary>
         ///     Initialize skill table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeSkillTable(DbModelBuilder dbModelBuilder)
+        private void InitializeSkillTable(ModelBuilder dbModelBuilder)
         {
             var skill = dbModelBuilder.Entity<Skill>();
             skill.HasKey(x => x.Id);
-            skill.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            skill.Property(x => x.Id).UseSqlServerIdentityColumn();
         }
 
         /// <summary>
         ///     Initialize project responsibility table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeProjectResponsibilityTable(DbModelBuilder dbModelBuilder)
+        private void InitializeProjectResponsibilityTable(ModelBuilder dbModelBuilder)
         {
             var projectResponsibility = dbModelBuilder.Entity<ProjectResponsibility>();
             projectResponsibility.HasKey(x => new { x.ProjectId, x.ResponsibilityId });
 
-            projectResponsibility.HasRequired(x => x.Project).WithMany(x => x.ProjectResponsibilities)
+            projectResponsibility.HasOne(x => x.Project).WithMany(x => x.ProjectResponsibilities)
                 .HasForeignKey(x => x.ProjectId);
 
-            projectResponsibility.HasRequired(x => x.Responsibility).WithMany(x => x.ProjectResponsibilities)
+            projectResponsibility.HasOne(x => x.Responsibility).WithMany(x => x.ProjectResponsibilities)
                 .HasForeignKey(x => x.ResponsibilityId);
         }
 
@@ -214,7 +208,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize responsibility table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeResponsibilityTable(DbModelBuilder dbModelBuilder)
+        private void InitializeResponsibilityTable(ModelBuilder dbModelBuilder)
         {
             var responsibility = dbModelBuilder.Entity<Responsibility>();
             responsibility.HasKey(x => x.Id);
@@ -224,26 +218,26 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize skill category.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeSkillCategory(DbModelBuilder dbModelBuilder)
+        private void InitializeSkillCategory(ModelBuilder dbModelBuilder)
         {
             var skillCategory = dbModelBuilder.Entity<SkillCategory>();
             skillCategory.HasKey(x => x.Id);
-            skillCategory.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            skillCategory.Property(x => x.Id).UseSqlServerIdentityColumn();
 
-            skillCategory.HasRequired(x => x.User).WithMany(x => x.SkillCategories).HasForeignKey(x => x.UserId);
+            skillCategory.HasOne(x => x.User).WithMany(x => x.SkillCategories).HasForeignKey(x => x.UserId);
         }
 
         /// <summary>
         ///     Initialize skill category - skill relationship.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeSkillCategorySkillRelationshipTable(DbModelBuilder dbModelBuilder)
+        private void InitializeSkillCategorySkillRelationshipTable(ModelBuilder dbModelBuilder)
         {
             var skillCategorySkillRelationship = dbModelBuilder.Entity<SkillCategorySkillRelationship>();
             skillCategorySkillRelationship.HasKey(x => new { x.SkillCategoryId, x.SkillId });
 
-            skillCategorySkillRelationship.HasRequired(x => x.Skill).WithMany(x => x.SkillCategorySkillRelationships).HasForeignKey(x => x.SkillId);
-            skillCategorySkillRelationship.HasRequired(x => x.SkillCategory)
+            skillCategorySkillRelationship.HasOne(x => x.Skill).WithMany(x => x.SkillCategorySkillRelationships).HasForeignKey(x => x.SkillId);
+            skillCategorySkillRelationship.HasOne(x => x.SkillCategory)
                 .WithMany(x => x.SkillCategorySkillRelationships).HasForeignKey(x => x.SkillCategoryId);
         }
 
@@ -251,12 +245,12 @@ namespace DbEntity.Models.Entities.Context
         /// Initialize hobby
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeHobbyTable (DbModelBuilder dbModelBuilder)
+        private void InitializeHobbyTable(ModelBuilder dbModelBuilder)
         {
             var hobby = dbModelBuilder.Entity<Hobby>();
             hobby.HasKey(x => x.Id);
-            hobby.Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-            hobby.HasRequired(x => x.User).WithMany(x => x.Hobbies).HasForeignKey(x => x.UserId);
+            hobby.Property(x => x.Id).UseSqlServerIdentityColumn();
+            hobby.HasOne(x => x.User).WithMany(x => x.Hobbies).HasForeignKey(x => x.UserId);
 
         }
 
@@ -264,12 +258,12 @@ namespace DbEntity.Models.Entities.Context
         /// Initialize profile activation token.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        public void InitializeProfileActivationToken(DbModelBuilder dbModelBuilder)
+        public void InitializeProfileActivationToken(ModelBuilder dbModelBuilder)
         {
             var profileActivationToken = dbModelBuilder.Entity<ProfileActivationToken>();
             profileActivationToken.HasKey(x => x.Email);
-            profileActivationToken.Property(x => x.Email).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+            profileActivationToken.Property(x => x.Email).IsRequired();
         }
-#endregion
+        #endregion
     }
 }

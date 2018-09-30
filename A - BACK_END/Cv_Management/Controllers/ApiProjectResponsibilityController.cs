@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -11,6 +10,7 @@ using ApiClientShared.ViewModel.ProjectResponsibility;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -19,7 +19,7 @@ namespace Cv_Management.Controllers
     {
         #region properties
 
-        public readonly CvManagementDbContext _dbContext;
+        public readonly BaseCvManagementDbContext _dbContext;
 
         public readonly IDbService _dbService;
         #endregion
@@ -29,7 +29,7 @@ namespace Cv_Management.Controllers
         public ApiProjectResponsibilityController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
 
         }

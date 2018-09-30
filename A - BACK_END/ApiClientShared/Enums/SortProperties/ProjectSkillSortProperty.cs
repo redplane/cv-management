@@ -2,7 +2,7 @@
 {
     public enum ProjectSkillSortProperty
     {
-        Id,
-       Name
+        ProjectId,
+        SkillId
     }
 }

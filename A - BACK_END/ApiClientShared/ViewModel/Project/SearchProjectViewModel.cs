@@ -14,9 +14,9 @@ namespace ApiClientShared.ViewModel.Project
 
         public HashSet<string> Names { get; set; }
 
-        public bool IncludeResponsibilities { get; set; }
+        //public bool IncludeResponsibilities { get; set; }
 
-        public bool IncludeSkills { get; set; }
+        //public bool IncludeSkills { get; set; }
 
         public RangeModel<double, double> StartedTime { get; set; }
 

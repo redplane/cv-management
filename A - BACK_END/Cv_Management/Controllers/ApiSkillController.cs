@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,6 +12,7 @@ using ApiClientShared.ViewModel.Skill;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -29,7 +29,7 @@ namespace Cv_Management.Controllers
         /// <param name="profileService"></param>
         public ApiSkillController(DbContext dbContext, IDbService dbService, IProfileService profileService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
         }
 
@@ -40,7 +40,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Context to access to database
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Cv_Management.Controllers
             skill.CreatedTime = DateTime.Now.ToOADate();
 
             //add skill to database
-            skill = _dbContext.Skills.Add(skill);
+            _dbContext.Skills.Add(skill);
 
             //save changes to database
             await _dbContext.SaveChangesAsync();

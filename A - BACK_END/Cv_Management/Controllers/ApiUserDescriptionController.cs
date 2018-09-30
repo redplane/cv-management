@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -10,6 +9,7 @@ using ApiClientShared.ViewModel.UserDescription;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -26,7 +26,7 @@ namespace Cv_Management.Controllers
         /// <param name="profileService"></param>
         public ApiUserDescriptionController(DbContext dbContext, IDbService dbService, IProfileService profileService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _dbContext = (BaseCvManagementDbContext) dbContext;
             _dbService = dbService;
             _profileService = profileService;
         }
@@ -38,7 +38,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Context to access to database.
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         ///     Service to handle database operation.
@@ -131,7 +131,7 @@ namespace Cv_Management.Controllers
             userDescription.Description = model.Description;
 
             // Add the description into database.
-            userDescription = _dbContext.UserDescriptions.Add(userDescription);
+            _dbContext.UserDescriptions.Add(userDescription);
 
             // Save changes into database.
             await _dbContext.SaveChangesAsync();

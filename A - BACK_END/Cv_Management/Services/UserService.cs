@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using AutoMapper;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Services
 {
@@ -18,7 +18,7 @@ namespace Cv_Management.Services
         /// <summary>
         /// Context to access to database.
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         /// Profile caching service (email - profile model)
@@ -48,7 +48,7 @@ namespace Cv_Management.Services
         /// <param name="mapper"></param>
         public UserService(DbContext dbContext, IValueCacheService<string, ProfileModel> profileCacheService, IProfileService profileService, IMapper mapper)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _dbContext = (BaseCvManagementDbContext) dbContext;
             _profileCacheService = profileCacheService;
             _profileService = profileService;
             _mapper = mapper;

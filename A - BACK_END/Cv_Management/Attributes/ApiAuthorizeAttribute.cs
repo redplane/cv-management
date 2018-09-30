@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,9 +9,8 @@ using System.Web.Http.Filters;
 using AutoMapper;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
-using Cv_Management.Services;
-using Cv_Management.Services.CacheServices;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Attributes
 {
@@ -39,9 +36,7 @@ namespace Cv_Management.Attributes
 
             var dependencyScope = httpActionContext.Request.GetDependencyScope();
 
-#if ALLOW_UNAUTHORZATION
-
-            // Get identity service from lifetime scope.
+#if ALLOW_UNAUTHORZATION // Get identity service from lifetime scope.
             identityService = (IIdentityService)dependencyScope.GetService(typeof(IIdentityService));
 
             profile = new ProfileViewModel();
@@ -51,21 +46,23 @@ namespace Cv_Management.Attributes
             profile.UserName = "sniper-warrior";
             profile.Level1Id = 1;
             profile.Level2Id = 2;
-            profile.Roles = (new [] {(int)RolesConstant.VinciAdministrator, (int)RolesConstant.OpuAdministrator, (int)RolesConstant.InspectionEngineer, (int)RolesConstant.TechnicalAssistant, (int)RolesConstant.Inspector, (int)RolesConstant.Reviewer, (int)RolesConstant.Approver, (int)RolesConstant.Viewer }).ToList();
+            profile.Roles =
+(new [] {(int)RolesConstant.VinciAdministrator, (int)RolesConstant.OpuAdministrator, (int)RolesConstant.InspectionEngineer, (int)RolesConstant.TechnicalAssistant, (int)RolesConstant.Inspector, (int)RolesConstant.Reviewer, (int)RolesConstant.Approver, (int)RolesConstant.Viewer }).ToList();
             identityService.InitRequestIdentity(httpActionContext.Request, profile);
 
-#else 
+#else
+
             #region Principle validation
 
             // Find identity service.
-            profileService = (IProfileService)dependencyScope.GetService(typeof(IProfileService));
+            profileService = (IProfileService) dependencyScope.GetService(typeof(IProfileService));
             mapper = (IMapper) dependencyScope.GetService(typeof(IMapper));
 
             //var memoryCacheService = (IMemoryCacheService)dependencyScope.GetService(typeof(IMemoryCacheService));
 
             // Get profile cache service.
             var profileCacheService =
-                (IValueCacheService<string, ProfileModel>)dependencyScope.GetService(
+                (IValueCacheService<string, ProfileModel>) dependencyScope.GetService(
                     typeof(IValueCacheService<string, ProfileModel>));
 
             // FullSearch the principle of request.
@@ -103,7 +100,7 @@ namespace Cv_Management.Attributes
             #region Claim identity
 
             // FullSearch the claim identity.
-            var claimIdentity = (ClaimsIdentity)identity;
+            var claimIdentity = (ClaimsIdentity) identity;
 
             // Claim doesn't contain email.
             var pUserEmailClaim = claimIdentity.FindFirst(ClaimTypes.Email);
@@ -131,7 +128,7 @@ namespace Cv_Management.Attributes
             }
 
             // Find unit of work from lifetime scope.
-            var dbContext = (CvManagementDbContext)dependencyScope.GetService(typeof(DbContext));
+            var dbContext = (BaseCvManagementDbContext) dependencyScope.GetService(typeof(DbContext));
 
             var users = dbContext.Users.AsQueryable();
             users = users.Where(x =>

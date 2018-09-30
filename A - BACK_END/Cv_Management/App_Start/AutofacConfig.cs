@@ -19,6 +19,8 @@ using Cv_Management.Services;
 using Cv_Management.Services.CacheServices;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Data;
 using ServiceStack.Redis;
 
@@ -66,22 +68,40 @@ namespace Cv_Management
 
             #region Database context
 
-            //builder.RegisterType<CvManagementDbContext>().As<DbContext>().InstancePerLifetimeScope();
             builder.Register(c =>
                 {
-                    var dbConnectionFactory =
-                        Effort.DbConnectionFactory.CreatePersistent(nameof(CvManagementDbContext));
-                    return new CvManagementDbContext(dbConnectionFactory);
+                    var dbContextOptionsBuilder = new DbContextOptionsBuilder<BaseCvManagementDbContext>();
+                    var connectionString = ConfigurationManager.ConnectionStrings["CvManagement"].ConnectionString;
+                    dbContextOptionsBuilder.UseSqlServer(connectionString)
+                        .EnableSensitiveDataLogging()
+                        .UseLoggerFactory(new LoggerFactory().AddConsole((category, level) => level == LogLevel.Information && category == DbLoggerCategory.Database.Command.Name, true));
+
+                    var dbContext = new BaseCvManagementDbContext(dbContextOptionsBuilder.Options);
+                    return dbContext;
                 })
                 .As<DbContext>()
-                .SingleInstance();
+                .InstancePerLifetimeScope();
 
-
-            //builder.RegisterType<CvManagementDbContext>().As<DbContext>()
+            //builder.RegisterType<BaseCvManagementDbContext>()
+            //    .As<DbContext>()
             //    .OnActivating(x =>
             //    {
-            //        var dbConnectionFactory = Effort.DbConnectionFactory.CreatePersistent(nameof(CvManagementDbContext));
-            //        var dbContext = new CvManagementDbContext(dbConnectionFactory);
+            //        var dbContextOptionsBuilder = new DbContextOptionsBuilder<BaseCvManagementDbContext>();
+            //        var connectionString = ConfigurationManager.ConnectionStrings["CvManagement"].ConnectionString;
+            //        dbContextOptionsBuilder.UseSqlServer(connectionString)
+            //            .EnableSensitiveDataLogging()
+            //            .UseLoggerFactory(new LoggerFactory().AddConsole((category, level) => level == LogLevel.Information && category == DbLoggerCategory.Database.Command.Name, true));
+                    
+            //        var dbContext = new BaseCvManagementDbContext(dbContextOptionsBuilder.Options);
+            //        x.ReplaceInstance(dbContext);
+            //    })
+            //    .InstancePerLifetimeScope();
+           
+            //builder.RegisterType<BaseCvManagementDbContext>().As<DbContext>()
+            //    .OnActivating(x =>
+            //    {
+            //        var dbConnectionFactory = Effort.DbConnectionFactory.CreatePersistent(nameof(BaseCvManagementDbContext));
+            //        var dbContext = new BaseCvManagementDbContext(dbConnectionFactory);
             //        x.ReplaceInstance(dbContext);
             //    })
             //    .SingleInstance();

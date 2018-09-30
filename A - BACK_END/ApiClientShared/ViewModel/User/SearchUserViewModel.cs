@@ -27,15 +27,15 @@ namespace ApiClientShared.ViewModel.User
         /// </summary>
         public HashSet<UserStatuses> Statuses { get; set; }
 
-        /// <summary>
-        /// Response include descriptions of user
-        /// </summary>
-        public bool IncludeDescriptions { get; set; }
+        ///// <summary>
+        ///// Response include descriptions of user
+        ///// </summary>
+        //public bool IncludeDescriptions { get; set; }
 
 
-        /// <summary>
-        /// Response include hobbies of user
-        /// </summary>
-        public bool IncludeHobbies { get; set; }
+        ///// <summary>
+        ///// Response include hobbies of user
+        ///// </summary>
+        //public bool IncludeHobbies { get; set; }
     }
 }

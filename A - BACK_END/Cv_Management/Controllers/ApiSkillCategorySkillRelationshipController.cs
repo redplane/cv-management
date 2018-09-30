@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +17,7 @@ using AutoMapper;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -29,7 +29,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         /// Database context to access to database.
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         /// Database service to handle common db operation.
@@ -54,7 +54,7 @@ namespace Cv_Management.Controllers
         public ApiSkillCategorySkillRelationshipController(DbContext dbContext,
             IDbService dbService, IProfileService profileService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
             _profileService = profileService;
         }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,6 +14,7 @@ using ApiClientShared.ViewModel.Skill;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -31,7 +31,7 @@ namespace Cv_Management.Controllers
         public ApiProjectController(DbContext dbContext,
             IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
         }
 
@@ -42,7 +42,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Context to access to database
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
 
         /// <summary>
@@ -106,68 +106,68 @@ namespace Cv_Management.Controllers
 
             #region Search project skills & responsibilities.
 
-            var skills = Enumerable.Empty<Skill>().AsQueryable();
-            var projectSkills = Enumerable.Empty<ProjectSkill>().AsQueryable();
+            //var skills = Enumerable.Empty<Skill>().AsQueryable();
+            //var projectSkills = Enumerable.Empty<ProjectSkill>().AsQueryable();
 
-            if (condition.IncludeSkills)
-            {
-                skills = _dbContext.Skills.AsQueryable();
-                projectSkills = _dbContext.ProjectSkills.AsQueryable();
-            }
+            //if (condition.IncludeSkills)
+            //{
+            //    skills = _dbContext.Skills.AsQueryable();
+            //    projectSkills = _dbContext.ProjectSkills.AsQueryable();
+            //}
 
 
-            var responsibilities = Enumerable.Empty<Responsibility>().AsQueryable();
-            var projectResponsibilities = Enumerable.Empty<ProjectResponsibility>().AsQueryable();
-            if (condition.IncludeResponsibilities)
-            {
-                responsibilities = _dbContext.Responsibilities.AsQueryable();
-                projectResponsibilities = _dbContext.ProjectResponsibilities.AsQueryable();
-            }
+            //var responsibilities = Enumerable.Empty<Responsibility>().AsQueryable();
+            //var projectResponsibilities = Enumerable.Empty<ProjectResponsibility>().AsQueryable();
+            //if (condition.IncludeResponsibilities)
+            //{
+            //    responsibilities = _dbContext.Responsibilities.AsQueryable();
+            //    projectResponsibilities = _dbContext.ProjectResponsibilities.AsQueryable();
+            //}
 
-            var loadedProjects = from project in projects
-                select new ProjectViewModel
-                {
-                    Id = project.Id,
-                    UserId = project.UserId,
-                    Name = project.Name,
-                    Description = project.Description,
-                    StartedTime = project.StartedTime,
-                    FinishedTime = project.FinishedTime,
-                    Skills = from projectSkill in projectSkills
-                        from skill in skills
-                        where projectSkill.ProjectId == project.Id && projectSkill.SkillId == skill.Id
-                        select new SkillViewModel
-                        {
-                            Id = skill.Id,
-                            Name = skill.Name,
-                            CreatedTime = skill.CreatedTime,
-                            LastModifiedTime = skill.LastModifiedTime
-                        },
-                    Responsibilities = from projectResponsibility in projectResponsibilities
-                        from responsibility in responsibilities
-                        where projectResponsibility.ProjectId == project.Id &&
-                              projectResponsibility.ResponsibilityId == responsibility.Id
-                        select new ResponsibilityViewModel
-                        {
-                            Id = responsibility.Id,
-                            Name = responsibility.Name,
-                            CreatedTime = responsibility.CreatedTime,
-                            LastModifiedTime = responsibility.LastModifiedTime
-                        }
-                };
+            //var loadedProjects = from project in projects
+            //                     select new ProjectViewModel
+            //                     {
+            //                         Id = project.Id,
+            //                         UserId = project.UserId,
+            //                         Name = project.Name,
+            //                         Description = project.Description,
+            //                         StartedTime = project.StartedTime,
+            //                         FinishedTime = project.FinishedTime,
+            //                         Skills = from projectSkill in projectSkills
+            //                                  from skill in skills
+            //                                  where projectSkill.ProjectId == project.Id && projectSkill.SkillId == skill.Id
+            //                                  select new SkillViewModel
+            //                                  {
+            //                                      Id = skill.Id,
+            //                                      Name = skill.Name,
+            //                                      CreatedTime = skill.CreatedTime,
+            //                                      LastModifiedTime = skill.LastModifiedTime
+            //                                  },
+            //                         Responsibilities = from projectResponsibility in projectResponsibilities
+            //                                            from responsibility in responsibilities
+            //                                            where projectResponsibility.ProjectId == project.Id &&
+            //                                                  projectResponsibility.ResponsibilityId == responsibility.Id
+            //                                            select new ResponsibilityViewModel
+            //                                            {
+            //                                                Id = responsibility.Id,
+            //                                                Name = responsibility.Name,
+            //                                                CreatedTime = responsibility.CreatedTime,
+            //                                                LastModifiedTime = responsibility.LastModifiedTime
+            //                                            }
+            //                     };
 
             #endregion
 
-            var result = new SearchResultViewModel<IList<ProjectViewModel>>();
+            var result = new SearchResultViewModel<IList<Project>>();
             result.Total = await projects.CountAsync();
 
             //Do sort
-            loadedProjects = _dbService.Sort(loadedProjects, SortDirection.Ascending, ProjectSortProperty.Id);
+            projects = _dbService.Sort(projects, SortDirection.Ascending, ProjectSortProperty.Id);
 
             //Do Pagination
-            loadedProjects = _dbService.Paginate(loadedProjects, condition.Pagination);
+            projects = _dbService.Paginate(projects, condition.Pagination);
 
-            result.Records = await loadedProjects.ToListAsync();
+            result.Records = await projects.ToListAsync();
             return Ok(result);
         }
 
@@ -207,7 +207,7 @@ namespace Cv_Management.Controllers
                 project.StartedTime = model.StatedTime;
 
                 //Add project to database
-                project = _dbContext.Projects.Add(project);
+                _dbContext.Projects.Add(project);
                 if (model.SkillIds != null)
                 {
                     #region add project skill

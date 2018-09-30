@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -20,6 +19,7 @@ using System.Threading;
 using ApiClientShared.Constants;
 using ApiClientShared.Resources;
 using Cv_Management.Models;
+using Microsoft.EntityFrameworkCore;
 using Image = System.Drawing.Image;
 
 namespace Cv_Management.Controllers
@@ -39,7 +39,7 @@ namespace Cv_Management.Controllers
         /// <param name="appPath"></param>
         public ApiSkillCategoryController(DbContext dbContext, IDbService dbService, IMapper mapper, IFileService fileService, AppPathModel appPath)
         {
-            _dbContext = dbContext as CvManagementDbContext;
+            _dbContext = dbContext as BaseCvManagementDbContext;
             _dbService = dbService;
             _mapper = mapper;
             _fileService = fileService;
@@ -53,7 +53,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Database context.
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         ///     Service which is for handling database operation.
@@ -146,7 +146,7 @@ namespace Cv_Management.Controllers
             // Get offline skill categories.
             var loadSkillCategoryResult = new SearchResultViewModel<IEnumerable<SkillCategoryViewModel>>();
             loadSkillCategoryResult.Total = await skillCategories.CountAsync();
-            
+
             // Load skill categories.
             var loadedSkillCategories = from skillCategory in skillCategories
                                         select new SkillCategoryViewModel
@@ -210,7 +210,7 @@ namespace Cv_Management.Controllers
             skillCategory.CreatedTime = DateTime.Now.ToOADate();
 
             //Save to db context
-            skillCategory = _dbContext.SkillCategories.Add(skillCategory);
+            _dbContext.SkillCategories.Add(skillCategory);
 
             //save change to db
             await _dbContext.SaveChangesAsync();
@@ -251,7 +251,7 @@ namespace Cv_Management.Controllers
                     return BadRequest(ModelState);
                 }
             }
-            
+
             #endregion
 
             //Get SkillCategory

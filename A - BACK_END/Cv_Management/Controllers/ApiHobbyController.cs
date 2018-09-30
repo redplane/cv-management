@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -12,6 +11,7 @@ using ApiClientShared.ViewModel.Hobby;
 using Cv_Management.Interfaces.Services;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -23,7 +23,7 @@ namespace Cv_Management.Controllers
         /// <summary>
         /// Database context.
         /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly BaseCvManagementDbContext _dbContext;
 
         /// <summary>
         /// Service which handles database operation.
@@ -41,7 +41,7 @@ namespace Cv_Management.Controllers
         /// <param name="dbService"></param>
         public ApiHobbyController(DbContext dbContext, IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
 
         }
@@ -135,7 +135,7 @@ namespace Cv_Management.Controllers
             hobby.Description = model.Description;
 
             //Add to db context
-            hobby = _dbContext.Hobbies.Add(hobby);
+            _dbContext.Hobbies.Add(hobby);
             await _dbContext.SaveChangesAsync();
 
             return Ok(hobby);
