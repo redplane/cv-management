@@ -23,11 +23,6 @@ namespace ApiClientShared.ViewModel.SkillCategory
         public HashSet<string> Names { get; set; }
         
         /// <summary>
-        /// Whether personal skills are included in search result or not.
-        /// </summary>
-        public bool IncludeSkills { get; set; }
-
-        /// <summary>
         /// Pagination information.
         /// </summary>
         public Pagination Pagination { get; set; }

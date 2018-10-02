@@ -26,16 +26,6 @@ namespace ApiClientShared.ViewModel.User
         /// List of statuses that used for searching for users.
         /// </summary>
         public HashSet<UserStatuses> Statuses { get; set; }
-
-        ///// <summary>
-        ///// Response include descriptions of user
-        ///// </summary>
-        //public bool IncludeDescriptions { get; set; }
-
-
-        ///// <summary>
-        ///// Response include hobbies of user
-        ///// </summary>
-        //public bool IncludeHobbies { get; set; }
+        
     }
 }

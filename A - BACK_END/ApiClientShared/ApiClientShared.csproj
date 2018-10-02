@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants\ImageSizeConstant.cs" />
+    <Compile Include="Enums\SortProperties\ProjectResponsibilitySortProperty.cs" />
     <Compile Include="Enums\SortProperties\SkillSortProperty.cs" />
     <Compile Include="Enums\SortProperties\ResponsibilitySortProperty.cs" />
     <Compile Include="Enums\SortProperties\SkillCategorySortProperty.cs" />

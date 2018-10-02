@@ -128,6 +128,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\IRepository.cs" />
+    <Compile Include="Interfaces\IUnitOfWork.cs" />
     <Compile Include="Models\Entities\Context\BaseCvManagementDbContext.cs" />
     <Compile Include="Models\Entities\Hobby.cs" />
     <Compile Include="Models\Entities\ProfileActivationToken.cs" />
@@ -141,6 +143,8 @@
     <Compile Include="Models\Entities\User.cs" />
     <Compile Include="Models\Entities\UserDescription.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Repository.cs" />
+    <Compile Include="Services\UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

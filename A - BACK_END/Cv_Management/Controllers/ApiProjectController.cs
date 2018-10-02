@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Project;
 using ApiClientShared.ViewModel.Responsibility;
 using ApiClientShared.ViewModel.Skill;
 using Cv_Management.Interfaces.Services;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
@@ -26,13 +28,11 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Initialize controller with injectors
         /// </summary>
-        /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
-        public ApiProjectController(DbContext dbContext,
-            IDbService dbService)
+        public ApiProjectController(IDbService dbService, IUnitOfWork unitOfWork)
         {
-            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
+            _unitOfWork = unitOfWork;
         }
 
         #endregion
@@ -40,15 +40,11 @@ namespace Cv_Management.Controllers
         #region Properties
 
         /// <summary>
-        ///     Context to access to database
-        /// </summary>
-        private readonly BaseCvManagementDbContext _dbContext;
-
-
-        /// <summary>
         ///     Service to handler controller operation
         /// </summary>
         private readonly IDbService _dbService;
+
+        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
 
@@ -74,7 +70,7 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
 
-            var projects = _dbContext.Projects.AsQueryable();
+            var projects = _unitOfWork.Projects.Search();
             if (condition.Ids != null)
             {
                 var ids = condition.Ids.Where(x => x > 0).ToList();
@@ -103,60 +99,6 @@ namespace Cv_Management.Controllers
             if (condition.FinishedTime != null)
                 projects = projects.Where(c => c.FinishedTime >= condition.FinishedTime.From
                                                && c.FinishedTime <= condition.FinishedTime.To);
-
-            #region Search project skills & responsibilities.
-
-            //var skills = Enumerable.Empty<Skill>().AsQueryable();
-            //var projectSkills = Enumerable.Empty<ProjectSkill>().AsQueryable();
-
-            //if (condition.IncludeSkills)
-            //{
-            //    skills = _dbContext.Skills.AsQueryable();
-            //    projectSkills = _dbContext.ProjectSkills.AsQueryable();
-            //}
-
-
-            //var responsibilities = Enumerable.Empty<Responsibility>().AsQueryable();
-            //var projectResponsibilities = Enumerable.Empty<ProjectResponsibility>().AsQueryable();
-            //if (condition.IncludeResponsibilities)
-            //{
-            //    responsibilities = _dbContext.Responsibilities.AsQueryable();
-            //    projectResponsibilities = _dbContext.ProjectResponsibilities.AsQueryable();
-            //}
-
-            //var loadedProjects = from project in projects
-            //                     select new ProjectViewModel
-            //                     {
-            //                         Id = project.Id,
-            //                         UserId = project.UserId,
-            //                         Name = project.Name,
-            //                         Description = project.Description,
-            //                         StartedTime = project.StartedTime,
-            //                         FinishedTime = project.FinishedTime,
-            //                         Skills = from projectSkill in projectSkills
-            //                                  from skill in skills
-            //                                  where projectSkill.ProjectId == project.Id && projectSkill.SkillId == skill.Id
-            //                                  select new SkillViewModel
-            //                                  {
-            //                                      Id = skill.Id,
-            //                                      Name = skill.Name,
-            //                                      CreatedTime = skill.CreatedTime,
-            //                                      LastModifiedTime = skill.LastModifiedTime
-            //                                  },
-            //                         Responsibilities = from projectResponsibility in projectResponsibilities
-            //                                            from responsibility in responsibilities
-            //                                            where projectResponsibility.ProjectId == project.Id &&
-            //                                                  projectResponsibility.ResponsibilityId == responsibility.Id
-            //                                            select new ResponsibilityViewModel
-            //                                            {
-            //                                                Id = responsibility.Id,
-            //                                                Name = responsibility.Name,
-            //                                                CreatedTime = responsibility.CreatedTime,
-            //                                                LastModifiedTime = responsibility.LastModifiedTime
-            //                                            }
-            //                     };
-
-            #endregion
 
             var result = new SearchResultViewModel<IList<Project>>();
             result.Total = await projects.CountAsync();
@@ -190,15 +132,18 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             //Check exists project in database
-            var isExists = await _dbContext.Projects.AnyAsync(c => c.Name == model.Name);
-            if (isExists)
+            var projects = _unitOfWork.Projects.Search();
+            projects = projects.Where(x => x.Name.Contains(model.Name));
+
+            var project = await projects.FirstOrDefaultAsync();
+            if (project != null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict, "EXISTS_CODE_ERROR"));
 
-            var transaction = _dbContext.Database.BeginTransaction();
+            var transaction = _unitOfWork.BeginTransactionScope();
             try
             {
                 //Inial Project object
-                var project = new Project();
+                project = new Project();
 
                 project.UserId = model.UserId;
                 project.Name = model.Name;
@@ -207,28 +152,25 @@ namespace Cv_Management.Controllers
                 project.StartedTime = model.StatedTime;
 
                 //Add project to database
-                _dbContext.Projects.Add(project);
+                _unitOfWork.Projects.Insert(project);
                 if (model.SkillIds != null)
                 {
                     #region add project skill
 
                     //check exists skill
-                    var countSkills = await _dbContext.Skills.Where(c => model.SkillIds.Contains(c.Id)).CountAsync();
-                    var isExistSkills = countSkills == model.SkillIds.Count;
+                    var skills = _unitOfWork.Skills.Search();
+                    var availableSkills = await skills.Where(x => model.SkillIds.Contains(x.Id)).ToListAsync();
 
-                    if (!isExistSkills)
-                        return NotFound();
-
-                    //Insert to projectSkill table
-                    foreach (var skillId in model.SkillIds)
+                    // Insert to projectSkill table
+                    foreach (var skill in availableSkills)
                     {
                         var projectSkill = new ProjectSkill();
 
                         projectSkill.ProjectId = project.Id;
-                        projectSkill.SkillId = skillId;
+                        projectSkill.SkillId = skill.Id;
 
                         //Add to db context
-                        _dbContext.ProjectSkills.Add(projectSkill);
+                        _unitOfWork.ProjectSkills.Insert(projectSkill);
                     }
 
                     #endregion
@@ -238,33 +180,28 @@ namespace Cv_Management.Controllers
                 {
                     #region Project responsibilitis
 
-                    // check exists responsibilities
-                    var countRespon = await _dbContext.Responsibilities
-                        .Where(c => model.ResponsibilityIds.Contains(c.Id)).CountAsync();
-                    var isExistsRespon = countRespon == model.ResponsibilityIds.Count;
-
-                    if (!isExistsRespon)
-                        return NotFound();
+                    // Find available responsibilities.
+                    var responsibilities = _unitOfWork.Responsibilities.Search();
+                    var availableResponsibilities = await responsibilities.Where(x => model.ResponsibilityIds.Contains(x.Id)).ToListAsync();
 
                     //Insert project responsibility to db context
-                    foreach (var responsibilityId in model.ResponsibilityIds)
+                    foreach (var responsibility in availableResponsibilities)
                     {
                         var projectResponsibility = new ProjectResponsibility();
 
                         projectResponsibility.ProjectId = project.Id;
-                        projectResponsibility.ResponsibilityId = responsibilityId;
+                        projectResponsibility.ResponsibilityId = responsibility.Id;
                         projectResponsibility.CreatedTime = DateTime.UtcNow.ToOADate();
 
                         //Add to db context
-                        _dbContext.ProjectResponsibilities.Add(projectResponsibility);
+                        _unitOfWork.ProjectResponsibilities.Insert(projectResponsibility);
                     }
 
                     #endregion
                 }
 
-
                 //Save changes to database
-                await _dbContext.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
 
                 //Commit transaction
                 transaction.Commit();
@@ -298,9 +235,11 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             //Find  Project
-            var project = await _dbContext.Projects.FindAsync(id);
+            var projects = _unitOfWork.Projects.Search();
+            var project = await projects.FirstOrDefaultAsync(x => x.Id == id);
             if (project == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                    HttpMessages.ProjectNotFound));
 
             //Update information
             project.UserId = model.UserId;
@@ -309,26 +248,54 @@ namespace Cv_Management.Controllers
             project.FinishedTime = model.FinishedTime;
             project.StartedTime = model.StatedTime;
 
-            // TODO: Update skills & responsibilities.
-
             #region  Update skills
 
-            //Remove skill
+            // Update skills
             if (model.SkillIds != null)
             {
-                var skills = _dbContext.Skills.Where(c => model.SkillIds.Contains(c.Id));
-                var isExists = skills.Count() == model.SkillIds.Count;
-                if (!isExists)
-                    NotFound();
+                // Get the list of available skills.
+                var skills = _unitOfWork.Skills.Search();
+                var availableSkills = await skills.Where(x => model.SkillIds.Contains(x.Id)).ToListAsync();
 
-                foreach (var projectSkill in project.ProjectSkills.ToList())
-                    project.ProjectSkills.Remove(projectSkill);
+                var projectSkills = _unitOfWork.ProjectSkills.Search();
+                projectSkills = projectSkills.Where(x => x.ProjectId == id);
+                _unitOfWork.ProjectSkills.Remove(projectSkills);
+
+                foreach (var availableSkill in availableSkills)
+                {
+                    var projectSkill = new ProjectSkill();
+                    projectSkill.ProjectId = id;
+                    projectSkill.SkillId = availableSkill.Id;
+
+                    _unitOfWork.ProjectSkills.Insert(projectSkill);
+                }
+            }
+            
+            // Update responsibilities
+            if (model.ResponsibilityIds != null)
+            {
+                // Get the list of available skills.
+                var responsibilities = _unitOfWork.Responsibilities.Search();
+                var availableResponsibilities = await responsibilities.Where(x => model.ResponsibilityIds.Contains(x.Id)).ToListAsync();
+
+                var projectResponsibilities = _unitOfWork.ProjectResponsibilities.Search();
+                projectResponsibilities = projectResponsibilities.Where(x => x.ProjectId == id);
+                _unitOfWork.ProjectResponsibilities.Remove(projectResponsibilities);
+
+                foreach (var availableResponsibility in availableResponsibilities)
+                {
+                    var projectResponsibility = new ProjectResponsibility();
+                    projectResponsibility.ProjectId = id;
+                    projectResponsibility.ResponsibilityId = availableResponsibility.Id;
+
+                    _unitOfWork.ProjectResponsibilities.Insert(projectResponsibility);
+                }
             }
 
             #endregion
 
             //Save changes to database
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
 
             return Ok(project);
         }
@@ -343,16 +310,17 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> Delete([FromUri] int id)
         {
             //Find project in database
-            var project = _dbContext.Projects.Find(id);
+            var projects = _unitOfWork.Projects.Search();
+            var project = await projects.FirstOrDefaultAsync(x => x.Id == id);
 
             if (project == null)
                 return NotFound();
 
             //Delete project from database
-            _dbContext.Projects.Remove(project);
+            _unitOfWork.Projects.Remove(project);
 
             //Save changes to database
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
 
             return Ok();
         }

@@ -124,6 +124,9 @@
   <data name="HasSkillNotFound" xml:space="preserve">
     <value>HAS_SKILL_NOT_FOUND</value>
   </data>
+  <data name="HobbyNotFound" xml:space="preserve">
+    <value>HOBBY_NOT_FOUND</value>
+  </data>
   <data name="ProfileImageInvalid" xml:space="preserve">
     <value>PROFILE_IMAGE_INVALID</value>
   </data>
@@ -133,8 +136,20 @@
   <data name="ProfileNotFound" xml:space="preserve">
     <value>PROFILE_NOT_FOUND</value>
   </data>
+  <data name="ProjectNotFound" xml:space="preserve">
+    <value>PROJECT_NOT_FOUND</value>
+  </data>
   <data name="RegistrationDuplicate" xml:space="preserve">
     <value>REGISTRATION_DUPLICATE</value>
+  </data>
+  <data name="ResponsibilityAlreadyAvailable" xml:space="preserve">
+    <value>RESPONSIBILITY_ALREADY_AVAILABLE</value>
+  </data>
+  <data name="ResponsibilityNotFound" xml:space="preserve">
+    <value>RESPONSIBILITY_NOT_FOUND</value>
+  </data>
+  <data name="SkillCategoryAlreadyAvailable" xml:space="preserve">
+    <value>SKILL_CATEGORY_ALREADY_EXIST</value>
   </data>
   <data name="SkillCategoryImageSizeInvalid" xml:space="preserve">
     <value>SKILL_CATEGORY_IMAGE_SIZE_INVALID</value>
@@ -144,6 +159,15 @@
   </data>
   <data name="SkillInvalid" xml:space="preserve">
     <value>SKILL_INVALID</value>
+  </data>
+  <data name="SkillIsDuplicate" xml:space="preserve">
+    <value>SKILL_DUPLCATED</value>
+  </data>
+  <data name="SkillNotFound" xml:space="preserve">
+    <value>SKILL_NOT_FOUND</value>
+  </data>
+  <data name="UserDescriptionNotFoud" xml:space="preserve">
+    <value>USER_DESCRIPTION_NOT_FOUND</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>USER_NOT_FOUND</value>

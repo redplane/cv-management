@@ -12,8 +12,7 @@ namespace ApiClientShared.ViewModel.Hobby
         /// <summary>
         /// UserId that hobby belong to
         /// </summary>
-        [Required]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         /// <summary>
         /// Name'hobby

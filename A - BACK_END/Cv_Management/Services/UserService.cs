@@ -6,6 +6,7 @@ using ApiClientShared.Enums;
 using AutoMapper;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,10 +16,7 @@ namespace Cv_Management.Services
     {
         #region Properties
 
-        /// <summary>
-        /// Context to access to database.
-        /// </summary>
-        private readonly BaseCvManagementDbContext _dbContext;
+        private readonly IUnitOfWork _unitOfWork;
 
         /// <summary>
         /// Profile caching service (email - profile model)
@@ -42,13 +40,13 @@ namespace Cv_Management.Services
         /// <summary>
         /// Initialize service with injectors.
         /// </summary>
-        /// <param name="dbContext"></param>
+        /// <param name="unitOfWork"></param>
         /// <param name="profileCacheService"></param>
         /// <param name="profileService"></param>
         /// <param name="mapper"></param>
-        public UserService(DbContext dbContext, IValueCacheService<string, ProfileModel> profileCacheService, IProfileService profileService, IMapper mapper)
+        public UserService(IUnitOfWork unitOfWork, IValueCacheService<string, ProfileModel> profileCacheService, IProfileService profileService, IMapper mapper)
         {
-            _dbContext = (BaseCvManagementDbContext) dbContext;
+            _unitOfWork = unitOfWork;
             _profileCacheService = profileCacheService;
             _profileService = profileService;
             _mapper = mapper;
@@ -76,7 +74,7 @@ namespace Cv_Management.Services
             // No profile has been found from cache. Find user from database.
             if (profile == null || string.IsNullOrWhiteSpace(profile.Password))
             {
-                var users = _dbContext.Users.AsQueryable();
+                var users = _unitOfWork.Users.Search();
                 users = users.Where(x =>
                     x.Email.Equals(email, StringComparison.InvariantCultureIgnoreCase) &&
                     x.Password.Equals(hashedPassword, StringComparison.InvariantCultureIgnoreCase) && x.Status == UserStatuses.Active);

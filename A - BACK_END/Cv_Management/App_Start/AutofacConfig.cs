@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -17,12 +16,13 @@ using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using Cv_Management.Services;
 using Cv_Management.Services.CacheServices;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using DbEntity.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using ServiceStack.Data;
-using ServiceStack.Redis;
+using ServiceStack.Caching;
 
 namespace Cv_Management
 {
@@ -74,37 +74,15 @@ namespace Cv_Management
                     var connectionString = ConfigurationManager.ConnectionStrings["CvManagement"].ConnectionString;
                     dbContextOptionsBuilder.UseSqlServer(connectionString)
                         .EnableSensitiveDataLogging()
-                        .UseLoggerFactory(new LoggerFactory().AddConsole((category, level) => level == LogLevel.Information && category == DbLoggerCategory.Database.Command.Name, true));
+                        .UseLoggerFactory(new LoggerFactory().AddConsole(
+                            (category, level) => level == LogLevel.Information &&
+                                                 category == DbLoggerCategory.Database.Command.Name, true));
 
                     var dbContext = new BaseCvManagementDbContext(dbContextOptionsBuilder.Options);
                     return dbContext;
                 })
                 .As<DbContext>()
                 .InstancePerLifetimeScope();
-
-            //builder.RegisterType<BaseCvManagementDbContext>()
-            //    .As<DbContext>()
-            //    .OnActivating(x =>
-            //    {
-            //        var dbContextOptionsBuilder = new DbContextOptionsBuilder<BaseCvManagementDbContext>();
-            //        var connectionString = ConfigurationManager.ConnectionStrings["CvManagement"].ConnectionString;
-            //        dbContextOptionsBuilder.UseSqlServer(connectionString)
-            //            .EnableSensitiveDataLogging()
-            //            .UseLoggerFactory(new LoggerFactory().AddConsole((category, level) => level == LogLevel.Information && category == DbLoggerCategory.Database.Command.Name, true));
-                    
-            //        var dbContext = new BaseCvManagementDbContext(dbContextOptionsBuilder.Options);
-            //        x.ReplaceInstance(dbContext);
-            //    })
-            //    .InstancePerLifetimeScope();
-           
-            //builder.RegisterType<BaseCvManagementDbContext>().As<DbContext>()
-            //    .OnActivating(x =>
-            //    {
-            //        var dbConnectionFactory = Effort.DbConnectionFactory.CreatePersistent(nameof(BaseCvManagementDbContext));
-            //        var dbContext = new BaseCvManagementDbContext(dbConnectionFactory);
-            //        x.ReplaceInstance(dbContext);
-            //    })
-            //    .SingleInstance();
 
             #endregion
 
@@ -120,13 +98,16 @@ namespace Cv_Management
 
             #region Services
 
+            builder.RegisterGeneric(typeof(Repository<>)).As(typeof(IRepository<>)).InstancePerLifetimeScope();
+            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
             builder.RegisterType<DbService>().As<IDbService>().InstancePerLifetimeScope();
             builder.RegisterType<ProfileService>().As<IProfileService>().InstancePerLifetimeScope();
             builder.RegisterType<GoogleCaptchaService>().As<ICaptchaService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenService>().As<ITokenService>().InstancePerLifetimeScope();
             builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
-            builder.RegisterType<ProfileCacheService>().As<IValueCacheService<string, ProfileModel>>().SingleInstance().WithAttributeFiltering();
+            builder.RegisterType<ProfileCacheService>().As<IValueCacheService<string, ProfileModel>>().SingleInstance()
+                .WithAttributeFiltering();
 
             RegisterRedisCachingServices(ref builder);
 
@@ -146,7 +127,8 @@ namespace Cv_Management
         private static AppSettingModel FindAppSettings()
         {
             var appSettingModel = new AppSettingModel();
-            appSettingModel.GoogleCaptchaSecret = ConfigurationManager.AppSettings[nameof(AppSettingModel.GoogleCaptchaSecret)];
+            appSettingModel.GoogleCaptchaSecret =
+                ConfigurationManager.AppSettings[nameof(AppSettingModel.GoogleCaptchaSecret)];
             appSettingModel.GoogleCaptchaValidationEndpoint =
                 ConfigurationManager.AppSettings[nameof(AppSettingModel.GoogleCaptchaValidationEndpoint)];
 
@@ -154,7 +136,7 @@ namespace Cv_Management
         }
 
         /// <summary>
-        /// Find app paths settings.
+        ///     Find app paths settings.
         /// </summary>
         /// <returns></returns>
         private static AppPathModel FindAppPathSettings()
@@ -171,25 +153,32 @@ namespace Cv_Management
                 Directory.CreateDirectory(absoluteProfileImagePath);
 
             var absoluteSkillCategoryImagePath = HostingEnvironment.MapPath(appPath.SkillCategoryImage);
-            if (!string.IsNullOrWhiteSpace(absoluteSkillCategoryImagePath) && !Directory.Exists(absoluteSkillCategoryImagePath))
+            if (!string.IsNullOrWhiteSpace(absoluteSkillCategoryImagePath) &&
+                !Directory.Exists(absoluteSkillCategoryImagePath))
                 Directory.CreateDirectory(absoluteSkillCategoryImagePath);
 
             return appPath;
         }
 
         /// <summary>
-        /// Register redis caching services.
+        ///     Register redis caching services.
         /// </summary>
         /// <param name="containerBuilder"></param>
         private static void RegisterRedisCachingServices(ref ContainerBuilder containerBuilder)
         {
             // Redis registration.
-            var profileCachingRedisConnectionString = ConfigurationManager.AppSettings[$"Redis.{nameof(AutofacKeyConstant.ProfileRedisCaching)}"];
+            var profileCachingRedisConnectionString =
+                ConfigurationManager.AppSettings[$"Redis.{nameof(AutofacKeyConstant.ProfileRedisCaching)}"];
             if (string.IsNullOrWhiteSpace(profileCachingRedisConnectionString))
                 throw new Exception("Access token - profile cache connection string is not found.");
 
-            containerBuilder.Register(c => new RedisManagerPool(profileCachingRedisConnectionString))
-                .Keyed<IRedisClientsManager>(AutofacKeyConstant.ProfileRedisCaching);
+            //containerBuilder.Register(c => new RedisManagerPool(profileCachingRedisConnectionString).GetClient())
+            //    .Keyed<IRedisClient>(AutofacKeyConstant.ProfileRedisCaching)
+            //    .InstancePerLifetimeScope();
+
+            containerBuilder.Register(c => new MemoryCacheClient())
+                .Keyed<ICacheClient>(AutofacKeyConstant.ProfileRedisCaching)
+                .InstancePerLifetimeScope();
         }
     }
 }

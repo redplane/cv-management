@@ -7,7 +7,6 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using System.Web.Hosting;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Constants;
@@ -15,16 +14,13 @@ using ApiClientShared.Enums;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
-using ApiClientShared.ViewModel.Hobby;
 using ApiClientShared.ViewModel.User;
-using ApiClientShared.ViewModel.UserDescription;
 using AutoMapper;
-using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
-using Cv_Management.Services.CacheServices;
 using Cv_Management.ViewModels;
 using Cv_Management.ViewModels.User;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +35,6 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Initalize controller with Injectors
         /// </summary>
-        /// <param name="dbContext"></param>
         /// <param name="dbService"></param>
         /// <param name="tokenService"></param>
         /// <param name="profileService"></param>
@@ -47,18 +42,18 @@ namespace Cv_Management.Controllers
         /// <param name="fileService"></param>
         /// <param name="profileCacheService"></param>
         /// <param name="userService"></param>
+        /// <param name="unitOfWork"></param>
         /// <param name="mapper"></param>
         /// <param name="appPath"></param>
-        public ApiUserController(DbContext dbContext,
+        public ApiUserController(
             IDbService dbService,
             ITokenService tokenService, IProfileService profileService,
             ICaptchaService captchaService, IFileService fileService,
             IValueCacheService<string, ProfileModel> profileCacheService,
-            IUserService userService,
+            IUserService userService, IUnitOfWork unitOfWork,
             IMapper mapper,
             AppPathModel appPath)
         {
-            _dbContext = (BaseCvManagementDbContext)dbContext;
             _dbService = dbService;
             _tokenService = tokenService;
             _profileService = profileService;
@@ -66,6 +61,7 @@ namespace Cv_Management.Controllers
             _fileService = fileService;
             _profileCacheService = profileCacheService;
             _userService = userService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _appPath = appPath;
         }
@@ -73,56 +69,53 @@ namespace Cv_Management.Controllers
         #endregion
 
         #region Properties
-
-        /// <summary>
-        ///     Context to access to database
-        /// </summary>
-        private readonly BaseCvManagementDbContext _dbContext;
-
+        
         /// <summary>
         ///     Service to handler database operation
         /// </summary>
         private readonly IDbService _dbService;
 
         /// <summary>
-        /// Service which is for handling token generation.
+        ///     Service which is for handling token generation.
         /// </summary>
         private readonly ITokenService _tokenService;
 
         /// <summary>
-        /// Service which handles profile operation.
+        ///     Service which handles profile operation.
         /// </summary>
         private readonly IProfileService _profileService;
 
         /// <summary>
-        /// Service for verifying captcha code.
+        ///     Service for verifying captcha code.
         /// </summary>
         private readonly ICaptchaService _captchaService;
 
         /// <summary>
-        /// Service for handling file operation.
+        ///     Service for handling file operation.
         /// </summary>
         private readonly IFileService _fileService;
 
         /// <summary>
-        /// Profile cache service.
+        ///     Profile cache service.
         /// </summary>
         private readonly IValueCacheService<string, ProfileModel> _profileCacheService;
 
         /// <summary>
-        /// Service to handle user data.
+        ///     Service to handle user data.
         /// </summary>
         private readonly IUserService _userService;
 
         /// <summary>
-        /// Automapper DI.
+        ///     Automapper DI.
         /// </summary>
         private readonly IMapper _mapper;
 
         /// <summary>
-        /// Application path configuration.
+        ///     Application path configuration.
         /// </summary>
         private readonly AppPathModel _appPath;
+
+        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
 
@@ -148,7 +141,7 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             // Get list of users.
-            var users = _dbContext.Users.AsQueryable();
+            var users = _unitOfWork.Users.Search();
 
             // Ids are defined.
             if (condition.Ids != null)
@@ -208,8 +201,10 @@ namespace Cv_Management.Controllers
                 }
             }
             else
+            {
                 users = users.Where(x => x.Status == UserStatuses.Active);
-            
+            }
+
             var result = new SearchResultViewModel<IList<User>>();
             result.Total = await users.CountAsync();
 
@@ -252,8 +247,8 @@ namespace Cv_Management.Controllers
             user.Email = model.Email;
             user.Password = model.Password;
 
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
+            _unitOfWork.Users.Insert(user);
+            await _unitOfWork.CommitAsync();
             return Ok(user);
         }
 
@@ -283,19 +278,20 @@ namespace Cv_Management.Controllers
 
             var photo = _fileService.GetImage(model.Photo?.Buffer);
             if (photo != null)
-            {
                 if (photo.Width != ImageSizeConstant.StandardProfileImageSize ||
                     photo.Height != ImageSizeConstant.StandardProfileImageSize)
                 {
-                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}", HttpMessages.ProfileImageSizeInvalid);
+                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}",
+                        HttpMessages.ProfileImageSizeInvalid);
                     return BadRequest(ModelState);
                 }
-            }
 
             #endregion
 
             //Find user
-            var user = await _dbContext.Users.FindAsync(id);
+            var users = _unitOfWork.Users.Search();
+            var user = await users.FirstOrDefaultAsync(x => x.Id == id && x.Status == UserStatuses.Active);
+
             if (user == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
@@ -311,14 +307,14 @@ namespace Cv_Management.Controllers
             // Photo is defined. Save photo to path.
             if (model.Photo != null)
             {
-                var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer, _appPath.ProfileImage, null, CancellationToken.None);
+                var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer,
+                    _appPath.ProfileImage, null, CancellationToken.None);
                 user.Photo = Url.Content(relativeProfileImagePath);
                 ;
             }
 
             //Save to database
-            await _dbContext.SaveChangesAsync();
-
+            await _unitOfWork.CommitAsync();
             return Ok(user);
         }
 
@@ -332,15 +328,16 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
             //Find user by id
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
+            var users = _unitOfWork.Users.Search();
+            var user = await users.FirstOrDefaultAsync(x => x.Id == id && x.Status == UserStatuses.Active);
             if (user == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.OK, HttpMessages.UserNotFound));
 
-            //Remove user
-            _dbContext.Users.Remove(user);
+            // Remove user
+            user.Status = UserStatuses.Disabled;
 
             //Save change to database
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
             return Ok();
         }
 
@@ -363,9 +360,9 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-#if !BY_PASS_CAPTCHA
-            // Verify the capcha first.
-            var bIsCaptchaValid = await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+#if !BY_PASS_CAPTCHA // Verify the capcha first.
+            var bIsCaptchaValid =
+await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden,
                     HttpMessages.CaptchaInvalid));
@@ -375,7 +372,7 @@ namespace Cv_Management.Controllers
             // Get profile from system.
             var profile = await _userService.LoginAsync(model.Email, model.Password, CancellationToken.None);
 
-            ;            // User is not found.
+            ; // User is not found.
             if (profile == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
@@ -397,7 +394,9 @@ namespace Cv_Management.Controllers
                 _profileCacheService.Add(profile.Email, profile, token.LifeTime);
             }
             else
+            {
                 token.AccessToken = profile.AccessToken;
+            }
 
             return Ok(token);
         }
@@ -423,9 +422,9 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-#if !BY_PASS_CAPTCHA
-            // Verify the capcha first.
-            var bIsCaptchaValid = await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+#if !BY_PASS_CAPTCHA // Verify the capcha first.
+            var bIsCaptchaValid =
+await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
             {
                 ModelState.AddModelError($"{nameof(model)}.{nameof(model.ClientCaptchaCode)}", HttpMessages.CaptchaInvalid);
@@ -437,8 +436,9 @@ namespace Cv_Management.Controllers
 
             #region Find user duplicated
 
-            var users = _dbContext.Users.AsQueryable();
-            var user = await users.FirstOrDefaultAsync(x => x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
+            var users = _unitOfWork.Users.Search();
+            var user = await users.FirstOrDefaultAsync(x =>
+                x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
             if (user != null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict,
                     HttpMessages.RegistrationDuplicate));
@@ -459,15 +459,15 @@ namespace Cv_Management.Controllers
 
                 // Hash the password for user protection.
                 user.Password = _profileService.HashPassword(model.Password);
-
-                _dbContext.Users.Add(user);
+                
+                _unitOfWork.Users.Insert(user);
 
                 #endregion
 
                 #region Initialize token
 
                 // Find list of profile activation tokens.
-                var profileActivationTokens = _dbContext.ProfileActivationTokens.AsQueryable();
+                var profileActivationTokens = _unitOfWork.ProfileActivationTokens.Search();
                 profileActivationTokens = profileActivationTokens.Where(x =>
                     x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
 
@@ -477,14 +477,13 @@ namespace Cv_Management.Controllers
                 profileActivationToken.CreatedTime = 0;
 
                 // Delete previous activation token and add the new one.
-                _dbContext.ProfileActivationTokens.RemoveRange(profileActivationTokens);
-                _dbContext.ProfileActivationTokens.Add(profileActivationToken);
+                _unitOfWork.ProfileActivationTokens.Remove(profileActivationTokens);
+                _unitOfWork.ProfileActivationTokens.Insert(profileActivationToken);
 
                 #endregion
 
                 // TODO: Send activation email.
-
-                await _dbContext.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
                 transactionScope.Complete();
             }
 
@@ -493,7 +492,7 @@ namespace Cv_Management.Controllers
         }
 
         /// <summary>
-        /// Get profile by using user id.
+        ///     Get profile by using user id.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -518,7 +517,7 @@ namespace Cv_Management.Controllers
             }
 
             // Find profile.
-            var users = _dbContext.Users.AsQueryable();
+            var users = _unitOfWork.Users.Search();
             users = users.Where(x => x.Id == id);
             if (profile.Role != UserRoles.Admin)
                 users = users.Where(x => x.Status == UserStatuses.Active);

@@ -79,6 +79,15 @@ namespace ApiClientShared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HOBBY_NOT_FOUND.
+        /// </summary>
+        public static string HobbyNotFound {
+            get {
+                return ResourceManager.GetString("HobbyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PROFILE_IMAGE_INVALID.
         /// </summary>
         public static string ProfileImageInvalid {
@@ -106,11 +115,47 @@ namespace ApiClientShared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PROJECT_NOT_FOUND.
+        /// </summary>
+        public static string ProjectNotFound {
+            get {
+                return ResourceManager.GetString("ProjectNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to REGISTRATION_DUPLICATE.
         /// </summary>
         public static string RegistrationDuplicate {
             get {
                 return ResourceManager.GetString("RegistrationDuplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RESPONSIBILITY_ALREADY_AVAILABLE.
+        /// </summary>
+        public static string ResponsibilityAlreadyAvailable {
+            get {
+                return ResourceManager.GetString("ResponsibilityAlreadyAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RESPONSIBILITY_NOT_FOUND.
+        /// </summary>
+        public static string ResponsibilityNotFound {
+            get {
+                return ResourceManager.GetString("ResponsibilityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKILL_CATEGORY_ALREADY_EXIST.
+        /// </summary>
+        public static string SkillCategoryAlreadyAvailable {
+            get {
+                return ResourceManager.GetString("SkillCategoryAlreadyAvailable", resourceCulture);
             }
         }
         
@@ -138,6 +183,33 @@ namespace ApiClientShared.Resources {
         public static string SkillInvalid {
             get {
                 return ResourceManager.GetString("SkillInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKILL_DUPLCATED.
+        /// </summary>
+        public static string SkillIsDuplicate {
+            get {
+                return ResourceManager.GetString("SkillIsDuplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SKILL_NOT_FOUND.
+        /// </summary>
+        public static string SkillNotFound {
+            get {
+                return ResourceManager.GetString("SkillNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to USER_DESCRIPTION_NOT_FOUND.
+        /// </summary>
+        public static string UserDescriptionNotFoud {
+            get {
+                return ResourceManager.GetString("UserDescriptionNotFoud", resourceCulture);
             }
         }
         
