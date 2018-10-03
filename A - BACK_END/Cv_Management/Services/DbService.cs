@@ -59,7 +59,7 @@ namespace Cv_Management.Services
             var methodCallExpression = Expression.Call(
                 typeof(Queryable),
                 sortMethod,
-                new[] {list.ElementType, memberExpression.Type},
+                new[] { list.ElementType, memberExpression.Type },
                 list.Expression,
                 Expression.Quote(lamdaExpression));
 

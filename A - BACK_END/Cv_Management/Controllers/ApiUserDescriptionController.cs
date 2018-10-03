@@ -1,15 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.UserDescription;
 using Cv_Management.Interfaces.Services;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -21,12 +25,12 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Initialize controller with injectors.
         /// </summary>
-        /// <param name="dbContext"></param>
+        /// <param name="unitOfWork"></param>
         /// <param name="dbService"></param>
         /// <param name="profileService"></param>
-        public ApiUserDescriptionController(DbContext dbContext, IDbService dbService, IProfileService profileService)
+        public ApiUserDescriptionController(IUnitOfWork unitOfWork, IDbService dbService, IProfileService profileService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _unitOfWork = unitOfWork;
             _dbService = dbService;
             _profileService = profileService;
         }
@@ -34,12 +38,7 @@ namespace Cv_Management.Controllers
         #endregion
 
         #region Properties
-
-        /// <summary>
-        ///     Context to access to database.
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
+        
         /// <summary>
         ///     Service to handle database operation.
         /// </summary>
@@ -49,6 +48,8 @@ namespace Cv_Management.Controllers
         ///     Service to handle profile.
         /// </summary>
         private readonly IProfileService _profileService;
+
+        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
 
@@ -73,7 +74,7 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+            var userDescriptions = _unitOfWork.UserDescriptions.Search();
 
             if (condition.Ids != null && condition.Ids.Count > 0)
             {
@@ -131,10 +132,10 @@ namespace Cv_Management.Controllers
             userDescription.Description = model.Description;
 
             // Add the description into database.
-            userDescription = _dbContext.UserDescriptions.Add(userDescription);
+            _unitOfWork.UserDescriptions.Insert(userDescription);
 
             // Save changes into database.
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
             return Ok(userDescription);
         }
 
@@ -159,17 +160,17 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             // Find the user description by using id.
-            var userDescriptions = _dbContext.UserDescriptions.AsQueryable();
+            var userDescriptions = _unitOfWork.UserDescriptions.Search();
             var userDescription = await userDescriptions.FirstOrDefaultAsync(x => x.Id == id);
 
             // Find the first record.
             if (userDescription == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserDescriptionNotFoud));
 
             userDescription.Description = model.Description;
 
             // Save changes.
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
             return Ok(userDescription);
         }
 
@@ -183,18 +184,19 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> DeleteUserDescription([FromUri] int id)
         {
             // Find the user description.
-            var userDescriptions = _dbContext.UserDescriptions;
+            var userDescriptions = _unitOfWork.UserDescriptions.Search();
 
             // Find the user description in the database.
             var userDescription = await userDescriptions.FirstOrDefaultAsync(x => x.Id == id);
             if (userDescription == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                    HttpMessages.UserDescriptionNotFoud));
 
             // Delete the description from database.
-            _dbContext.UserDescriptions.Remove(userDescription);
+            _unitOfWork.UserDescriptions.Remove(userDescription);
 
             // Save changes in database.
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
             return Ok();
         }
 

@@ -3,6 +3,7 @@ using Autofac.Features.AttributeFilters;
 using Cv_Management.Constant;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
+using ServiceStack.Caching;
 using ServiceStack.Redis;
 
 namespace Cv_Management.Services.CacheServices
@@ -14,8 +15,8 @@ namespace Cv_Management.Services.CacheServices
         /// <summary>
         /// Redis connection manager for access token caching.
         /// </summary>
-        private readonly IRedisClientsManager _profileRedisClientManager;
-        
+        private readonly ICacheClient _redisClient;
+
         #endregion
 
         #region Constructors
@@ -23,10 +24,10 @@ namespace Cv_Management.Services.CacheServices
         /// <summary>
         /// Initialize service with injectors.
         /// </summary>
-        /// <param name="profileRedisClientManager"></param>
-        public ProfileCacheService([KeyFilter(AutofacKeyConstant.ProfileRedisCaching)] IRedisClientsManager profileRedisClientManager)
+        /// <param name="redisClient"></param>
+        public ProfileCacheService([KeyFilter(AutofacKeyConstant.ProfileRedisCaching)] ICacheClient redisClient)
         {
-            _profileRedisClientManager = profileRedisClientManager;
+            _redisClient = redisClient;
         }
 
         #endregion
@@ -41,16 +42,12 @@ namespace Cv_Management.Services.CacheServices
         /// <param name="expirationTime"></param>
         public override void Add(string key, ProfileModel value, DateTime? expirationTime)
         {
-            using (var redisClient = _profileRedisClientManager.GetClient())
+            if (expirationTime == null)
+                _redisClient.Set(key, value);
+            else
             {
-                var profiles = redisClient.As<ProfileModel>();
-                if (expirationTime == null)
-                    profiles.SetValue(key, value);
-                else
-                {
-                    var expireIn = expirationTime.Value - DateTime.Now;
-                    profiles.SetValue(key, value, expireIn);
-                }
+                var expireIn = expirationTime.Value - DateTime.Now;
+                _redisClient.Set(key, value, expireIn);
             }
         }
 
@@ -61,11 +58,7 @@ namespace Cv_Management.Services.CacheServices
         /// <returns></returns>
         public override ProfileModel Read(string key)
         {
-            using (var redis = _profileRedisClientManager.GetClient())
-            {
-                var profiles = redis.As<ProfileModel>();
-                return profiles.GetValue(key);
-            }
+            return _redisClient.Get<ProfileModel>(key);
         }
 
         /// <summary>

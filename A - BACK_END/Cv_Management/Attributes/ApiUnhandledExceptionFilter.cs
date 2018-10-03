@@ -1,5 +1,4 @@
-﻿using System.Data.Entity.Validation;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,12 +39,12 @@ namespace Cv_Management.Attributes
 
             var exception = actionExecutedContext.Exception;
             
-            if (exception is DbEntityValidationException)
-            {
-                var dbEntityValidationException = (DbEntityValidationException) exception;
-                Debug.WriteLine(dbEntityValidationException);
-                return Task.FromResult(1);
-            }
+            //if (exception is DbEntityValidationException)
+            //{
+            //    var dbEntityValidationException = (DbEntityValidationException) exception;
+            //    Debug.WriteLine(dbEntityValidationException);
+            //    return Task.FromResult(1);
+            //}
 
             Debug.WriteLine(exception.Message, exception);
 

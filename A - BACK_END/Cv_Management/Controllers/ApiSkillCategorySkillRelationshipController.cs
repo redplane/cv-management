@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,8 +15,10 @@ using ApiClientShared.ViewModel.SkillCategory;
 using ApiClientShared.ViewModel.SkillCategorySkillRelationship;
 using AutoMapper;
 using Cv_Management.Interfaces.Services;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -26,10 +27,7 @@ namespace Cv_Management.Controllers
     {
         #region Properties
 
-        /// <summary>
-        /// Database context to access to database.
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly IUnitOfWork _unitOfWork;
 
         /// <summary>
         /// Database service to handle common db operation.
@@ -48,13 +46,13 @@ namespace Cv_Management.Controllers
         /// <summary>
         /// Initialize controller with injectors.
         /// </summary>
-        /// <param name="dbContext"></param>
+        /// <param name="unitOfWork"></param>
         /// <param name="dbService"></param>
         /// <param name="profileService"></param>
-        public ApiSkillCategorySkillRelationshipController(DbContext dbContext,
+        public ApiSkillCategorySkillRelationshipController(IUnitOfWork unitOfWork,
             IDbService dbService, IProfileService profileService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
+            _unitOfWork = unitOfWork;
             _dbService = dbService;
             _profileService = profileService;
         }
@@ -82,7 +80,8 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
             
             // Find skill category using id.
-            var skillCategories = _dbContext.SkillCategories.AsQueryable();
+
+            var skillCategories = _unitOfWork.SkillCategories.Search();
             skillCategories = skillCategories.Where(x => x.Id == model.SkillCategoryId);
             var skillCategory = await skillCategories.FirstOrDefaultAsync();
             if (skillCategory == null)
@@ -100,7 +99,7 @@ namespace Cv_Management.Controllers
 
                 if (skillIds.Count > 0)
                 {
-                    var skills = _dbContext.Skills.AsQueryable();
+                    var skills = _unitOfWork.Skills.Search();
                     skills = skills.Where(skill => skillIds.Contains(skill.Id));
 
                     var iTotalValidSkills = await skills.CountAsync();
@@ -116,9 +115,9 @@ namespace Cv_Management.Controllers
             using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 // Remove all skill category - skill relationships
-                var hasSkills = _dbContext.SkillCategorySkillRelationships.AsQueryable();
+                var hasSkills = _unitOfWork.SkillCategorySkillRelationships.Search();
                 hasSkills = hasSkills.Where(x => x.SkillCategoryId == skillCategory.Id);
-                _dbContext.SkillCategorySkillRelationships.RemoveRange(hasSkills);
+                _unitOfWork.SkillCategorySkillRelationships.Remove(hasSkills);
 
                 // Go through every skill ids and add 'em to the list.
                 if (model.HasSkills != null)
@@ -130,12 +129,12 @@ namespace Cv_Management.Controllers
                         hasSkill.SkillId = mHasSkill.SkillId;
                         hasSkill.Point = mHasSkill.Point;
                         hasSkill.CreatedTime = 0;
-                        _dbContext.SkillCategorySkillRelationships.Add(hasSkill);
+                        _unitOfWork.SkillCategorySkillRelationships.Insert(hasSkill);
                     }
                 }
 
                 // Save changes into database.
-                await _dbContext.SaveChangesAsync(CancellationToken.None);
+                await _unitOfWork.CommitAsync();
                 transactionScope.Complete();
             }
 
@@ -154,7 +153,7 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> EditHasSkillRelationship([FromUri] int skillCategoryId,
             [FromUri] int skillId, [FromBody] EditHasSkillViewModel editHasSkill)
         {
-            var hasSkills = _dbContext.SkillCategorySkillRelationships.AsQueryable();
+            var hasSkills = _unitOfWork.SkillCategorySkillRelationships.Search();
             hasSkills = hasSkills.Where(x => x.SkillCategoryId == skillCategoryId && x.SkillId == skillId);
 
             var hasSkill = await hasSkills.FirstOrDefaultAsync();
@@ -163,7 +162,7 @@ namespace Cv_Management.Controllers
                     HttpMessages.HasSkillNotFound));
 
             hasSkill.Point = editHasSkill.Point;
-            await _dbContext.SaveChangesAsync(CancellationToken.None);
+            await _unitOfWork.CommitAsync();
             return Ok();
         }
 
@@ -192,7 +191,7 @@ namespace Cv_Management.Controllers
             var profile = _profileService.GetProfile(Request);
 
             //Get personal skill
-            var skillCategorySkillRelationships = _dbContext.SkillCategorySkillRelationships.AsQueryable();
+            var skillCategorySkillRelationships = _unitOfWork.SkillCategorySkillRelationships.Search();
 
             //Search for skillCategoryIds
             if (conditon.SkillCategoryIds != null && conditon.SkillCategoryIds.Any())
@@ -222,7 +221,7 @@ namespace Cv_Management.Controllers
             }
 
             // Find the list of users.
-            var users = _dbContext.Users.AsQueryable();
+            var users = _unitOfWork.Users.Search();
             if (conditon.UserIds != null && conditon.UserIds.Count > 0)
             {
                 var userIds = conditon.UserIds.Where(x => x > 0).ToList();
@@ -235,7 +234,7 @@ namespace Cv_Management.Controllers
                 users = users.Where(x => x.Status == UserStatuses.Active);
 
                 // Find the list of skill category belongs to those user.
-                var skillCategories = _dbContext.SkillCategories.AsQueryable();
+                var skillCategories = _unitOfWork.SkillCategories.Search();
 
                 var relationships = skillCategorySkillRelationships;
                 skillCategorySkillRelationships = from user in users
@@ -275,12 +274,12 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var skillCategorySkillRelationships = _dbContext.SkillCategorySkillRelationships.AsQueryable();
+            var skillCategorySkillRelationships = _unitOfWork.SkillCategorySkillRelationships.Search();
             skillCategorySkillRelationships = skillCategorySkillRelationships.Where(x =>
                 x.SkillCategoryId == condition.SkillCategoryId && x.SkillId == condition.SkillId);
 
-            _dbContext.SkillCategorySkillRelationships.RemoveRange(skillCategorySkillRelationships);
-            await _dbContext.SaveChangesAsync(CancellationToken.None);
+            _unitOfWork.SkillCategorySkillRelationships.Remove(skillCategorySkillRelationships);
+            await _unitOfWork.CommitAsync();
             return Ok();
         }
 

@@ -1,6 +1,13 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.User;
 using Cv_Management.Models;
+using Cv_Management.Models.Operations;
+using Cv_Management.ViewModels;
+using Cv_Management.ViewModels.User;
+using DbEntity.Models.Entities;
 
 namespace Cv_Management.Interfaces.Services
 {
@@ -9,13 +16,62 @@ namespace Cv_Management.Interfaces.Services
         #region Methods
 
         /// <summary>
-        /// Get user information from cache / database to check whether user is valid to login or not.
+        /// Find user information using login information.
         /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
+        /// <param name="loginModel"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ProfileModel> LoginAsync(string email, string password, CancellationToken cancellationToken);
+        Task<ProfileModel> LoginAsync(LoginViewModel loginModel, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Add user to service.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<User> AddUserAsync(AddUserViewModel model, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Edit user using specific information.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<User> EditUserAsync(int id, EditUserViewModel model, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Delete user by using his/her id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task DeleteUserAsync(int id, CancellationToken cancellationToken = default(CancellationToken));
+        
+        /// <summary>
+        /// Register user to system.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<RegisterUserResult> RegisterUserAsync(RegisterViewModel model, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get user using specific conditions.
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<SearchResultViewModel<IList<User>>> GetUsersAsync(SearchUserViewModel condition,
+            CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Search user using specific condition.
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<User> GetUserAsync(SearchUserViewModel condition, CancellationToken cancellationToken = default(CancellationToken));
 
         #endregion
 

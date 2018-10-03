@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -8,11 +7,14 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Responsibility;
 using Cv_Management.Interfaces.Services;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -21,10 +23,10 @@ namespace Cv_Management.Controllers
     {
         #region Contructors
 
-        public ApiResponsibilityController(DbContext dbContext,
+        public ApiResponsibilityController(IUnitOfWork unitOfWork,
             IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext) dbContext;
+            _unitOfWork = unitOfWork;
             _dbService = dbService;
         }
 
@@ -32,10 +34,7 @@ namespace Cv_Management.Controllers
 
         #region Properties 
 
-        /// <summary>
-        ///     Context to access to database
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
+        private readonly IUnitOfWork _unitOfWork;
 
         /// <summary>
         ///     Service to handler database operation
@@ -65,7 +64,7 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var responsibilities = _dbContext.Responsibilities.AsQueryable();
+            var responsibilities = _unitOfWork.Responsibilities.Search();
             if (condition.Ids != null)
             {
                 var ids = condition.Ids.Where(x => x > 0).ToList();
@@ -111,7 +110,7 @@ namespace Cv_Management.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("")]
-        public async Task<IHttpActionResult> Create([FromBody] AddResponsibilityViewModel model)
+        public async Task<IHttpActionResult> AddResponsibility([FromBody] AddResponsibilityViewModel model)
         {
             if (model == null)
             {
@@ -122,20 +121,23 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             //Check exists responsibility
-            var isExists = await _dbContext.Responsibilities.AnyAsync(c => c.Name == model.Name);
-            if (isExists)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict, "EXISTS_CODE_ERROR"));
+            var responsibilities = _unitOfWork.Responsibilities.Search();
+            responsibilities = responsibilities.Where(x => x.Name.Equals(model.Name));
+            var responsibility = await responsibilities.FirstOrDefaultAsync();
+            if (responsibility != null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict,
+                    HttpMessages.ResponsibilityAlreadyAvailable));
 
             //Inital responsibility object
-            var responsibility = new Responsibility();
+            responsibility = new Responsibility();
             responsibility.Name = model.Name;
             responsibility.CreatedTime = DateTime.Now.ToOADate();
 
             //Add responsibility to database
-            responsibility = _dbContext.Responsibilities.Add(responsibility);
+            _unitOfWork.Responsibilities.Insert(responsibility);
 
             //Save changes to database
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
 
             return Ok(responsibility);
         }
@@ -160,16 +162,18 @@ namespace Cv_Management.Controllers
                 return BadRequest(ModelState);
 
             //find Responsibility from database
-            var responsibility = await _dbContext.Responsibilities.FindAsync(id);
+            var responsibilities = _unitOfWork.Responsibilities.Search();
+            var responsibility = await responsibilities.FirstOrDefaultAsync(x => x.Id == id);
             if (responsibility == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                    HttpMessages.ResponsibilityNotFound));
 
             if (!string.IsNullOrEmpty(model.Name))
                 responsibility.Name = model.Name;
             responsibility.LastModifiedTime = DateTime.Now.ToOADate();
 
             //Save changes to database
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
 
             return Ok(responsibility);
         }
@@ -184,15 +188,17 @@ namespace Cv_Management.Controllers
         public async Task<IHttpActionResult> Delete([FromUri] int id)
         {
             //Find responsibility in database
-            var responsibility = await _dbContext.Responsibilities.FindAsync(id);
+            var responsibilities = _unitOfWork.Responsibilities.Search();
+            var responsibility = await responsibilities.FirstOrDefaultAsync(x => x.Id == id);
             if (responsibility == null)
-                return NotFound();
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                    HttpMessages.ResponsibilityNotFound));
 
             //Delete responsibility from database
-            _dbContext.Responsibilities.Remove(responsibility);
+            _unitOfWork.Responsibilities.Remove(responsibility);
 
             //Save changes in database
-            await _dbContext.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
             return Ok();
         }
 

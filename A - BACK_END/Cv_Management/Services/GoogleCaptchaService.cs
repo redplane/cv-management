@@ -37,6 +37,9 @@ namespace Cv_Management.Services
         public async Task<bool> IsCaptchaValidAsync(string code, string clientAddress,
             CancellationToken cancellationToken)
         {
+#if BY_PASS_CAPTCHA
+            return true;
+#else
             var queries = new List<KeyValuePair<string, string>>();
             queries.Add(new KeyValuePair<string, string>("secret", _appSetting.GoogleCaptchaSecret));
             queries.Add(new KeyValuePair<string, string>("response", code));
@@ -63,6 +66,7 @@ namespace Cv_Management.Services
             bool.TryParse(jObject["success"].ToString(), out bIsSuccess);
 
             return bIsSuccess;
+#endif
         }
 
         #endregion

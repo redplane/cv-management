@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -9,29 +7,22 @@ using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.ProjectResponsibility;
 using Cv_Management.Interfaces.Services;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
     [RoutePrefix("api/project-responsibility")]
     public class ApiProjectResponsibilityController : ApiController
     {
-        #region properties
-
-        public readonly CvManagementDbContext _dbContext;
-
-        public readonly IDbService _dbService;
-        #endregion
-
         #region Contructors
 
-        public ApiProjectResponsibilityController(DbContext dbContext,
+        public ApiProjectResponsibilityController(IUnitOfWork unitOfWork,
             IDbService dbService)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
             _dbService = dbService;
-
+            _unitOfWork = unitOfWork;
         }
 
         #endregion
@@ -56,17 +47,18 @@ namespace Cv_Management.Controllers
 
             //Validate model
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(ModelState);
 
             //Get list projet responsibility
-            var projectResponsibilities = _dbContext.ProjectResponsibilities.AsQueryable();
-            if (condition.ProjectIds != null)
+            var projectResponsibilities = _unitOfWork.ProjectResponsibilities.Search();
+            if (condition.ProjectIds != null && condition.ProjectIds.Count > 0)
             {
                 var projectIds = condition.ProjectIds.Where(x => x > 0).ToList();
                 if (projectIds.Count > 0)
                     projectResponsibilities = projectResponsibilities.Where(x => projectIds.Contains(x.ProjectId));
             }
-            if (condition.ResponsibilityIds != null)
+
+            if (condition.ResponsibilityIds != null && condition.ResponsibilityIds.Count > 0)
             {
                 var responsibilityIds = condition.ResponsibilityIds.Where(x => x > 0).ToList();
                 if (responsibilityIds.Count > 0)
@@ -79,7 +71,8 @@ namespace Cv_Management.Controllers
 
             //Do sort
             projectResponsibilities =
-                _dbService.Sort(projectResponsibilities, SortDirection.Ascending, ProjectSortProperty.Id);
+                _dbService.Sort(projectResponsibilities, SortDirection.Ascending,
+                    ProjectResponsibilitySortProperty.ProjectId);
 
             //Do paginatin
             projectResponsibilities = _dbService.Paginate(projectResponsibilities, condition.Pagination);
@@ -89,50 +82,13 @@ namespace Cv_Management.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        ///     Create project responsibility
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        //[HttpPost]
-        //[Route("")]
-        //public async Task<IHttpActionResult> Create([FromBody] AddProjectResponsibilityViewModel model)
-        //{
-        //    if (model == null)
-        //    {
-        //        model = new AddProjectResponsibilityViewModel();
-        //        Validate(model);
-        //    }
-        //    if (!ModelState.IsValid)
-        //        return BadRequest(ModelState);
-        //    var projectResponsibility = new ProjectResponsibility();
-        //    projectResponsibility.ProjectId = model.ProjectId;
-        //    projectResponsibility.ResponsibilityId = model.ResponsibilityId;
-        //    projectResponsibility.CreatedTime = DateTime.Now.ToOADate();
-        //    projectResponsibility = DbSet.ProjectResponsibilities.Add(projectResponsibility);
-        //    await DbSet.SaveChangesAsync();
-        //    return Ok(projectResponsibility);
-        //}
+        #endregion
 
-        ///// <summary>
-        /////     Delete project responsibility
-        ///// </summary>
-        ///// <param name="responsibilityId"></param>
-        ///// <param name="projectId"></param>
-        ///// <returns></returns>
-        //[HttpDelete]
-        //[Route("")]
-        //public async Task<IHttpActionResult> Delete([FromUri] int responsibilityId, [FromUri] int projectId)
-        //{
-        //    var projectResponsibility = DbSet.ProjectResponsibilities.FirstOrDefault(c =>
-        //        c.ResponsibilityId == responsibilityId && c.ProjectId == projectId);
+        #region properties
 
-        //    if (projectResponsibility == null)
-        //        return NotFound();
-        //    DbSet.ProjectResponsibilities.Remove(projectResponsibility);
-        //    await DbSet.SaveChangesAsync();
-        //    return Ok();
-        //}
+        private readonly IDbService _dbService;
+
+        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
     }

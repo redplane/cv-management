@@ -1,8 +1,8 @@
 ﻿namespace ApiClientShared.Enums.SortProperties
 {
-    public enum ProjectSkillSortProperty
+    public enum ProjectResponsibilitySortProperty
     {
         ProjectId,
-        SkillId
+        ResponsibilityId
     }
 }

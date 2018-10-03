@@ -1,33 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using System.Web.Hosting;
 using System.Web.Http;
-using System.Web.UI.WebControls;
 using ApiClientShared.Constants;
 using ApiClientShared.Enums;
-using ApiClientShared.Enums.SortProperties;
+using ApiClientShared.Extensions;
 using ApiClientShared.Resources;
-using ApiClientShared.ViewModel;
-using ApiClientShared.ViewModel.Hobby;
 using ApiClientShared.ViewModel.User;
-using ApiClientShared.ViewModel.UserDescription;
 using AutoMapper;
-using Cv_Management.Attributes;
 using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
-using Cv_Management.Services.CacheServices;
+using Cv_Management.Models.Operations;
 using Cv_Management.ViewModels;
 using Cv_Management.ViewModels.User;
+using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cv_Management.Controllers
 {
@@ -39,33 +34,30 @@ namespace Cv_Management.Controllers
         /// <summary>
         ///     Initalize controller with Injectors
         /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="dbService"></param>
         /// <param name="tokenService"></param>
         /// <param name="profileService"></param>
         /// <param name="captchaService"></param>
         /// <param name="fileService"></param>
         /// <param name="profileCacheService"></param>
         /// <param name="userService"></param>
+        /// <param name="unitOfWork"></param>
         /// <param name="mapper"></param>
         /// <param name="appPath"></param>
-        public ApiUserController(DbContext dbContext,
-            IDbService dbService,
+        public ApiUserController(
             ITokenService tokenService, IProfileService profileService,
             ICaptchaService captchaService, IFileService fileService,
             IValueCacheService<string, ProfileModel> profileCacheService,
-            IUserService userService,
+            IUserService userService, IUnitOfWork unitOfWork,
             IMapper mapper,
             AppPathModel appPath)
         {
-            _dbContext = (CvManagementDbContext)dbContext;
-            _dbService = dbService;
             _tokenService = tokenService;
             _profileService = profileService;
             _captchaService = captchaService;
             _fileService = fileService;
             _profileCacheService = profileCacheService;
             _userService = userService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _appPath = appPath;
         }
@@ -75,55 +67,47 @@ namespace Cv_Management.Controllers
         #region Properties
 
         /// <summary>
-        ///     Context to access to database
-        /// </summary>
-        private readonly CvManagementDbContext _dbContext;
-
-        /// <summary>
-        ///     Service to handler database operation
-        /// </summary>
-        private readonly IDbService _dbService;
-
-        /// <summary>
-        /// Service which is for handling token generation.
+        ///     Service which is for handling token generation.
         /// </summary>
         private readonly ITokenService _tokenService;
 
         /// <summary>
-        /// Service which handles profile operation.
+        ///     Service which handles profile operation.
         /// </summary>
         private readonly IProfileService _profileService;
 
         /// <summary>
-        /// Service for verifying captcha code.
+        ///     Service for verifying captcha code.
         /// </summary>
         private readonly ICaptchaService _captchaService;
 
         /// <summary>
-        /// Service for handling file operation.
+        ///     Service for handling file operation.
         /// </summary>
         private readonly IFileService _fileService;
 
         /// <summary>
-        /// Profile cache service.
+        ///     Profile cache service.
         /// </summary>
         private readonly IValueCacheService<string, ProfileModel> _profileCacheService;
 
         /// <summary>
-        /// Service to handle user data.
+        ///     Service to handle user data.
         /// </summary>
         private readonly IUserService _userService;
 
         /// <summary>
-        /// Automapper DI.
+        ///     Automapper DI.
         /// </summary>
         private readonly IMapper _mapper;
 
         /// <summary>
-        /// Application path configuration.
+        ///     Application path configuration.
         /// </summary>
         private readonly AppPathModel _appPath;
-        
+
+        private readonly IUnitOfWork _unitOfWork;
+
         #endregion
 
         #region Methods
@@ -147,43 +131,17 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Get list of users.
-            var users = _dbContext.Users.AsQueryable();
-
             // Ids are defined.
             if (condition.Ids != null)
-            {
-                var ids = condition.Ids.Where(c => c > 0).ToList();
-                if (ids.Count > 0)
-                    users = users.Where(c => condition.Ids.Contains(c.Id));
-            }
+                condition.Ids = condition.Ids.Where(x => x > 0).ToHashSet();
 
             // Last names are defined.
             if (condition.LastNames != null)
-            {
-                var lastNames = condition.LastNames.Where(c => !string.IsNullOrEmpty(c)).ToList();
-                if (lastNames.Count > 0)
-                    users = users.Where(c => lastNames.Contains(c.LastName));
-            }
+                condition.LastNames = condition.LastNames.Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
 
             // First names are defined.
             if (condition.FirstNames != null)
-            {
-                var firstNames = condition.FirstNames.Where(c => !string.IsNullOrEmpty(c)).ToList();
-                if (firstNames.Count > 0)
-                    users = users.Where(c => firstNames.Contains(c.FirstName));
-            }
-
-            // Birthday range is defined.
-            if (condition.Birthday != null)
-            {
-                var birthday = condition.Birthday;
-                if (birthday.From != null)
-                    users = users.Where(c => c.Birthday >= birthday.From);
-
-                if (birthday.To != null)
-                    users = users.Where(user => user.Birthday <= birthday.To);
-            }
+                condition.FirstNames = condition.FirstNames.Where(x => !string.IsNullOrEmpty(x)).ToHashSet();
 
             // Get request profile.
             var profile = _profileService.GetProfile(Request);
@@ -191,79 +149,23 @@ namespace Cv_Management.Controllers
             // User is anonymous or ordinary.
             if (profile == null || profile.Role != UserRoles.Admin)
             {
+                condition.Statuses = new HashSet<UserStatuses>();
+                condition.Statuses.Add(UserStatuses.Active);
+            }
+            else
+            {
                 // Statuses are defined.
                 if (condition.Statuses != null)
-                {
-                    var statuses = condition.Statuses.Where(x => Enum.IsDefined(typeof(UserRoles), x)).ToList();
-                    if (statuses.Count > 0)
-                        users = users.Where(x => statuses.Contains(x.Status));
-                }
+                    condition.Statuses =
+                        condition.Statuses.Where(x => Enum.IsDefined(typeof(UserRoles), x)).ToHashSet();
 
                 // Roles are defined.
                 if (condition.Roles != null)
-                {
-                    var roles = condition.Roles.Where(x => Enum.IsDefined(typeof(UserRoles), x)).ToList();
-                    if (roles.Count > 0)
-                        users = users.Where(x => roles.Contains(x.Role));
-                }
+                    condition.Roles = condition.Roles.Where(x => Enum.IsDefined(typeof(UserRoles), x)).ToHashSet();
             }
-            else
-                users = users.Where(x => x.Status == UserStatuses.Active);
 
-            #region Search user descriptions && hobbies
-
-            //user descriptions
-            var userDescriptions = Enumerable.Empty<UserDescription>().AsQueryable();
-
-            if (condition.IncludeDescriptions)
-                userDescriptions = _dbContext.UserDescriptions.AsQueryable();
-
-            // Get all hobbies.
-            var hobbies = Enumerable.Empty<Hobby>().AsQueryable();
-            if (condition.IncludeHobbies)
-                hobbies = _dbContext.Hobbies.AsQueryable();
-
-            var loadedUsers = from user in users
-                              select new UserViewModel
-                              {
-                                  Id = user.Id,
-                                  Birthday = user.Birthday,
-                                  Email = user.Email,
-                                  FirstName = user.FirstName,
-                                  LastName = user.LastName,
-                                  Photo = user.Photo,
-                                  Role = user.Role,
-                                  Descriptions = from description in userDescriptions
-                                                 select new UserDescriptionViewModel
-                                                 {
-                                                     Id = description.Id,
-                                                     Description = description.Description,
-                                                     UserId = description.UserId
-                                                 },
-                                  Hobbies = from hobby in hobbies
-                                            select new HobbyViewModel
-                                            {
-                                                Id = hobby.Id,
-                                                Name = hobby.Name,
-                                                UserId = hobby.UserId,
-                                                Description = hobby.Description
-                                            }
-                              };
-
-            #endregion
-
-            var result = new SearchResultViewModel<IList<UserViewModel>>();
-            result.Total = await users.CountAsync();
-
-            // Do sort
-            loadedUsers = _dbService.Sort(loadedUsers, SortDirection.Ascending, UserSortProperty.Id);
-
-            // Do pagination
-            loadedUsers = _dbService.Paginate(loadedUsers, condition.Pagination);
-
-            result.Records = await loadedUsers.ToListAsync();
-
-            return Ok(result);
+            var searchResult = await _userService.GetUsersAsync(condition);
+            return Ok(searchResult);
         }
 
         /// <summary>
@@ -284,19 +186,18 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = new User();
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.Birthday = model.Birthday;
-            if (model.Photo != null)
-                user.Photo = Convert.ToBase64String(model.Photo.Buffer);
-            user.Role = model.Role;
-            user.Email = model.Email;
-            user.Password = model.Password;
+            try
+            {
+                var user = await _userService.AddUserAsync(model, CancellationToken.None);
+                return Ok(user);
+            }
+            catch (Exception exception)
+            {
+                if (HttpMessages.UserAlreadyExist.Equals(exception.Message))
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict, exception.Message));
 
-            user = _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
-            return Ok(user);
+                throw;
+            }
         }
 
         /// <summary>
@@ -325,43 +226,28 @@ namespace Cv_Management.Controllers
 
             var photo = _fileService.GetImage(model.Photo?.Buffer);
             if (photo != null)
-            {
                 if (photo.Width != ImageSizeConstant.StandardProfileImageSize ||
                     photo.Height != ImageSizeConstant.StandardProfileImageSize)
                 {
-                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}", HttpMessages.ProfileImageSizeInvalid);
+                    ModelState.AddModelError($"{nameof(model)}.{nameof(model.Photo)}",
+                        HttpMessages.ProfileImageSizeInvalid);
                     return BadRequest(ModelState);
                 }
-            }
 
             #endregion
 
-            //Find user
-            var user = await _dbContext.Users.FindAsync(id);
-            if (user == null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
-
-            if (!string.IsNullOrEmpty(model.FirstName))
-                user.FirstName = model.FirstName;
-
-            if (!string.IsNullOrEmpty(model.LastName))
-                user.LastName = model.LastName;
-
-            if (model.Birthday != null)
-                user.Birthday = model.Birthday.Value;
-
-            // Photo is defined. Save photo to path.
-            if (model.Photo != null)
+            try
             {
-                var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer, _appPath.ProfileImage, null, CancellationToken.None);
-                user.Photo = Url.Content(relativeProfileImagePath);
-                ;
+                var user = await _userService.EditUserAsync(id, model);
+                return Ok(user);
             }
+            catch (Exception exception)
+            {
+                if (HttpMessages.UserAlreadyExist.Equals(exception.Message))
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, exception.Message));
 
-            //Save to database
-            await _dbContext.SaveChangesAsync();
-
-            return Ok(user);
+                throw;
+            }
         }
 
         /// <summary>
@@ -373,16 +259,17 @@ namespace Cv_Management.Controllers
         [HttpDelete]
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
-            //Find user by id
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == id);
-            if (user == null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.OK, HttpMessages.UserNotFound));
-
-            //Remove user
-            _dbContext.Users.Remove(user);
-
-            //Save change to database
-            await _dbContext.SaveChangesAsync();
+            // Find user by id
+            try
+            {
+                await _userService.DeleteUserAsync(id, CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                if (HttpMessages.UserNotFound.Equals(exception.Message))
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, exception.Message));
+            }
+            
             return Ok();
         }
 
@@ -405,19 +292,19 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-#if !BY_PASS_CAPTCHA
-            // Verify the capcha first.
-            var bIsCaptchaValid = await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+#if !BY_PASS_CAPTCHA // Verify the capcha first.
+            var bIsCaptchaValid =
+await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden,
                     HttpMessages.CaptchaInvalid));
 
 #endif
-            
-            // Get profile from system.
-            var profile = await _userService.LoginAsync(model.Email, model.Password, CancellationToken.None);
 
-;            // User is not found.
+            // Get profile from system.
+            var profile = await _userService.LoginAsync(model, CancellationToken.None);
+
+            ; // User is not found.
             if (profile == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, HttpMessages.UserNotFound));
 
@@ -439,8 +326,10 @@ namespace Cv_Management.Controllers
                 _profileCacheService.Add(profile.Email, profile, token.LifeTime);
             }
             else
+            {
                 token.AccessToken = profile.AccessToken;
-            
+            }
+
             return Ok(token);
         }
 
@@ -465,77 +354,36 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-#if !BY_PASS_CAPTCHA
-            // Verify the capcha first.
-            var bIsCaptchaValid = await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+            var bIsCaptchaValid =
+await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
             {
                 ModelState.AddModelError($"{nameof(model)}.{nameof(model.ClientCaptchaCode)}", HttpMessages.CaptchaInvalid);
                 return BadRequest(ModelState);
             }
-#endif
 
             #endregion
 
-            #region Find user duplicated
-
-            var users = _dbContext.Users.AsQueryable();
-            var user = await users.FirstOrDefaultAsync(x => x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
-            if (user != null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict,
-                    HttpMessages.RegistrationDuplicate));
-
-            #endregion
-
-            using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            try
             {
-                #region Initialize user
+                await _userService.RegisterUserAsync(model, CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                if (HttpMessages.UserAlreadyExist.Equals(exception.Message))
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
+                        HttpMessages.UserAlreadyExist));
 
-                user = new User();
-                user.Email = model.Email;
-                user.LastName = model.LastName;
-                user.FirstName = model.FirstName;
-
-                // Mark account as pending.
-                user.Status = UserStatuses.Pending;
-
-                // Hash the password for user protection.
-                user.Password = _profileService.HashPassword(model.Password);
-
-                _dbContext.Users.Add(user);
-
-                #endregion
-
-                #region Initialize token
-
-                // Find list of profile activation tokens.
-                var profileActivationTokens = _dbContext.ProfileActivationTokens.AsQueryable();
-                profileActivationTokens = profileActivationTokens.Where(x =>
-                    x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
-
-                var profileActivationToken = new ProfileActivationToken();
-                profileActivationToken.Email = model.Email;
-                profileActivationToken.Token = Guid.NewGuid().ToString("D");
-                profileActivationToken.CreatedTime = 0;
-
-                // Delete previous activation token and add the new one.
-                _dbContext.ProfileActivationTokens.RemoveRange(profileActivationTokens);
-                _dbContext.ProfileActivationTokens.Add(profileActivationToken);
-
-                #endregion
-
-                // TODO: Send activation email.
-
-                await _dbContext.SaveChangesAsync();
-                transactionScope.Complete();
+                throw;
             }
             
-            
-            return Ok(user);
+            // TODO: Send activation email.
+
+            return Ok();
         }
 
         /// <summary>
-        /// Get profile by using user id.
+        ///     Get profile by using user id.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -545,7 +393,6 @@ namespace Cv_Management.Controllers
         {
             // Get profile from request.
             var profile = _profileService.GetProfile(Request);
-            
 
             // No profile is found.
             if (id == null || id < 1)
@@ -560,13 +407,18 @@ namespace Cv_Management.Controllers
             }
 
             // Find profile.
-            var users = _dbContext.Users.AsQueryable();
-            users = users.Where(x => x.Id == id);
+            var conditions = new SearchUserViewModel();
+            conditions.Ids = new HashSet<int>();
+            conditions.Ids.Add(id.Value);
+
             if (profile.Role != UserRoles.Admin)
-                users = users.Where(x => x.Status == UserStatuses.Active);
+            {
+                conditions.Statuses = new HashSet<UserStatuses>();
+                conditions.Statuses.Add(UserStatuses.Active);
+            }
 
             // Find the first matched record.
-            var user = await users.FirstOrDefaultAsync();
+            var user = await _userService.GetUserAsync(conditions);
             if (user == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
                     HttpMessages.ProfileNotFound));
