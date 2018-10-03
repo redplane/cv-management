@@ -269,6 +269,7 @@
     <Compile Include="Interfaces\Services\IValueCacheService.cs" />
     <Compile Include="Models\AppPathModel.cs" />
     <Compile Include="Models\AppSettingModel.cs" />
+    <Compile Include="Models\Operations\RegisterUserResult.cs" />
     <Compile Include="Models\ProfileModel.cs" />
     <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\GoogleCaptchaService.cs" />

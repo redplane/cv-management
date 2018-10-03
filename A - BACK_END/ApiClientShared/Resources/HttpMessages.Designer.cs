@@ -205,6 +205,15 @@ namespace ApiClientShared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to USER_ALREADY_EXIST.
+        /// </summary>
+        public static string UserAlreadyExist {
+            get {
+                return ResourceManager.GetString("UserAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to USER_DESCRIPTION_NOT_FOUND.
         /// </summary>
         public static string UserDescriptionNotFoud {

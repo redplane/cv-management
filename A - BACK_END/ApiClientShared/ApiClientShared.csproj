@@ -63,6 +63,7 @@
     <Compile Include="Enums\TextSearchMode.cs" />
     <Compile Include="Enums\UserRoles.cs" />
     <Compile Include="Enums\UserStatuses.cs" />
+    <Compile Include="Extensions\HashSetExtensions.cs" />
     <Compile Include="Models\Pagination.cs" />
     <Compile Include="Models\RangeModel.cs" />
     <Compile Include="Models\TextSearch.cs" />

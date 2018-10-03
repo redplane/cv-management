@@ -131,7 +131,7 @@ namespace DbEntity.Models.Entities.Context
         /// <summary>
         ///     Initialize user table.
         /// </summary>
-        private void InitializeUserTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeUserTable(ModelBuilder dbModelBuilder)
         {
             var user = dbModelBuilder.Entity<User>();
             user.HasKey(x => x.Id);
@@ -142,7 +142,7 @@ namespace DbEntity.Models.Entities.Context
         /// Initialize user description tabe,
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeUserDescriptionTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeUserDescriptionTable(ModelBuilder dbModelBuilder)
         {
             var userDescription = dbModelBuilder.Entity<UserDescription>();
             userDescription.HasKey(x => x.Id);
@@ -155,7 +155,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize project table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeProjectTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeProjectTable(ModelBuilder dbModelBuilder)
         {
             var project = dbModelBuilder.Entity<Project>();
             project.HasKey(x => x.Id);
@@ -168,7 +168,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize project skill table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeProjectSkillTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeProjectSkillTable(ModelBuilder dbModelBuilder)
         {
             var projectSkill = dbModelBuilder.Entity<ProjectSkill>();
             projectSkill.HasKey(x => new { x.ProjectId, x.SkillId });
@@ -181,7 +181,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize skill table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeSkillTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeSkillTable(ModelBuilder dbModelBuilder)
         {
             var skill = dbModelBuilder.Entity<Skill>();
             skill.HasKey(x => x.Id);
@@ -192,7 +192,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize project responsibility table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeProjectResponsibilityTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeProjectResponsibilityTable(ModelBuilder dbModelBuilder)
         {
             var projectResponsibility = dbModelBuilder.Entity<ProjectResponsibility>();
             projectResponsibility.HasKey(x => new { x.ProjectId, x.ResponsibilityId });
@@ -208,7 +208,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize responsibility table.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeResponsibilityTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeResponsibilityTable(ModelBuilder dbModelBuilder)
         {
             var responsibility = dbModelBuilder.Entity<Responsibility>();
             responsibility.HasKey(x => x.Id);
@@ -218,7 +218,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize skill category.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeSkillCategory(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeSkillCategory(ModelBuilder dbModelBuilder)
         {
             var skillCategory = dbModelBuilder.Entity<SkillCategory>();
             skillCategory.HasKey(x => x.Id);
@@ -231,7 +231,7 @@ namespace DbEntity.Models.Entities.Context
         ///     Initialize skill category - skill relationship.
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeSkillCategorySkillRelationshipTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeSkillCategorySkillRelationshipTable(ModelBuilder dbModelBuilder)
         {
             var skillCategorySkillRelationship = dbModelBuilder.Entity<SkillCategorySkillRelationship>();
             skillCategorySkillRelationship.HasKey(x => new { x.SkillCategoryId, x.SkillId });
@@ -245,7 +245,7 @@ namespace DbEntity.Models.Entities.Context
         /// Initialize hobby
         /// </summary>
         /// <param name="dbModelBuilder"></param>
-        private void InitializeHobbyTable(ModelBuilder dbModelBuilder)
+        protected virtual void InitializeHobbyTable(ModelBuilder dbModelBuilder)
         {
             var hobby = dbModelBuilder.Entity<Hobby>();
             hobby.HasKey(x => x.Id);

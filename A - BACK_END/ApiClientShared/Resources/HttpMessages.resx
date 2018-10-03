@@ -166,6 +166,9 @@
   <data name="SkillNotFound" xml:space="preserve">
     <value>SKILL_NOT_FOUND</value>
   </data>
+  <data name="UserAlreadyExist" xml:space="preserve">
+    <value>USER_ALREADY_EXIST</value>
+  </data>
   <data name="UserDescriptionNotFoud" xml:space="preserve">
     <value>USER_DESCRIPTION_NOT_FOUND</value>
   </data>
