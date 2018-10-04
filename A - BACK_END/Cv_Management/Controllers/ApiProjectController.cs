@@ -10,15 +10,12 @@ using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Project;
-using ApiClientShared.ViewModel.Responsibility;
-using ApiClientShared.ViewModel.Skill;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cv_Management.Controllers
+namespace CvManagement.Controllers
 {
     [RoutePrefix("api/project")]
     public class ApiProjectController : ApiController

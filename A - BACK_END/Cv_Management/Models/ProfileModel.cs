@@ -1,7 +1,6 @@
 ﻿using ApiClientShared.Enums;
-using Newtonsoft.Json;
 
-namespace Cv_Management.Models
+namespace CvManagement.Models
 {
     public class ProfileModel
     {

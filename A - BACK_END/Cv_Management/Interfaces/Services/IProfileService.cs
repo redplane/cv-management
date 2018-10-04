@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using Cv_Management.Models;
+﻿using System.Net.Http;
+using CvManagement.Models;
 
-namespace Cv_Management.Interfaces.Services
+namespace CvManagement.Interfaces.Services
 {
     public interface IProfileService
     {

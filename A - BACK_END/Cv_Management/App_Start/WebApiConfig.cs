@@ -3,10 +3,10 @@ using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using ApiMultiPartFormData;
-using Cv_Management.Attributes;
+using CvManagement.Attributes;
 using Newtonsoft.Json.Serialization;
 
-namespace Cv_Management
+namespace CvManagement
 {
     public static class WebApiConfig
     {

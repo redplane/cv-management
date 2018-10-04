@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cv_Management", "Cv_Management\Cv_Management.csproj", "{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CvManagement", "Cv_Management\CvManagement.csproj", "{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbEntity", "DbEntity\DbEntity.csproj", "{C8479499-019B-41B5-826C-43012F849B89}"
 EndProject

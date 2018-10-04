@@ -1,16 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
-using JWT;
-using JWT.Algorithms;
-using JWT.Serializers;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
 
-namespace Cv_Management.Services
+namespace CvManagement.Services
 {
     public class ProfileService : IProfileService
     {

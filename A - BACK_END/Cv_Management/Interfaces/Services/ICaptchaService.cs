@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cv_Management.Interfaces.Services
+namespace CvManagement.Interfaces.Services
 {
     public interface ICaptchaService
     {

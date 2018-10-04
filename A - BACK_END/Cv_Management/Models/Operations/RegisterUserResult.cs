@@ -1,4 +1,4 @@
-﻿namespace Cv_Management.Models.Operations
+﻿namespace CvManagement.Models.Operations
 {
     public class RegisterUserResult
     {

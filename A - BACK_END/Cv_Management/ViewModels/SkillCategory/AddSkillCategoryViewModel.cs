@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ApiMultiPartFormData.Models;
 
-namespace Cv_Management.ViewModels.SkillCategory
+namespace CvManagement.ViewModels.SkillCategory
 {
     public class AddSkillCategoryViewModel
     {

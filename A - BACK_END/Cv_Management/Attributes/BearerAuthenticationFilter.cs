@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 
-namespace Cv_Management.Attributes
+namespace CvManagement.Attributes
 {
     public class BearerAuthenticationFilter : IAuthenticationFilter
     {

@@ -6,12 +6,12 @@ using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.ProjectResponsibility;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cv_Management.Controllers
+namespace CvManagement.Controllers
 {
     [RoutePrefix("api/project-responsibility")]
     public class ApiProjectResponsibilityController : ApiController

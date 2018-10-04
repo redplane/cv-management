@@ -1,4 +1,4 @@
-﻿namespace Cv_Management.Models
+﻿namespace CvManagement.Models
 {
     public class AppPathModel
     {

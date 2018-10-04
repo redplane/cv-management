@@ -3,7 +3,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 using ApiClientShared.Models;
 
-namespace Cv_Management.Interfaces.Services
+namespace CvManagement.Interfaces.Services
 {
     public interface IDbService
     {

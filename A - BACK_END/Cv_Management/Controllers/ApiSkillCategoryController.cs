@@ -1,31 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.UI.WebControls;
-using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.ViewModel;
-using ApiClientShared.ViewModel.Skill;
-using ApiClientShared.ViewModel.SkillCategory;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.ViewModels.SkillCategory;
-using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
-using System.Drawing.Imaging;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.UI.WebControls;
 using ApiClientShared.Constants;
+using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.Resources;
-using Cv_Management.Models;
+using ApiClientShared.ViewModel;
+using ApiClientShared.ViewModel.SkillCategory;
+using AutoMapper;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
+using CvManagement.ViewModels.SkillCategory;
 using DbEntity.Interfaces;
+using DbEntity.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using Image = System.Drawing.Image;
 
-namespace Cv_Management.Controllers
+namespace CvManagement.Controllers
 {
     [RoutePrefix("api/skill-category")]
     public class ApiSkillCategoryController : ApiController

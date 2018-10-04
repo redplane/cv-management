@@ -1,6 +1,6 @@
 ﻿using System.Net.Mail;
 
-namespace Cv_Management.Interfaces.Services
+namespace CvManagement.Interfaces.Services
 {
     public interface IEmailService
     {

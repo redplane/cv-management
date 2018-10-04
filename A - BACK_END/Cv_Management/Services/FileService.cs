@@ -4,10 +4,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Hosting;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
 
-namespace Cv_Management.Services
+namespace CvManagement.Services
 {
     public class FileService : IFileService
     {

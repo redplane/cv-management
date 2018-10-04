@@ -3,28 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using System.Web.Http;
 using ApiClientShared.Constants;
 using ApiClientShared.Enums;
 using ApiClientShared.Extensions;
 using ApiClientShared.Resources;
 using ApiClientShared.ViewModel.User;
-using AutoMapper;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
-using Cv_Management.Models.Operations;
-using Cv_Management.ViewModels;
-using Cv_Management.ViewModels.User;
-using DbEntity.Interfaces;
-using DbEntity.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
+using CvManagement.ViewModels;
+using CvManagement.ViewModels.User;
 
-namespace Cv_Management.Controllers
+namespace CvManagement.Controllers
 {
     [RoutePrefix("api/user")]
     public class ApiUserController : ApiController
@@ -40,15 +33,11 @@ namespace Cv_Management.Controllers
         /// <param name="fileService"></param>
         /// <param name="profileCacheService"></param>
         /// <param name="userService"></param>
-        /// <param name="mapper"></param>
-        /// <param name="appPath"></param>
         public ApiUserController(
             ITokenService tokenService, IProfileService profileService,
             ICaptchaService captchaService, IFileService fileService,
             IValueCacheService<string, ProfileModel> profileCacheService,
-            IUserService userService,
-            IMapper mapper,
-            AppPathModel appPath)
+            IUserService userService)
         {
             _tokenService = tokenService;
             _profileService = profileService;
@@ -56,8 +45,6 @@ namespace Cv_Management.Controllers
             _fileService = fileService;
             _profileCacheService = profileCacheService;
             _userService = userService;
-            _mapper = mapper;
-            _appPath = appPath;
         }
 
         #endregion
@@ -93,17 +80,7 @@ namespace Cv_Management.Controllers
         ///     Service to handle user data.
         /// </summary>
         private readonly IUserService _userService;
-
-        /// <summary>
-        ///     Automapper DI.
-        /// </summary>
-        private readonly IMapper _mapper;
-
-        /// <summary>
-        ///     Application path configuration.
-        /// </summary>
-        private readonly AppPathModel _appPath;
-
+        
         #endregion
 
         #region Methods
@@ -290,7 +267,7 @@ namespace Cv_Management.Controllers
 
             // Verify the capcha first.
             var bIsCaptchaValid =
-await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+                await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden,
                     HttpMessages.CaptchaInvalid));
@@ -349,10 +326,11 @@ await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, Cancell
                 return BadRequest(ModelState);
 
             var bIsCaptchaValid =
-await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
+                await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
             {
-                ModelState.AddModelError($"{nameof(model)}.{nameof(model.ClientCaptchaCode)}", HttpMessages.CaptchaInvalid);
+                ModelState.AddModelError($"{nameof(model)}.{nameof(model.ClientCaptchaCode)}",
+                    HttpMessages.CaptchaInvalid);
                 return BadRequest(ModelState);
             }
 

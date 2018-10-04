@@ -2,7 +2,7 @@
 using ApiClientShared.Enums;
 using ApiMultiPartFormData.Models;
 
-namespace Cv_Management.ViewModels.User
+namespace CvManagement.ViewModels.User
 {
     public class AddUserViewModel
     {

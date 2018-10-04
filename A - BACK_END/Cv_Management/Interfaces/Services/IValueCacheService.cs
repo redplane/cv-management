@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Cv_Management.Interfaces.Services
+namespace CvManagement.Interfaces.Services
 {
     public interface IValueCacheService<TKey, TValue>
     {

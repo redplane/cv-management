@@ -3,13 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.User;
-using Cv_Management.Models;
-using Cv_Management.Models.Operations;
-using Cv_Management.ViewModels;
-using Cv_Management.ViewModels.User;
+using CvManagement.Models;
+using CvManagement.Models.Operations;
+using CvManagement.ViewModels;
+using CvManagement.ViewModels.User;
 using DbEntity.Models.Entities;
 
-namespace Cv_Management.Interfaces.Services
+namespace CvManagement.Interfaces.Services
 {
     public interface IUserService
     {

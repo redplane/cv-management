@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web.Http;
@@ -13,14 +11,12 @@ using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.PersonalSkill;
 using ApiClientShared.ViewModel.SkillCategory;
 using ApiClientShared.ViewModel.SkillCategorySkillRelationship;
-using AutoMapper;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cv_Management.Controllers
+namespace CvManagement.Controllers
 {
     [RoutePrefix("api/skill-category-skill")]
     public class ApiSkillCategorySkillRelationshipController : ApiController

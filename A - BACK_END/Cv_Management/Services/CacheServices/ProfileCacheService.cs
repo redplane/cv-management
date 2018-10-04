@@ -1,12 +1,10 @@
 ﻿using System;
 using Autofac.Features.AttributeFilters;
-using Cv_Management.Constant;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
+using CvManagement.Constant;
+using CvManagement.Models;
 using ServiceStack.Caching;
-using ServiceStack.Redis;
 
-namespace Cv_Management.Services.CacheServices
+namespace CvManagement.Services.CacheServices
 {
     public class ProfileCacheService : ValueCacheBaseService<string, ProfileModel>
     {

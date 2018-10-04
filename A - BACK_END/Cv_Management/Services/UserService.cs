@@ -1,34 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
-using System.Web;
-using System.Web.Hosting;
-using System.Web.Http;
 using System.Web.Http.Routing;
-using System.Web.Routing;
-using System.Web.UI.WebControls;
 using ApiClientShared.Enums;
-using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.Resources;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.User;
 using AutoMapper;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
-using Cv_Management.Models.Operations;
-using Cv_Management.ViewModels;
-using Cv_Management.ViewModels.User;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
+using CvManagement.Models.Operations;
+using CvManagement.ViewModels;
+using CvManagement.ViewModels.User;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cv_Management.Services
+namespace CvManagement.Services
 {
     public class UserService : IUserService
     {

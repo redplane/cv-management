@@ -1,11 +1,11 @@
 ﻿using System.Web.Http;
-using Cv_Management;
+using CvManagement;
 using Microsoft.Owin;
 using Owin;
 
 [assembly: OwinStartup(typeof(Startup))]
 
-namespace Cv_Management
+namespace CvManagement
 {
     public class Startup
     {

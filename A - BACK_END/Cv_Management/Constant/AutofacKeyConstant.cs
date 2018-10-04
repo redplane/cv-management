@@ -1,4 +1,4 @@
-﻿namespace Cv_Management.Constant
+﻿namespace CvManagement.Constant
 {
     public class AutofacKeyConstant
     {

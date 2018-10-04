@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
-using Newtonsoft.Json.Linq;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
 
-namespace Cv_Management.Services
+namespace CvManagement.Services
 {
     public class GoogleCaptchaService : ICaptchaService
     {

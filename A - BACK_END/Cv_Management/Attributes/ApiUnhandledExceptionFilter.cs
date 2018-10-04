@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
 
-namespace Cv_Management.Attributes
+namespace CvManagement.Attributes
 {
     public class ApiUnhandledExceptionFilter : IExceptionFilter
     {

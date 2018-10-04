@@ -7,12 +7,12 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using AutoMapper;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
 using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cv_Management.Attributes
+namespace CvManagement.Attributes
 {
     public class ApiAuthorizeAttribute : AuthorizationFilterAttribute
     {

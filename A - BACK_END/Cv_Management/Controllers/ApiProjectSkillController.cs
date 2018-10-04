@@ -1,19 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums.SortProperties;
 using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.ProjectSkill;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
-using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Cv_Management.Controllers
+namespace CvManagement.Controllers
 {
     [RoutePrefix("api/project-skill")]
     public class ApiProjectSkillController : ApiController

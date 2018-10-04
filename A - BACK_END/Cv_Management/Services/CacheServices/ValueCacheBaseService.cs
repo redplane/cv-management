@@ -2,9 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 
-namespace Cv_Management.Services.CacheServices
+namespace CvManagement.Services.CacheServices
 {
     public class ValueCacheBaseService<TKey, TValue> : IValueCacheService<TKey, TValue>
     {

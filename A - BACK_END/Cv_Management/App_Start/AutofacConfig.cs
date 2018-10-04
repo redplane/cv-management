@@ -6,18 +6,17 @@ using System.Net.Http;
 using System.Web.Hosting;
 using System.Web.Http;
 using System.Web.Http.Routing;
-using ApiClientShared.Enums;
 using ApiClientShared.ViewModel.SkillCategory;
 using Autofac;
 using Autofac.Features.AttributeFilters;
 using Autofac.Integration.WebApi;
 using AutoMapper;
 using AutoMapper.Configuration;
-using Cv_Management.Constant;
-using Cv_Management.Interfaces.Services;
-using Cv_Management.Models;
-using Cv_Management.Services;
-using Cv_Management.Services.CacheServices;
+using CvManagement.Constant;
+using CvManagement.Interfaces.Services;
+using CvManagement.Models;
+using CvManagement.Services;
+using CvManagement.Services.CacheServices;
 using DbEntity.Extensions;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
@@ -25,10 +24,9 @@ using DbEntity.Models.Entities.Context;
 using DbEntity.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Logging;
 using ServiceStack.Caching;
 
-namespace Cv_Management
+namespace CvManagement
 {
     public class AutofacConfig
     {

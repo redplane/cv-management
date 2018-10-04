@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Security.Claims;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 using JWT;
 using JWT.Algorithms;
 using JWT.Serializers;
 using Newtonsoft.Json;
 
-namespace Cv_Management.Services
+namespace CvManagement.Services
 {
     public class TokenService : ITokenService
     {

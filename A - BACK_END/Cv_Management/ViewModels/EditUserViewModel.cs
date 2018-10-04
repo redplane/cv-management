@@ -1,6 +1,6 @@
 ﻿using ApiMultiPartFormData.Models;
 
-namespace Cv_Management.ViewModels
+namespace CvManagement.ViewModels
 {
     public class EditUserViewModel
     {

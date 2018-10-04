@@ -1,7 +1,7 @@
 ﻿using System.Web.Http;
-using Cv_Management.Attributes;
+using CvManagement.Attributes;
 
-namespace Cv_Management
+namespace CvManagement
 {
     public class ApiFilterConfig
     {

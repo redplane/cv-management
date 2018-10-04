@@ -4,9 +4,9 @@ using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums;
 using ApiClientShared.Models;
-using Cv_Management.Interfaces.Services;
+using CvManagement.Interfaces.Services;
 
-namespace Cv_Management.Services
+namespace CvManagement.Services
 {
     public class DbService : IDbService
     {
