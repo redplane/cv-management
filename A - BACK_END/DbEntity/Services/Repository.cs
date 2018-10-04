@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using DbEntity.Interfaces;
+using DbEntity.Models.Entities.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace DbEntity.Services

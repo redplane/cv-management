@@ -40,14 +40,13 @@ namespace Cv_Management.Controllers
         /// <param name="fileService"></param>
         /// <param name="profileCacheService"></param>
         /// <param name="userService"></param>
-        /// <param name="unitOfWork"></param>
         /// <param name="mapper"></param>
         /// <param name="appPath"></param>
         public ApiUserController(
             ITokenService tokenService, IProfileService profileService,
             ICaptchaService captchaService, IFileService fileService,
             IValueCacheService<string, ProfileModel> profileCacheService,
-            IUserService userService, IUnitOfWork unitOfWork,
+            IUserService userService,
             IMapper mapper,
             AppPathModel appPath)
         {
@@ -57,7 +56,6 @@ namespace Cv_Management.Controllers
             _fileService = fileService;
             _profileCacheService = profileCacheService;
             _userService = userService;
-            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _appPath = appPath;
         }
@@ -105,8 +103,6 @@ namespace Cv_Management.Controllers
         ///     Application path configuration.
         /// </summary>
         private readonly AppPathModel _appPath;
-
-        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
 
@@ -269,7 +265,7 @@ namespace Cv_Management.Controllers
                 if (HttpMessages.UserNotFound.Equals(exception.Message))
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, exception.Message));
             }
-            
+
             return Ok();
         }
 
@@ -292,14 +288,12 @@ namespace Cv_Management.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-#if !BY_PASS_CAPTCHA // Verify the capcha first.
+            // Verify the capcha first.
             var bIsCaptchaValid =
 await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
             if (!bIsCaptchaValid)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden,
                     HttpMessages.CaptchaInvalid));
-
-#endif
 
             // Get profile from system.
             var profile = await _userService.LoginAsync(model, CancellationToken.None);
@@ -376,7 +370,7 @@ await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, Cancell
 
                 throw;
             }
-            
+
             // TODO: Send activation email.
 
             return Ok();

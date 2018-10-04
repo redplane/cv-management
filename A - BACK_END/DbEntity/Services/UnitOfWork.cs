@@ -8,15 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DbEntity.Services
 {
-    public class UnitOfWork : IUnitOfWork, IDisposable
+    public class UnitOfWork : IUnitOfWork
     {
         #region Properties
-
-        /// <summary>
-        ///     Whether the instance has been disposed or not.
-        /// </summary>
-        private bool _disposed;
-
+        
         /// <summary>
         ///     Provide methods to access confession database.
         /// </summary>
@@ -105,33 +100,7 @@ namespace DbEntity.Services
         {
             return _dbContext.Database.BeginTransaction(isolationLevel);
         }
-
-        /// <summary>
-        ///     Dispose the instance and free it from memory.
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            // Object has been disposed.
-            if (_disposed)
-                return;
-
-            // Object is being disposed.
-            if (disposing)
-                _dbContext.Dispose();
-
-            _disposed = true;
-        }
-
-        /// <summary>
-        ///     Dispose the instance.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
+        
         #endregion
     }
 }

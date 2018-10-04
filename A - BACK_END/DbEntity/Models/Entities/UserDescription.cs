@@ -4,6 +4,21 @@ namespace DbEntity.Models.Entities
 {
     public class UserDescription
     {
+        #region Constructor
+
+        public UserDescription()
+        {
+        }
+
+        public UserDescription(int id, int userId, string description): this()
+        {
+            Id = id;
+            UserId = userId;
+            Description = description;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>

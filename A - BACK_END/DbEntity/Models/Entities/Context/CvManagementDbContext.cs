@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DbEntity.Models.Entities.Context
 {
-    public class BaseCvManagementDbContext : DbContext
+    public class CvManagementDbContext : DbContext
     {
         #region Constructors
 
-        public BaseCvManagementDbContext(DbContextOptions<BaseCvManagementDbContext> options)
+        public CvManagementDbContext(DbContextOptions options)
             : base(options)
         { }
 

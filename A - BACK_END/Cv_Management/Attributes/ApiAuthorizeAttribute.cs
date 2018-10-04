@@ -128,7 +128,7 @@ namespace Cv_Management.Attributes
             }
 
             // Find unit of work from lifetime scope.
-            var dbContext = (BaseCvManagementDbContext) dependencyScope.GetService(typeof(DbContext));
+            var dbContext = (CvManagementDbContext) dependencyScope.GetService(typeof(DbContext));
 
             var users = dbContext.Users.AsQueryable();
             users = users.Where(x =>

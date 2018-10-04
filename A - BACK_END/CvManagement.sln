@@ -12,19 +12,26 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		In memory db|Any CPU = In memory db|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}.In memory db|Any CPU.ActiveCfg = In memory db|Any CPU
+		{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}.In memory db|Any CPU.Build.0 = In memory db|Any CPU
 		{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EFDCEFE-42FF-4F98-BF3E-BF9CAD58A2CF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C8479499-019B-41B5-826C-43012F849B89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C8479499-019B-41B5-826C-43012F849B89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8479499-019B-41B5-826C-43012F849B89}.In memory db|Any CPU.ActiveCfg = In memory db|Any CPU
+		{C8479499-019B-41B5-826C-43012F849B89}.In memory db|Any CPU.Build.0 = In memory db|Any CPU
 		{C8479499-019B-41B5-826C-43012F849B89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8479499-019B-41B5-826C-43012F849B89}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2393207C-0982-4939-A8D9-685A06D54218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2393207C-0982-4939-A8D9-685A06D54218}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2393207C-0982-4939-A8D9-685A06D54218}.In memory db|Any CPU.ActiveCfg = In memory db|Any CPU
+		{2393207C-0982-4939-A8D9-685A06D54218}.In memory db|Any CPU.Build.0 = In memory db|Any CPU
 		{2393207C-0982-4939-A8D9-685A06D54218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2393207C-0982-4939-A8D9-685A06D54218}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

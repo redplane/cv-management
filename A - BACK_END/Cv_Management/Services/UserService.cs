@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
 using System.Web.Hosting;
+using System.Web.Http;
 using System.Web.Http.Routing;
+using System.Web.Routing;
 using System.Web.UI.WebControls;
 using ApiClientShared.Enums;
 using ApiClientShared.Enums.SortProperties;
@@ -54,6 +57,8 @@ namespace Cv_Management.Services
 
         private readonly AppPathModel _appPath;
 
+        private readonly UrlHelper _urlHelper;
+
         #endregion
 
         #region Constructors
@@ -71,6 +76,7 @@ namespace Cv_Management.Services
         public UserService(IUnitOfWork unitOfWork, 
             IValueCacheService<string, ProfileModel> profileCacheService, 
             IProfileService profileService, IMapper mapper, 
+            UrlHelper urlHelper,
             IDbService dbService,
             IFileService fileService, AppPathModel appPath)
         {
@@ -80,6 +86,7 @@ namespace Cv_Management.Services
             _mapper = mapper;
             _dbService = dbService;
             _fileService = fileService;
+            _urlHelper = urlHelper;
             _appPath = appPath;
         }
 
@@ -105,6 +112,7 @@ namespace Cv_Management.Services
             if (profile == null || string.IsNullOrWhiteSpace(profile.Password))
             {
                 var users = _unitOfWork.Users.Search();
+                
                 users = users.Where(x =>
                     x.Email.Equals(loginModel.Email, StringComparison.InvariantCultureIgnoreCase) &&
                     x.Password.Equals(hashedPassword, StringComparison.InvariantCultureIgnoreCase) && x.Status == UserStatuses.Active);
@@ -185,8 +193,8 @@ namespace Cv_Management.Services
             {
                 var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer,
                     _appPath.ProfileImage, null, CancellationToken.None);
-                //var urlHelper = new UrlHelper(HttpContext.Current.Request.RequestContext);
-                //user.Photo = urlHelper.Content(relativeProfileImagePath);
+                
+                user.Photo = _urlHelper.Content(relativeProfileImagePath);
             }
 
             //Save to database

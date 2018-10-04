@@ -45,6 +45,31 @@ namespace DbEntity.Models.Entities
             Status = UserStatuses.Pending;
         }
 
+        /// <summary>
+        /// Initialize user object with default settings.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="photo"></param>
+        /// <param name="birthday"></param>
+        /// <param name="role"></param>
+        /// <param name="status"></param>
+        public User(int id, string email, string password, string firstName, string lastName, string photo, double birthday, UserRoles role, UserStatuses status): this()
+        {
+            Id = id;
+            Email = email;
+            Password = password;
+            FirstName = firstName;
+            LastName = lastName;
+            Photo = photo;
+            Birthday = birthday;
+            Role = role;
+            Status = status;
+        }
+
         #endregion
 
         #region Navigation properties

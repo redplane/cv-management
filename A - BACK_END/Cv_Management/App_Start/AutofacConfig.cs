@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Web.Hosting;
 using System.Web.Http;
+using System.Web.Http.Routing;
+using ApiClientShared.Enums;
 using ApiClientShared.ViewModel.SkillCategory;
 using Autofac;
 using Autofac.Features.AttributeFilters;
@@ -16,11 +18,13 @@ using Cv_Management.Interfaces.Services;
 using Cv_Management.Models;
 using Cv_Management.Services;
 using Cv_Management.Services.CacheServices;
+using DbEntity.Extensions;
 using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 using DbEntity.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Caching;
 
@@ -68,9 +72,10 @@ namespace Cv_Management
 
             #region Database context
 
+#if !USE_IN_MEMORY
             builder.Register(c =>
                 {
-                    var dbContextOptionsBuilder = new DbContextOptionsBuilder<BaseCvManagementDbContext>();
+                    var dbContextOptionsBuilder = new DbContextOptionsBuilder<CvManagementDbContext>();
                     var connectionString = ConfigurationManager.ConnectionStrings["CvManagement"].ConnectionString;
                     dbContextOptionsBuilder.UseSqlServer(connectionString)
                         .EnableSensitiveDataLogging()
@@ -78,12 +83,25 @@ namespace Cv_Management
                             (category, level) => level == LogLevel.Information &&
                                                  category == DbLoggerCategory.Database.Command.Name, true));
 
-                    var dbContext = new BaseCvManagementDbContext(dbContextOptionsBuilder.Options);
+                    var dbContext = new CvManagementDbContext(dbContextOptionsBuilder.Options);
                     return dbContext;
                 })
                 .As<DbContext>()
                 .InstancePerLifetimeScope();
+#else
+            builder.Register(c =>
+                {
+                    var dbContextOptionsBuilder = new DbContextOptionsBuilder<CvManagementInMemoryDbContext>();
+                    dbContextOptionsBuilder.UseInMemoryDatabase(nameof(CvManagementInMemoryDbContext))
+                        .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
+                    var dbContext = new CvManagementInMemoryDbContext(dbContextOptionsBuilder.Options);
+                    dbContext.Seed();
+                    return dbContext;
+                })
+                .As<DbContext>()
+                .SingleInstance();
+#endif
             #endregion
 
             #region Model
@@ -106,6 +124,8 @@ namespace Cv_Management
             builder.RegisterType<TokenService>().As<ITokenService>().InstancePerLifetimeScope();
             builder.RegisterType<FileService>().As<IFileService>().InstancePerLifetimeScope();
             builder.Register(c => new HttpClient()).As<HttpClient>().SingleInstance();
+            builder.RegisterHttpRequestMessage(httpConfiguration);
+            builder.Register(x => new UrlHelper(x.Resolve<HttpRequestMessage>()));
             builder.RegisterType<ProfileCacheService>().As<IValueCacheService<string, ProfileModel>>().SingleInstance()
                 .WithAttributeFiltering();
 
