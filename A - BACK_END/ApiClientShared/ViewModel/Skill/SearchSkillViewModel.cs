@@ -16,12 +16,11 @@ namespace ApiClientShared.ViewModel.Skill
         /// </summary>
         public HashSet<string> Names { get; set; }
 
-        public RangeModel<double,double>  StartedTime { get; set; }
+        /// <summary>
+        /// When the skill was created.
+        /// </summary>
+        public RangeModel<double?,double?>  CreatedTime { get; set; }
 
         #endregion
-
-
-
-
     }
 }

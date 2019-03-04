@@ -1,52 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.UI.WebControls;
-using ApiClientShared.Enums;
-using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.Resources;
-using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Hobby;
 using CvManagement.Interfaces.Services;
-using DbEntity.Interfaces;
-using DbEntity.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using CvManagement.Interfaces.Services.Businesses;
 
 namespace CvManagement.Controllers
 {
     [RoutePrefix("api/hobby")]
     public class ApiHobbyController : ApiController
     {
+        #region Properties
+
+        private readonly IHobbyService _hobbyService;
+
+        #endregion
+
         #region Contructors
 
         /// <summary>
         ///     Initialize controller with injectors.
         /// </summary>
-        /// <param name="dbService"></param>
-        /// <param name="profileService"></param>
-        /// <param name="unitOfWork"></param>
-        public ApiHobbyController(IDbService dbService, IProfileService profileService, IUnitOfWork unitOfWork)
+        /// <param name="hobbyService"></param>
+        public ApiHobbyController(IHobbyService hobbyService)
         {
-            _dbService = dbService;
-            _profileService = profileService;
-            _unitOfWork = unitOfWork;
+            _hobbyService = hobbyService;
         }
-
-        #endregion
-
-        #region Properties
-        
-        /// <summary>
-        ///     Service which handles database operation.
-        /// </summary>
-        private readonly IDbService _dbService;
-
-        private readonly IProfileService _profileService;
-
-        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
 
@@ -72,44 +51,8 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var hobbies = _unitOfWork.Hobbies.Search();
-
-            //Search for ids
-            if (condition.Ids != null && condition.Ids.Any())
-            {
-                var ids = condition.Ids.Where(c => c > 0).ToList();
-                if (ids.Any())
-                    hobbies = hobbies.Where(c => ids.Contains(c.Id));
-            }
-
-            //Search for UserIds
-            if (condition.UserIds != null && condition.UserIds.Any())
-            {
-                var userIds = condition.UserIds.Where(c => c > 0).ToList();
-                if (userIds.Any())
-                    hobbies = hobbies.Where(c => userIds.Contains(c.UserId));
-            }
-
-            //Search for names
-            if (condition.Names != null && condition.Names.Any())
-            {
-                var names = condition.Names.Where(c => !string.IsNullOrEmpty(c)).ToList();
-                if (names.Any())
-                    hobbies = hobbies.Where(c => names.Contains(c.Name));
-            }
-
-            var result = new SearchResultViewModel<IList<Hobby>>();
-            result.Total = await hobbies.CountAsync();
-
-            //Do sort
-            hobbies = _dbService.Sort(hobbies, SortDirection.Ascending, SkillSortProperty.Id);
-
-            //Do pagination
-            hobbies = _dbService.Paginate(hobbies, condition.Pagination);
-
-            result.Records = await hobbies.ToListAsync();
-
-            return Ok(result);
+            var loadHobbiesResult = await _hobbyService.SearchHobbiesAsync(condition, CancellationToken.None);
+            return Ok(loadHobbiesResult);
         }
 
         /// <summary>
@@ -132,17 +75,7 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Get profile information.
-            var profile = _profileService.GetProfile(Request);
-
-            var hobby = new Hobby();
-            hobby.Name = model.Name;
-            hobby.UserId = profile.Role == UserRoles.Admin && model.UserId != null ? model.UserId.Value : profile.Id;
-            hobby.Description = model.Description;
-
-            //Add to db context
-            _unitOfWork.Hobbies.Insert(hobby);
-            await _unitOfWork.CommitAsync();
+            var hobby = await _hobbyService.AddHobbyAsync(model, CancellationToken.None);
 
             return Ok(hobby);
         }
@@ -150,6 +83,7 @@ namespace CvManagement.Controllers
         /// <summary>
         ///     Edit an hobby
         /// </summary>
+        /// <param name="id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
@@ -167,21 +101,7 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //Find hobby by id
-            var hobbies = _unitOfWork.Hobbies.Search();
-            var hobby = await hobbies.FirstOrDefaultAsync(x => x.Id == id);
-            if (hobby == null)
-                return NotFound();
-
-            //Update hobby
-            if (!string.IsNullOrEmpty(model.Name))
-                hobby.Name = model.Name;
-
-            if (!string.IsNullOrEmpty(model.Description))
-                hobby.Description = model.Description;
-
-            //Save change to database
-            await _unitOfWork.CommitAsync();
+            var hobby = await _hobbyService.EditHobbyAsync(id, model, CancellationToken.None);
 
             return Ok(hobby);
         }
@@ -195,18 +115,7 @@ namespace CvManagement.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult> DeleteHobby([FromUri] int id)
         {
-            //Find hobby
-            var hobbies = _unitOfWork.Hobbies.Search();
-            var hobby = await hobbies.FirstOrDefaultAsync(x => x.Id == id);
-            if (hobby == null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                    HttpMessages.HobbyNotFound));
-
-             _unitOfWork.Hobbies.Remove(hobby);
-
-            //Save change to db
-            await _unitOfWork.CommitAsync();
-
+            await _hobbyService.DeleteHobbyAsync(id, CancellationToken.None);
             return Ok();
         }
 

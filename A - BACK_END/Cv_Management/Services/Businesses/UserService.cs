@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+using System.Web;
 using System.Web.Http.Routing;
 using ApiClientShared.Enums;
 using ApiClientShared.Resources;
@@ -11,6 +13,7 @@ using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.User;
 using AutoMapper;
 using CvManagement.Interfaces.Services;
+using CvManagement.Interfaces.Services.Businesses;
 using CvManagement.Models;
 using CvManagement.Models.Operations;
 using CvManagement.ViewModels;
@@ -19,7 +22,7 @@ using DbEntity.Interfaces;
 using DbEntity.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CvManagement.Services
+namespace CvManagement.Services.Businesses
 {
     public class UserService : IUserService
     {
@@ -64,9 +67,9 @@ namespace CvManagement.Services
         /// <param name="dbService"></param>
         /// <param name="fileService"></param>
         /// <param name="appPath"></param>
-        public UserService(IUnitOfWork unitOfWork, 
-            IValueCacheService<string, ProfileModel> profileCacheService, 
-            IProfileService profileService, IMapper mapper, 
+        public UserService(IUnitOfWork unitOfWork,
+            IValueCacheService<string, ProfileModel> profileCacheService,
+            IProfileService profileService, IMapper mapper,
             UrlHelper urlHelper,
             IDbService dbService,
             IFileService fileService, AppPathModel appPath)
@@ -103,7 +106,7 @@ namespace CvManagement.Services
             if (profile == null || string.IsNullOrWhiteSpace(profile.Password))
             {
                 var users = _unitOfWork.Users.Search();
-                
+
                 users = users.Where(x =>
                     x.Email.Equals(loginModel.Email, StringComparison.InvariantCultureIgnoreCase) &&
                     x.Password.Equals(hashedPassword, StringComparison.InvariantCultureIgnoreCase) && x.Status == UserStatuses.Active);
@@ -135,7 +138,7 @@ namespace CvManagement.Services
             users = users.Where(x => x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase));
             var addedUser = await users.FirstOrDefaultAsync(cancellationToken);
             if (addedUser != null)
-                throw new Exception(HttpMessages.UserAlreadyExist);
+                throw new HttpException((int)HttpStatusCode.Conflict, HttpMessages.UserAlreadyExist);
 
             var user = new User();
             user.FirstName = model.FirstName;
@@ -159,7 +162,7 @@ namespace CvManagement.Services
         /// <param name="model"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public virtual async  Task<User> EditUserAsync(int id, EditUserViewModel model, CancellationToken cancellationToken = default (CancellationToken))
+        public virtual async Task<User> EditUserAsync(int id, EditUserViewModel model, CancellationToken cancellationToken = default(CancellationToken))
         {
             //Find user
             var loadUserCondition = new SearchUserViewModel();
@@ -168,7 +171,7 @@ namespace CvManagement.Services
 
             var user = await GetUserAsync(loadUserCondition, cancellationToken);
             if (user == null)
-                throw new Exception(HttpMessages.UserNotFound);
+                throw new HttpException((int)HttpStatusCode.NotFound, HttpMessages.UserNotFound);
 
             if (!string.IsNullOrEmpty(model.FirstName))
                 user.FirstName = model.FirstName;
@@ -184,7 +187,7 @@ namespace CvManagement.Services
             {
                 var relativeProfileImagePath = await _fileService.AddFileToDirectory(model.Photo.Buffer,
                     _appPath.ProfileImage, null, CancellationToken.None);
-                
+
                 user.Photo = _urlHelper.Content(relativeProfileImagePath);
             }
 
@@ -199,7 +202,7 @@ namespace CvManagement.Services
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task DeleteUserAsync(int id, CancellationToken cancellationToken = default (CancellationToken))
+        public async Task DeleteUserAsync(int id, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Find users.
             var loadUserCondition = new SearchUserViewModel();
@@ -208,7 +211,7 @@ namespace CvManagement.Services
 
             var user = await GetUserAsync(loadUserCondition, cancellationToken);
             if (user == null)
-                throw new Exception(HttpMessages.UserNotFound);
+                throw new HttpException((int)HttpStatusCode.NotFound, HttpMessages.UserNotFound);
 
             user.Status = UserStatuses.Disabled;
             await _unitOfWork.CommitAsync();
@@ -228,7 +231,7 @@ namespace CvManagement.Services
                 x.Email.Equals(model.Email, StringComparison.InvariantCultureIgnoreCase), cancellationToken);
 
             if (user != null)
-                throw new Exception(HttpMessages.UserAlreadyExist);
+                throw new HttpException((int)HttpStatusCode.Conflict, HttpMessages.UserAlreadyExist);
 
             using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {

@@ -61,6 +61,15 @@ namespace ApiClientShared.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ACTION_FORBIDDEN.
+        /// </summary>
+        public static string ActionIsForbidden {
+            get {
+                return ResourceManager.GetString("ActionIsForbidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CAPTCHA_INVALID.
         /// </summary>
         public static string CaptchaInvalid {
@@ -111,6 +120,15 @@ namespace ApiClientShared.Resources {
         public static string ProfileNotFound {
             get {
                 return ResourceManager.GetString("ProfileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PROJECT_ALREADY_EXIST.
+        /// </summary>
+        public static string ProjectAlreadyExist {
+            get {
+                return ResourceManager.GetString("ProjectAlreadyExist", resourceCulture);
             }
         }
         
@@ -219,6 +237,15 @@ namespace ApiClientShared.Resources {
         public static string UserDescriptionNotFoud {
             get {
                 return ResourceManager.GetString("UserDescriptionNotFoud", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to USER_ID_MISSING.
+        /// </summary>
+        public static string UserIdMissing {
+            get {
+                return ResourceManager.GetString("UserIdMissing", resourceCulture);
             }
         }
         

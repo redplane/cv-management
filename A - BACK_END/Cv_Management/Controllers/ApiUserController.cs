@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using ApiClientShared.Constants;
 using ApiClientShared.Enums;
@@ -13,6 +14,7 @@ using ApiClientShared.Extensions;
 using ApiClientShared.Resources;
 using ApiClientShared.ViewModel.User;
 using CvManagement.Interfaces.Services;
+using CvManagement.Interfaces.Services.Businesses;
 using CvManagement.Models;
 using CvManagement.ViewModels;
 using CvManagement.ViewModels.User;
@@ -80,7 +82,7 @@ namespace CvManagement.Controllers
         ///     Service to handle user data.
         /// </summary>
         private readonly IUserService _userService;
-        
+
         #endregion
 
         #region Methods
@@ -159,18 +161,8 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var user = await _userService.AddUserAsync(model, CancellationToken.None);
-                return Ok(user);
-            }
-            catch (Exception exception)
-            {
-                if (HttpMessages.UserAlreadyExist.Equals(exception.Message))
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict, exception.Message));
-
-                throw;
-            }
+            var user = await _userService.AddUserAsync(model, CancellationToken.None);
+            return Ok(user);
         }
 
         /// <summary>
@@ -209,20 +201,10 @@ namespace CvManagement.Controllers
 
             #endregion
 
-            try
-            {
-                var user = await _userService.EditUserAsync(id, model);
-                return Ok(user);
-            }
-            catch (Exception exception)
-            {
-                if (HttpMessages.UserAlreadyExist.Equals(exception.Message))
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, exception.Message));
-
-                throw;
-            }
+            var user = await _userService.EditUserAsync(id, model);
+            return Ok(user);
         }
-
+        
         /// <summary>
         ///     Delete an user
         /// </summary>
@@ -233,16 +215,7 @@ namespace CvManagement.Controllers
         public async Task<IHttpActionResult> DeleteUser([FromUri] int id)
         {
             // Find user by id
-            try
-            {
-                await _userService.DeleteUserAsync(id, CancellationToken.None);
-            }
-            catch (Exception exception)
-            {
-                if (HttpMessages.UserNotFound.Equals(exception.Message))
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, exception.Message));
-            }
-
+            await _userService.DeleteUserAsync(id, CancellationToken.None);
             return Ok();
         }
 
@@ -264,7 +237,7 @@ namespace CvManagement.Controllers
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+            
             // Verify the capcha first.
             var bIsCaptchaValid =
                 await _captchaService.IsCaptchaValidAsync(model.ClientCaptchaCode, null, CancellationToken.None);
@@ -336,18 +309,7 @@ namespace CvManagement.Controllers
 
             #endregion
 
-            try
-            {
-                await _userService.RegisterUserAsync(model, CancellationToken.None);
-            }
-            catch (Exception exception)
-            {
-                if (HttpMessages.UserAlreadyExist.Equals(exception.Message))
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                        HttpMessages.UserAlreadyExist));
-
-                throw;
-            }
+            await _userService.RegisterUserAsync(model, CancellationToken.None);
 
             // TODO: Send activation email.
 

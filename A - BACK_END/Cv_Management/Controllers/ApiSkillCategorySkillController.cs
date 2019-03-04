@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CvManagement.Controllers
 {
     [RoutePrefix("api/skill-category-skill")]
-    public class ApiSkillCategorySkillRelationshipController : ApiController
+    public class ApiSkillCategorySkillController : ApiController
     {
         #region Properties
 
@@ -45,7 +45,7 @@ namespace CvManagement.Controllers
         /// <param name="unitOfWork"></param>
         /// <param name="dbService"></param>
         /// <param name="profileService"></param>
-        public ApiSkillCategorySkillRelationshipController(IUnitOfWork unitOfWork,
+        public ApiSkillCategorySkillController(IUnitOfWork unitOfWork,
             IDbService dbService, IProfileService profileService)
         {
             _unitOfWork = unitOfWork;

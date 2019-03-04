@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ApiClientShared.Enums;
+﻿using ApiClientShared.Enums;
 using DbEntity.Models.Entities;
 using DbEntity.Models.Entities.Context;
 
@@ -16,7 +15,8 @@ namespace DbEntity.Extensions
         public static void Seed(this CvManagementInMemoryDbContext dbContext)
         {
             AddUsers(dbContext);
-            AddUserDescription(dbContext);
+            AddUserDescriptions(dbContext);
+            AddProjects(dbContext);
         }
 
         /// <summary>
@@ -38,10 +38,10 @@ namespace DbEntity.Extensions
         }
 
         /// <summary>
-        /// Add user description to user table.
+        ///     Add user description to user table.
         /// </summary>
         /// <param name="dbContext"></param>
-        private static void AddUserDescription(CvManagementInMemoryDbContext dbContext)
+        private static void AddUserDescriptions(CvManagementInMemoryDbContext dbContext)
         {
             dbContext.UserDescriptions.Add(new UserDescription(1, 1, "DESCRIPTION_01"));
             dbContext.UserDescriptions.Add(new UserDescription(2, 1, "DESCRIPTION_02"));
@@ -58,6 +58,30 @@ namespace DbEntity.Extensions
             dbContext.SaveChanges();
         }
 
+        /// <summary>
+        ///     Add project to in-memory database context.
+        /// </summary>
+        /// <param name="dbContext"></param>
+        private static void AddProjects(CvManagementInMemoryDbContext dbContext)
+        {
+            dbContext.Projects.Add(new Project(1, 1, "PROJECT_01", "PROJECT_DESCRIPTION_01", 0, 0));
+            dbContext.Projects.Add(new Project(2, 1, "PROJECT_02", "PROJECT_DESCRIPTION_02", 0, 0));
+            dbContext.Projects.Add(new Project(3, 1, "PROJECT_03", "PROJECT_DESCRIPTION_03", 0, 0));
+
+            dbContext.Projects.Add(new Project(4, 2, "PROJECT_01", "PROJECT_DESCRIPTION_01", 0, 0));
+            dbContext.Projects.Add(new Project(5, 2, "PROJECT_02", "PROJECT_DESCRIPTION_02", 0, 0));
+            dbContext.Projects.Add(new Project(6, 2, "PROJECT_03", "PROJECT_DESCRIPTION_03", 0, 0));
+
+            dbContext.Projects.Add(new Project(7, 3, "PROJECT_01", "PROJECT_DESCRIPTION_01", 0, 0));
+            dbContext.Projects.Add(new Project(8, 3, "PROJECT_02", "PROJECT_DESCRIPTION_02", 0, 0));
+            dbContext.Projects.Add(new Project(9, 3, "PROJECT_03", "PROJECT_DESCRIPTION_03", 0, 0));
+
+            dbContext.Projects.Add(new Project(10, 4, "PROJECT_01", "PROJECT_DESCRIPTION_01", 0, 0));
+            dbContext.Projects.Add(new Project(11, 4, "PROJECT_02", "PROJECT_DESCRIPTION_02", 0, 0));
+            dbContext.Projects.Add(new Project(12, 4, "PROJECT_03", "PROJECT_DESCRIPTION_03", 0, 0));
+
+            dbContext.SaveChanges();
+        }
     }
 
     #endregion

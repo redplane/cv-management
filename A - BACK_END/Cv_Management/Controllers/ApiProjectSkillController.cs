@@ -1,15 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.UI.WebControls;
-using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.ProjectSkill;
-using CvManagement.Interfaces.Services;
-using DbEntity.Interfaces;
-using DbEntity.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using CvManagement.Interfaces.Services.Businesses;
 
 namespace CvManagement.Controllers
 {
@@ -17,20 +9,16 @@ namespace CvManagement.Controllers
     public class ApiProjectSkillController : ApiController
     {
         #region Properties
-        
-        private readonly IDbService _dbService;
 
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IProjectSkillService _projectSkillService;
 
         #endregion
 
         #region Contructors
 
-        public ApiProjectSkillController(IUnitOfWork unitOfWork,
-            IDbService dbService)
+        public ApiProjectSkillController(IProjectSkillService projectSkillService)
         {
-            _dbService = dbService;
-            _unitOfWork = unitOfWork;
+            _projectSkillService = projectSkillService;
         }
 
         #endregion
@@ -57,37 +45,11 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //Get project skills list
-            var projectSkills = _unitOfWork.ProjectSkills.Search();
 
-            if (condition.ProjectIds != null)
-            {
-                var projectIds = condition.ProjectIds.Where(x => x > 0).ToList();
-                if (projectIds.Count > 0)
-                    projectSkills = projectSkills.Where(x => projectIds.Contains(x.ProjectId));
-            }
-
-            if (condition.SkillIds != null)
-            {
-                var skillIds = condition.SkillIds.Where(x => x > 0).ToList();
-                if (skillIds.Count > 0)
-                    projectSkills = projectSkills.Where(x => skillIds.Contains(x.SkillId));
-            }
-
-            //Result search 
-            var result = new SearchResultViewModel<IList<ProjectSkill>>();
-            result.Total = await projectSkills.CountAsync();
-            
-            //Do sort
-            projectSkills = _dbService.Sort(projectSkills, SortDirection.Ascending, ProjectSkillSortProperty.ProjectId);
-
-            //Do pagination
-            projectSkills = _dbService.Paginate(projectSkills, condition.Pagination);
-
-            result.Records = await projectSkills.ToListAsync();
-            return Ok(result);
+            var loadProjectSkillsResult = await _projectSkillService.SearchProjectSkillsAsync(condition);
+            return Ok(loadProjectSkillsResult);
         }
-        
+
         #endregion
     }
 }

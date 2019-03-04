@@ -1,49 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.UI.WebControls;
-using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.Resources;
-using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.Skill;
-using CvManagement.Interfaces.Services;
-using DbEntity.Interfaces;
-using DbEntity.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using CvManagement.Interfaces.Services.Businesses;
 
 namespace CvManagement.Controllers
 {
     [RoutePrefix("api/skill")]
     public class ApiSkillController : ApiController
     {
+        #region Properties
+
+        private readonly ISkillService _skillService;
+
+        #endregion
+
         #region Contructors
 
         /// <summary>
         ///     Initialize controller with injectors
         /// </summary>
-        /// <param name="unitOfWork"></param>
-        /// <param name="dbService"></param>
-        /// <param name="profileService"></param>
-        public ApiSkillController(IUnitOfWork unitOfWork, IDbService dbService, IProfileService profileService)
+        /// <param name="skillService"></param>
+        public ApiSkillController(ISkillService skillService)
         {
-            _unitOfWork = unitOfWork;
-            _dbService = dbService;
+            _skillService = skillService;
         }
-
-        #endregion
-
-        #region Properties
-
-        private readonly IUnitOfWork _unitOfWork;
-
-        /// <summary>
-        ///     Service to handle database operation
-        /// </summary>
-        private readonly IDbService _dbService;
 
         #endregion
 
@@ -68,38 +49,8 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var skills = _unitOfWork.Skills.Search();
-
-            if (condition.Ids != null && condition.Ids.Count > 0)
-            {
-                var ids = condition.Ids.Where(c => c > 0).ToList();
-                if (ids.Count > 0)
-                    skills = skills.Where(c => ids.Contains(c.Id));
-            }
-
-            if (condition.Names != null && condition.Names.Count > 0)
-            {
-                var names = condition.Names.Where(c => !string.IsNullOrEmpty(c)).ToList();
-                if (names.Count > 0)
-                    skills = skills.Where(c => names.Any(name => c.Name.Contains(name)));
-            }
-
-            if (condition.StartedTime != null)
-                skills = skills.Where(c => c.CreatedTime >= condition.StartedTime.From
-                                           && c.CreatedTime <= condition.StartedTime.To);
-
-            var result = new SearchResultViewModel<IList<Skill>>();
-            result.Total = await skills.CountAsync();
-
-            //do sorting
-            skills = _dbService.Sort(skills, SortDirection.Ascending, UserDescriptionSortProperty.Id);
-
-            // Do pagination.
-            skills = _dbService.Paginate(skills, condition.Pagination);
-
-            result.Records = await skills.ToListAsync();
-
-            return Ok(result);
+            var loadSkillResult = await _skillService.SearchSkillsAsync(condition, CancellationToken.None);
+            return Ok(loadSkillResult);
         }
 
         /// <summary>
@@ -120,25 +71,7 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var skills = _unitOfWork.Skills.Search();
-            skills = skills.Where(x => x.Name.Equals(model.Name, StringComparison.InvariantCultureIgnoreCase));
-
-            var skill = await skills.FirstOrDefaultAsync();
-
-            if (skill != null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Conflict, HttpMessages.SkillIsDuplicate));
-
-            //Inital skill object
-            skill = new Skill();
-            skill.Name = model.Name;
-            skill.CreatedTime = DateTime.Now.ToOADate();
-
-            //add skill to database
-            _unitOfWork.Skills.Insert(skill);
-
-            //save changes to database
-            await _unitOfWork.CommitAsync();
-
+            var skill = await _skillService.AddSkillAsync(model, CancellationToken.None);
             return Ok(skill);
         }
 
@@ -161,20 +94,7 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //Find skill in database
-            var skills =  _unitOfWork.Skills.Search();
-            var skill = await skills.FirstOrDefaultAsync(x => x.Id == id);
-            if (skill == null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                    HttpMessages.SkillNotFound));
-
-            //Update information
-            skill.Name = model.Name;
-            skill.LastModifiedTime = DateTime.Now.ToOADate();
-
-            //Save changes to database
-            await _unitOfWork.CommitAsync();
-
+            var skill = await _skillService.EditSkillAsync(id, model, CancellationToken.None);
             return Ok(skill);
         }
 
@@ -187,20 +107,7 @@ namespace CvManagement.Controllers
         [Route("{id}")]
         public async Task<IHttpActionResult> DeleteSkill([FromUri] int id)
         {
-            //Find skill in database
-            var skills = _unitOfWork.Skills.Search();
-
-            var skill = await skills.FirstOrDefaultAsync(x => x.Id == id);
-            if (skill == null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                    HttpMessages.SkillNotFound));
-
-            //Delete skill from database
-            _unitOfWork.Skills.Remove(skill);
-
-            //Save changes in database
-            await _unitOfWork.CommitAsync();
-
+            await _skillService.DeleteSkillAsync(id, CancellationToken.None);
             return Ok();
         }
 

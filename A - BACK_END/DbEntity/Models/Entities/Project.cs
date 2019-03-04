@@ -21,6 +21,34 @@ namespace DbEntity.Models.Entities
 
         #endregion
 
+        #region Constructors
+
+        public Project()
+        {
+        }
+
+        public Project(int userId, string name, string description, double startedTime, double? finishedTime)
+        {
+            UserId = userId;
+            Name = name;
+            Description = description;
+            StartedTime = startedTime;
+            FinishedTime = finishedTime;
+        }
+
+        public Project(int id, int userId, string name, string description, double startedTime, double? finishedTime)
+        {
+            Id = id;
+            UserId = userId;
+            Name = name;
+            Description = description;
+            StartedTime = startedTime;
+            FinishedTime = finishedTime;
+        }
+
+        #endregion
+
+
         #region Navigation properties
 
         /// <summary>

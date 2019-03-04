@@ -14,8 +14,10 @@ using AutoMapper;
 using AutoMapper.Configuration;
 using CvManagement.Constant;
 using CvManagement.Interfaces.Services;
+using CvManagement.Interfaces.Services.Businesses;
 using CvManagement.Models;
 using CvManagement.Services;
+using CvManagement.Services.Businesses;
 using CvManagement.Services.CacheServices;
 using DbEntity.Extensions;
 using DbEntity.Interfaces;
@@ -131,6 +133,14 @@ namespace CvManagement
 
             // Api services.
             builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
+            builder.RegisterType<UserDescriptionService>().As<IUserDescriptionService>().InstancePerLifetimeScope();
+            builder.RegisterType<ProjectService>().As<IProjectService>().InstancePerLifetimeScope();
+            builder.RegisterType<HobbyService>().As<IHobbyService>().InstancePerLifetimeScope();
+            builder.RegisterType<SkillService>().As<ISkillService>().InstancePerLifetimeScope();
+            builder.RegisterType<ProjectSkill>().As<IProjectSkillService>().InstancePerLifetimeScope();
+            builder.RegisterType<ProjectResponsibilityService>().As<IProjectResponsibilityService>().InstancePerLifetimeScope();
+            builder.RegisterType<ResponsibilityService>().As<IResponsibilityService>().InstancePerLifetimeScope();
+            builder.RegisterType<SkillCategoryService>().As<ISkillCategoryService>().InstancePerLifetimeScope();
 
             #endregion
 

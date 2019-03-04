@@ -95,7 +95,6 @@
     <Compile Include="ViewModel\ProjectResponsibility\AddProjectResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\ProjectResponsibility\ReadingProjectResponsibilityViewModel.cs" />
     <Compile Include="ViewModel\ProjectResponsibility\SearchProjectResponsibilityViewModel.cs" />
-    <Compile Include="ViewModel\ProjectSkill\AddProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\Project\ProjectViewModel.cs" />
     <Compile Include="ViewModel\ProjectSkill\SearchProjectSkillViewModel.cs" />
     <Compile Include="ViewModel\Project\AddProjectViewModel.cs" />

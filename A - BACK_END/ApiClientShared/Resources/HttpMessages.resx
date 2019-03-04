@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ActionIsForbidden" xml:space="preserve">
+    <value>ACTION_FORBIDDEN</value>
+  </data>
   <data name="CaptchaInvalid" xml:space="preserve">
     <value>CAPTCHA_INVALID</value>
     <comment>Captcha is invalid. Cannot be verified by Captcha provider.</comment>
@@ -135,6 +138,9 @@
   </data>
   <data name="ProfileNotFound" xml:space="preserve">
     <value>PROFILE_NOT_FOUND</value>
+  </data>
+  <data name="ProjectAlreadyExist" xml:space="preserve">
+    <value>PROJECT_ALREADY_EXIST</value>
   </data>
   <data name="ProjectNotFound" xml:space="preserve">
     <value>PROJECT_NOT_FOUND</value>
@@ -171,6 +177,9 @@
   </data>
   <data name="UserDescriptionNotFoud" xml:space="preserve">
     <value>USER_DESCRIPTION_NOT_FOUND</value>
+  </data>
+  <data name="UserIdMissing" xml:space="preserve">
+    <value>USER_ID_MISSING</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>USER_NOT_FOUND</value>

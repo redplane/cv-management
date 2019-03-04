@@ -6,7 +6,5 @@ namespace ApiClientShared.ViewModel.Skill
     {
         [Required]
         public string Name { get; set; }
-      
-
     }
 }

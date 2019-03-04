@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http.Filters;
 
 namespace CvManagement.Attributes
@@ -37,13 +40,22 @@ namespace CvManagement.Attributes
                 return Task.FromResult(0);
 
             var exception = actionExecutedContext.Exception;
-            
+
             //if (exception is DbEntityValidationException)
             //{
-            //    var dbEntityValidationException = (DbEntityValidationException) exception;
+            //    var dbEntityValidationException = (DbEntityValidationException)exception;
             //    Debug.WriteLine(dbEntityValidationException);
             //    return Task.FromResult(1);
             //}
+
+            if (exception is HttpException)
+            {
+                var httpException = (HttpException) exception;
+                actionExecutedContext.Response =
+                    actionExecutedContext.Request.CreateErrorResponse((HttpStatusCode) httpException.GetHttpCode(),
+                        httpException.Message);
+                return Task.FromResult(1);
+            }
 
             Debug.WriteLine(exception.Message, exception);
 

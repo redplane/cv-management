@@ -9,7 +9,7 @@ using CvManagement.ViewModels;
 using CvManagement.ViewModels.User;
 using DbEntity.Models.Entities;
 
-namespace CvManagement.Interfaces.Services
+namespace CvManagement.Interfaces.Services.Businesses
 {
     public interface IUserService
     {

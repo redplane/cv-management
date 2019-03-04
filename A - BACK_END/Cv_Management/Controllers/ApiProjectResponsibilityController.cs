@@ -1,28 +1,24 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.UI.WebControls;
-using ApiClientShared.Enums.SortProperties;
-using ApiClientShared.ViewModel;
 using ApiClientShared.ViewModel.ProjectResponsibility;
-using CvManagement.Interfaces.Services;
-using DbEntity.Interfaces;
-using DbEntity.Models.Entities;
-using Microsoft.EntityFrameworkCore;
+using CvManagement.Interfaces.Services.Businesses;
 
 namespace CvManagement.Controllers
 {
     [RoutePrefix("api/project-responsibility")]
     public class ApiProjectResponsibilityController : ApiController
     {
+        #region properties
+
+        private readonly IProjectResponsibilityService _projectResponsibilityService;
+
+        #endregion
+
         #region Contructors
 
-        public ApiProjectResponsibilityController(IUnitOfWork unitOfWork,
-            IDbService dbService)
+        public ApiProjectResponsibilityController(IProjectResponsibilityService projectResponsibilityService)
         {
-            _dbService = dbService;
-            _unitOfWork = unitOfWork;
+            _projectResponsibilityService = projectResponsibilityService;
         }
 
         #endregion
@@ -49,46 +45,10 @@ namespace CvManagement.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //Get list projet responsibility
-            var projectResponsibilities = _unitOfWork.ProjectResponsibilities.Search();
-            if (condition.ProjectIds != null && condition.ProjectIds.Count > 0)
-            {
-                var projectIds = condition.ProjectIds.Where(x => x > 0).ToList();
-                if (projectIds.Count > 0)
-                    projectResponsibilities = projectResponsibilities.Where(x => projectIds.Contains(x.ProjectId));
-            }
-
-            if (condition.ResponsibilityIds != null && condition.ResponsibilityIds.Count > 0)
-            {
-                var responsibilityIds = condition.ResponsibilityIds.Where(x => x > 0).ToList();
-                if (responsibilityIds.Count > 0)
-                    projectResponsibilities =
-                        projectResponsibilities.Where(x => responsibilityIds.Contains(x.ResponsibilityId));
-            }
-
-            var result = new SearchResultViewModel<IList<ProjectResponsibility>>();
-            result.Total = await projectResponsibilities.CountAsync();
-
-            //Do sort
-            projectResponsibilities =
-                _dbService.Sort(projectResponsibilities, SortDirection.Ascending,
-                    ProjectResponsibilitySortProperty.ProjectId);
-
-            //Do paginatin
-            projectResponsibilities = _dbService.Paginate(projectResponsibilities, condition.Pagination);
-
-            result.Records = await projectResponsibilities.ToListAsync();
-
-            return Ok(result);
+            var loadProjectResponsibilitiesResult =
+                await _projectResponsibilityService.SearchProjectResponsibilitiesAsync(condition);
+            return Ok(loadProjectResponsibilitiesResult);
         }
-
-        #endregion
-
-        #region properties
-
-        private readonly IDbService _dbService;
-
-        private readonly IUnitOfWork _unitOfWork;
 
         #endregion
     }
